@@ -105,16 +105,12 @@ int main() {
     while (true) {
         tcp::socket socket(ioc);
         acceptor.accept(socket);
-        while (true) {
-            tcp::socket socket(ioc);
-            acceptor.accept(socket);
 
-            std::thread t(
-                [](tcp::socket socket) {
-                    HandleConnection(socket, HandleRequest);
-                },
-                std::move(socket));
-            t.detach();
-        }
+        std::thread t(
+            [](tcp::socket socket) {
+                HandleConnection(socket, HandleRequest);
+            },
+            std::move(socket));
+        t.detach();
     }
 }
