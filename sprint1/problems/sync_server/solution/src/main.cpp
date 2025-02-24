@@ -54,7 +54,7 @@ StringResponse HandleRequest(StringRequest&& req) {
     case http::verb::get:
         return MakeStringResponse(ss.view(), req.version(), req.keep_alive(), false);
     case http::verb::head:
-        return MakeStringResponse("Hello, "sv, req.version(), req.keep_alive(), true);
+        return MakeStringResponse(ss.view(), req.version(), req.keep_alive(), true);
     default:
         return GetMethodNotAllowedResponse(req.version(), req.keep_alive());
     }
