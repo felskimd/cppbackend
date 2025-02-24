@@ -29,7 +29,7 @@ StringResponse MakeStringResponse(std::string_view body, unsigned http_version,
     std::string_view content_type = ContentType::TEXT_HTML) {
     StringResponse response(http::status::ok, http_version);
     response.set(http::field::content_type, content_type);
-    if (is_head_method) {
+    if (!is_head_method) {
         response.body() = body;
     }
     response.content_length(body.size());
@@ -49,7 +49,6 @@ StringResponse GetMethodNotAllowedResponse(unsigned http_version, bool keep_aliv
 StringResponse HandleRequest(StringRequest&& req) {
     std::stringstream ss;
     ss << "Hello, " << req.target().substr(1, req.target().size() - 1);
-    std::cout << ss.view() << std::endl;
     switch (req.method()) {
     case http::verb::get:
         return MakeStringResponse(ss.view(), req.version(), req.keep_alive(), false);
