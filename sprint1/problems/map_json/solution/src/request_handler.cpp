@@ -1,11 +1,17 @@
 #include "request_handler.h"
 
+#include <ranges>
+
 namespace http_handler {
 
 std::vector<std::string_view> SplitRequest(std::string_view body) {
     std::vector<std::string_view> result;
-    for (const auto& word : std::views::split(body, "/"sv)) {
-        result.push_back(std::string_view(word.data()));
+    size_t start = 0;
+    size_t end = body.find("/");
+    while (end != std::string_view::npos) {
+        result.push_back(body.substr(start, end - start));
+        start = end + 1;
+        end = body.find("/", start);
     }
     return result;
 }

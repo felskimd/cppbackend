@@ -3,7 +3,6 @@
 #include "model.h"
 
 #include <boost/json.hpp>
-#include <ranges>
 
 namespace http_handler {
 
