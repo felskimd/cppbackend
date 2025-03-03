@@ -32,7 +32,7 @@ public:
 
     template <typename Body, typename Allocator, typename Send>
     void operator()(http::request<Body, http::basic_fields<Allocator>>&& req, Send&& send) {
-        auto request = SplitRequest(std::string_view(req.body()));
+        auto request = SplitRequest(std::string_view(req.target().substr(1, req.target().size() - 1)));
         if (request[0] == "api"sv && request[1] == "v1"sv && request[2] == "maps"sv) {
             if (request.size() == 3) {
                 auto maps_body = json::array();
@@ -45,7 +45,9 @@ public:
                 SendResponse(http::status::ok, json::serialize(maps_body), req.version(), std::move(send));
             }
             else if (request.size() == 4) {
-                const auto* map = game_.FindMap(model::Map::Id(request[3].data()));
+                std::string id_text(request[3].data(), request[3].size());
+                model::Map::Id id(id_text);
+                const auto* map = game_.FindMap(id);
                 if (map) {
                     SendResponse(http::status::ok, json::serialize(MapToJSON(map)), req.version(), std::move(send));
                 }

@@ -13,6 +13,7 @@ std::vector<std::string_view> SplitRequest(std::string_view body) {
         start = end + 1;
         end = body.find("/", start);
     }
+    result.push_back(body.substr(start, body.length() - start));
     return result;
 }
 
