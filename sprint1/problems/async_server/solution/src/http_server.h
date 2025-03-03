@@ -18,7 +18,7 @@ namespace sys = boost::system;
 
 using namespace std::literals;
 
-void ReportError(beast::error_code ec, std::string_view str);
+void ReportError(beast::error_code ec, std::string_view what);
 
 class SessionBase {
 public:
