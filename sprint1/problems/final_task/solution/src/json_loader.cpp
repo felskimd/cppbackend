@@ -60,11 +60,9 @@ model::Road JsonToRoad(const json::object& obj) {
             , { obj.at("x0").to_number<int>(), obj.at("y0").to_number<int>() }
             , obj.at("x1").to_number<int>());
     }
-    else {
-        return model::Road(model::Road::VERTICAL
-            , { obj.at("x0").to_number<int>(), obj.at("y0").to_number<int>() }
-            , obj.at("y1").to_number<int>());
-    }
+    return model::Road(model::Road::VERTICAL
+        , { obj.at("x0").to_number<int>(), obj.at("y0").to_number<int>() }
+        , obj.at("y1").to_number<int>());
 }
 
 }  // namespace json_loader

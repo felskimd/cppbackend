@@ -17,15 +17,42 @@ struct ContentType {
     constexpr static std::string_view APP_JSON = "application/json"sv;
 };
 
+struct ModelLiterals {
+    ModelLiterals() = delete;
+    constexpr static std::string_view ID = "id"sv;
+    constexpr static std::string_view NAME = "name"sv;
+    constexpr static std::string_view START_X = "x0"sv;
+    constexpr static std::string_view START_Y = "y0"sv;
+    constexpr static std::string_view END_X = "x1"sv;
+    constexpr static std::string_view END_Y = "y1"sv;
+    constexpr static std::string_view POSITION_X = "x"sv;
+    constexpr static std::string_view POSITION_Y = "y"sv;
+    constexpr static std::string_view OFFSET_X = "offsetX"sv;
+    constexpr static std::string_view OFFSET_Y = "offsetY"sv;
+    constexpr static std::string_view SIZE_WIDTH = "w"sv;
+    constexpr static std::string_view SIZE_HEIGHT = "h"sv;
+    constexpr static std::string_view ROADS = "roads"sv;
+    constexpr static std::string_view OFFICES = "offices"sv;
+    constexpr static std::string_view BUILDINGS = "buildings"sv;
+};
+
+struct RestApiLiterals {
+    RestApiLiterals() = delete;
+    constexpr static std::string_view API = "api"sv;
+    constexpr static std::string_view VERSION_1 = "v1"sv;
+    constexpr static std::string_view MAPS = "maps"sv;
+};
+
 std::vector<std::string_view> SplitRequest(std::string_view body);
 
 json::object MapToJSON(const model::Map* map);
+json::array RoadsToJson(const model::Map* map);
+json::array OfficesToJson(const model::Map* map);
+json::array BuildingsToJson(const model::Map* map);
 
 class RequestHandler {
 public:
-    explicit RequestHandler(model::Game& game)
-        : game_{game} {
-    }
+    explicit RequestHandler(model::Game& game);
 
     RequestHandler(const RequestHandler&) = delete;
     RequestHandler& operator=(const RequestHandler&) = delete;
@@ -33,13 +60,13 @@ public:
     template <typename Body, typename Allocator, typename Send>
     void operator()(http::request<Body, http::basic_fields<Allocator>>&& req, Send&& send) {
         auto request = SplitRequest(std::string_view(req.target().substr(1, req.target().size() - 1)));
-        if (request[0] == "api"sv && request[1] == "v1"sv && request[2] == "maps"sv) {
+        if (request[0] == RestApiLiterals::API && request[1] == RestApiLiterals::VERSION_1 && request[2] == RestApiLiterals::MAPS) {
             if (request.size() == 3) {
                 auto maps_body = json::array();
                 for (const auto& map : game_.GetMaps()) {
                     json::object body;
-                    body["id"] = *map.GetId();
-                    body["name"] = map.GetName();
+                    body[std::string(ModelLiterals::ID)] = *map.GetId();
+                    body[std::string(ModelLiterals::NAME)] = map.GetName();
                     maps_body.emplace_back(std::move(body));
                 }
                 SendResponse(http::status::ok, json::serialize(maps_body), req.version(), std::move(send));
