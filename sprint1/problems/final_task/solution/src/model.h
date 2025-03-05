@@ -195,22 +195,22 @@ private:
 
 struct ModelLiterals {
     ModelLiterals() = delete;
-    const static std::string_view MAPS = "maps";
-    const static std::string_view ID = "id";
-    const static std::string_view NAME = "name";
-    const static std::string_view START_X = "x0";
-    const static std::string_view START_Y = "y0";
-    const static std::string_view END_X = "x1";
-    const static std::string_view END_Y = "y1";
-    const static std::string_view POSITION_X = "x";
-    const static std::string_view POSITION_Y = "y";
-    const static std::string_view OFFSET_X = "offsetX";
-    const static std::string_view OFFSET_Y = "offsetY";
-    const static std::string_view SIZE_WIDTH = "w";
-    const static std::string_view SIZE_HEIGHT = "h";
-    const static std::string_view ROADS = "roads";
-    const static std::string_view OFFICES = "offices";
-    const static std::string_view BUILDINGS = "buildings";
+    constexpr static std::string_view MAPS = "maps";
+    constexpr static std::string_view ID = "id";
+    constexpr static std::string_view NAME = "name";
+    constexpr static std::string_view START_X = "x0";
+    constexpr static std::string_view START_Y = "y0";
+    constexpr static std::string_view END_X = "x1";
+    constexpr static std::string_view END_Y = "y1";
+    constexpr static std::string_view POSITION_X = "x";
+    constexpr static std::string_view POSITION_Y = "y";
+    constexpr static std::string_view OFFSET_X = "offsetX";
+    constexpr static std::string_view OFFSET_Y = "offsetY";
+    constexpr static std::string_view SIZE_WIDTH = "w";
+    constexpr static std::string_view SIZE_HEIGHT = "h";
+    constexpr static std::string_view ROADS = "roads";
+    constexpr static std::string_view OFFICES = "offices";
+    constexpr static std::string_view BUILDINGS = "buildings";
 };
 
 }  // namespace model
