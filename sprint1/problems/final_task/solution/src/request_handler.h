@@ -17,25 +17,6 @@ struct ContentType {
     constexpr static std::string_view APP_JSON = "application/json"sv;
 };
 
-struct ModelLiterals {
-    ModelLiterals() = delete;
-    constexpr static std::string_view ID = "id"sv;
-    constexpr static std::string_view NAME = "name"sv;
-    constexpr static std::string_view START_X = "x0"sv;
-    constexpr static std::string_view START_Y = "y0"sv;
-    constexpr static std::string_view END_X = "x1"sv;
-    constexpr static std::string_view END_Y = "y1"sv;
-    constexpr static std::string_view POSITION_X = "x"sv;
-    constexpr static std::string_view POSITION_Y = "y"sv;
-    constexpr static std::string_view OFFSET_X = "offsetX"sv;
-    constexpr static std::string_view OFFSET_Y = "offsetY"sv;
-    constexpr static std::string_view SIZE_WIDTH = "w"sv;
-    constexpr static std::string_view SIZE_HEIGHT = "h"sv;
-    constexpr static std::string_view ROADS = "roads"sv;
-    constexpr static std::string_view OFFICES = "offices"sv;
-    constexpr static std::string_view BUILDINGS = "buildings"sv;
-};
-
 struct RestApiLiterals {
     RestApiLiterals() = delete;
     constexpr static std::string_view API = "api"sv;
@@ -65,8 +46,8 @@ public:
                 auto maps_body = json::array();
                 for (const auto& map : game_.GetMaps()) {
                     json::object body;
-                    body[std::string(ModelLiterals::ID)] = *map.GetId();
-                    body[std::string(ModelLiterals::NAME)] = map.GetName();
+                    body[std::string(model::ModelLiterals::ID)] = *map.GetId();
+                    body[std::string(model::ModelLiterals::NAME)] = map.GetName();
                     maps_body.emplace_back(std::move(body));
                 }
                 SendResponse(http::status::ok, json::serialize(maps_body), req.version(), std::move(send));

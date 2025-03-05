@@ -10,17 +10,17 @@ model::Game LoadGame(const std::filesystem::path& json_path) {
     // Загрузить модель игры из файла
     model::Game game;
     auto json_config = json::parse(ReadFileToString(json_path));
-    for (const auto& parsed_map : json_config.as_object().at("maps").as_array()) {
+    for (const auto& parsed_map : json_config.as_object().at(std::string(model::ModelLiterals::MAPS)).as_array()) {
         json::object object_map = parsed_map.as_object();
-        auto parsed_id = object_map.at("id").as_string().c_str();
-        model::Map model_map(model::Map::Id(parsed_id), object_map.at("name").as_string().c_str());
-        for (const auto& building : object_map.at("buildings").as_array()) {
+        auto parsed_id = object_map.at(std::string(model::ModelLiterals::ID)).as_string().c_str();
+        model::Map model_map(model::Map::Id(parsed_id), object_map.at(std::string(model::ModelLiterals::NAME)).as_string().c_str());
+        for (const auto& building : object_map.at(std::string(model::ModelLiterals::BUILDINGS)).as_array()) {
             model_map.AddBuilding(JsonToBuilding(building.as_object()));
         }
-        for (const auto& road : object_map.at("roads").as_array()) {
+        for (const auto& road : object_map.at(std::string(model::ModelLiterals::ROADS)).as_array()) {
             model_map.AddRoad(JsonToRoad(road.as_object()));
         }
-        for (const auto& office : object_map.at("offices").as_array()) {
+        for (const auto& office : object_map.at(std::string(model::ModelLiterals::OFFICES)).as_array()) {
             model_map.AddOffice(JsonToOffice(office.as_object()));
         }
         game.AddMap(model_map);
@@ -42,27 +42,33 @@ std::string ReadFileToString(const std::filesystem::path& filePath) {
 }
 
 model::Building JsonToBuilding(const json::object& obj) {
-    model::Rectangle rect{ {obj.at("x").to_number<int>(), obj.at("y").to_number<int>()}
-            , {obj.at("w").to_number<int>(), obj.at("h").to_number<int>()}};
+    model::Rectangle rect{ { obj.at(std::string(model::ModelLiterals::POSITION_X)).to_number<int>()
+                , obj.at(std::string(model::ModelLiterals::POSITION_Y)).to_number<int>() }
+        , { obj.at(std::string(model::ModelLiterals::SIZE_WIDTH)).to_number<int>()
+                , obj.at(std::string(model::ModelLiterals::SIZE_HEIGHT)).to_number<int>() } };
     return model::Building(rect);
 }
 
 model::Office JsonToOffice(const json::object& obj) {
     
-    return model::Office(model::Office::Id(obj.at("id").as_string().c_str())
-        , { obj.at("x").to_number<int>(), obj.at("y").to_number<int>() }
-        , {obj.at("offsetX").to_number<int>(), obj.at("offsetY").to_number<int>() });
+    return model::Office(model::Office::Id(obj.at(std::string(model::ModelLiterals::ID)).as_string().c_str())
+        , { obj.at(std::string(model::ModelLiterals::POSITION_X)).to_number<int>()
+                , obj.at(std::string(model::ModelLiterals::POSITION_Y)).to_number<int>() }
+        , {obj.at(std::string(model::ModelLiterals::OFFSET_X)).to_number<int>()
+                , obj.at(std::string(model::ModelLiterals::OFFSET_Y)).to_number<int>() });
 }
 
 model::Road JsonToRoad(const json::object& obj) {
-    if (obj.contains("x1")) {
+    if (obj.contains(std::string(model::ModelLiterals::END_X))) {
         return model::Road(model::Road::HORIZONTAL
-            , { obj.at("x0").to_number<int>(), obj.at("y0").to_number<int>() }
-            , obj.at("x1").to_number<int>());
+            , { obj.at(std::string(model::ModelLiterals::START_X)).to_number<int>()
+                    , obj.at(std::string(model::ModelLiterals::START_Y)).to_number<int>() }
+            , obj.at(std::string(model::ModelLiterals::END_X)).to_number<int>());
     }
     return model::Road(model::Road::VERTICAL
-        , { obj.at("x0").to_number<int>(), obj.at("y0").to_number<int>() }
-        , obj.at("y1").to_number<int>());
+        , { obj.at(std::string(model::ModelLiterals::START_X)).to_number<int>()
+                , obj.at(std::string(model::ModelLiterals::START_Y)).to_number<int>() }
+        , obj.at(std::string(model::ModelLiterals::END_Y)).to_number<int>());
 }
 
 }  // namespace json_loader
