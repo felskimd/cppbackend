@@ -193,6 +193,8 @@ private:
     MapIdToIndex map_id_to_index_;
 };
 
+using namespace std::literals;
+
 struct ModelLiterals {
     ModelLiterals() = delete;
     constexpr static std::string_view MAPS = "maps";
