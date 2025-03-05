@@ -8,6 +8,7 @@
 
 namespace model {
 
+using namespace std::literals;
 using Dimension = int;
 using Coord = Dimension;
 
@@ -192,8 +193,6 @@ private:
     std::vector<Map> maps_;
     MapIdToIndex map_id_to_index_;
 };
-
-using namespace std::literals;
 
 struct ModelLiterals {
     ModelLiterals() = delete;
