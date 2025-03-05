@@ -194,22 +194,22 @@ private:
 
 struct ModelLiterals {
     ModelLiterals() = delete;
-    constexpr static std::string_view MAPS = "maps";
-    constexpr static std::string_view ID = "id";
-    constexpr static std::string_view NAME = "name";
-    constexpr static std::string_view START_X = "x0";
-    constexpr static std::string_view START_Y = "y0";
-    constexpr static std::string_view END_X = "x1";
-    constexpr static std::string_view END_Y = "y1";
-    constexpr static std::string_view POSITION_X = "x";
-    constexpr static std::string_view POSITION_Y = "y";
-    constexpr static std::string_view OFFSET_X = "offsetX";
-    constexpr static std::string_view OFFSET_Y = "offsetY";
-    constexpr static std::string_view SIZE_WIDTH = "w";
-    constexpr static std::string_view SIZE_HEIGHT = "h";
-    constexpr static std::string_view ROADS = "roads";
-    constexpr static std::string_view OFFICES = "offices";
-    constexpr static std::string_view BUILDINGS = "buildings";
+    constexpr static std::string_view MAPS = std::string_view("maps");
+    constexpr static std::string_view ID = std::string_view("id");
+    constexpr static std::string_view NAME = std::string_view("name");
+    constexpr static std::string_view START_X = std::string_view("x0");
+    constexpr static std::string_view START_Y = std::string_view("y0");
+    constexpr static std::string_view END_X = std::string_view("x1");
+    constexpr static std::string_view END_Y = std::string_view("y1");
+    constexpr static std::string_view POSITION_X = std::string_view("x");
+    constexpr static std::string_view POSITION_Y = std::string_view("y");
+    constexpr static std::string_view OFFSET_X = std::string_view("offsetX");
+    constexpr static std::string_view OFFSET_Y = std::string_view("offsetY");
+    constexpr static std::string_view SIZE_WIDTH = std::string_view("w");
+    constexpr static std::string_view SIZE_HEIGHT = std::string_view("h");
+    constexpr static std::string_view ROADS = std::string_view("roads");
+    constexpr static std::string_view OFFICES = std::string_view("offices");
+    constexpr static std::string_view BUILDINGS = std::string_view("buildings");
 };
 
 }  // namespace model
