@@ -197,22 +197,22 @@ using namespace std::literals;
 
 struct ModelLiterals {
     ModelLiterals() = delete;
-    constexpr static std::string_view MAPS = "maps";
-    constexpr static std::string_view ID = "id";
-    constexpr static std::string_view NAME = "name";
-    constexpr static std::string_view START_X = "x0";
-    constexpr static std::string_view START_Y = "y0";
-    constexpr static std::string_view END_X = "x1";
-    constexpr static std::string_view END_Y = "y1";
-    constexpr static std::string_view POSITION_X = "x";
-    constexpr static std::string_view POSITION_Y = "y";
-    constexpr static std::string_view OFFSET_X = "offsetX";
-    constexpr static std::string_view OFFSET_Y = "offsetY";
-    constexpr static std::string_view SIZE_WIDTH = "w";
-    constexpr static std::string_view SIZE_HEIGHT = "h";
-    constexpr static std::string_view ROADS = "roads";
-    constexpr static std::string_view OFFICES = "offices";
-    constexpr static std::string_view BUILDINGS = "buildings";
+    constexpr static std::string_view MAPS = "maps"sv;
+    constexpr static std::string_view ID = "id"sv;
+    constexpr static std::string_view NAME = "name"sv;
+    constexpr static std::string_view START_X = "x0"sv;
+    constexpr static std::string_view START_Y = "y0"sv;
+    constexpr static std::string_view END_X = "x1"sv;
+    constexpr static std::string_view END_Y = "y1"sv;
+    constexpr static std::string_view POSITION_X = "x"sv;
+    constexpr static std::string_view POSITION_Y = "y"sv;
+    constexpr static std::string_view OFFSET_X = "offsetX"sv;
+    constexpr static std::string_view OFFSET_Y = "offsetY"sv;
+    constexpr static std::string_view SIZE_WIDTH = "w"sv;
+    constexpr static std::string_view SIZE_HEIGHT = "h"sv;
+    constexpr static std::string_view ROADS = "roads"sv;
+    constexpr static std::string_view OFFICES = "offices"sv;
+    constexpr static std::string_view BUILDINGS = "buildings"sv;
 };
 
 }  // namespace model
