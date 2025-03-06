@@ -61,8 +61,8 @@ json::array BuildingsToJson(const model::Map* map) {
         auto& bounds = building.GetBounds();
         json_building[std::string(model::ModelLiterals::POSITION_X)] = bounds.position.x;
         json_building[std::string(model::ModelLiterals::POSITION_Y)] = bounds.position.y;
-        json_building[std::string(model::ModelLiterals::SIZE_WIDTH)] = bounds.size.width;
-        json_building[std::string(model::ModelLiterals::SIZE_HEIGHT)] = bounds.size.height;
+        json_building[std::string(model::ModelLiterals::MODEL_SIZE_WIDTH)] = bounds.size.width;
+        json_building[std::string(model::ModelLiterals::MODEL_SIZE_HEIGHT)] = bounds.size.height;
         buildings.emplace_back(json_building);
     }
     return buildings;

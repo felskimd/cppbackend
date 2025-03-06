@@ -44,8 +44,8 @@ std::string ReadFileToString(const std::filesystem::path& filePath) {
 model::Building JsonToBuilding(const json::object& obj) {
     model::Rectangle rect{ { obj.at(std::string(model::ModelLiterals::POSITION_X)).to_number<int>()
                 , obj.at(std::string(model::ModelLiterals::POSITION_Y)).to_number<int>() }
-        , { obj.at(std::string(model::ModelLiterals::SIZE_WIDTH)).to_number<int>()
-                , obj.at(std::string(model::ModelLiterals::SIZE_HEIGHT)).to_number<int>() } };
+        , { obj.at(std::string(model::ModelLiterals::MODEL_SIZE_WIDTH)).to_number<int>()
+                , obj.at(std::string(model::ModelLiterals::MODEL_SIZE_HEIGHT)).to_number<int>() } };
     return model::Building(rect);
 }
 

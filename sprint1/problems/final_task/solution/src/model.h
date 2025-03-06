@@ -25,8 +25,8 @@ struct ModelLiterals {
     constexpr static std::string_view POSITION_Y = "y"sv;
     constexpr static std::string_view OFFSET_X = "offsetX"sv;
     constexpr static std::string_view OFFSET_Y = "offsetY"sv;
-    constexpr static std::string_view SIZE_WIDTH = "w"sv;
-    constexpr static std::string_view SIZE_HEIGHT = "h"sv;
+    constexpr static std::string_view MODEL_SIZE_WIDTH = "w"sv;
+    constexpr static std::string_view MODEL_SIZE_HEIGHT = "h"sv;
     constexpr static std::string_view ROADS = "roads"sv;
     constexpr static std::string_view OFFICES = "offices"sv;
     constexpr static std::string_view BUILDINGS = "buildings"sv;
