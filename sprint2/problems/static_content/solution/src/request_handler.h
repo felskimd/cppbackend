@@ -148,13 +148,19 @@ private:
         http::response<http::file_body> res;
         res.version(http_version);
         res.result(http::status::ok);
-        std::size_t ext_start = path.find_last_of('.', path.size()) + 1;
-        auto type = mapper_(path.substr(ext_start, path.size() - ext_start));
-        res.insert(http::field::content_type, type);
+        std::string full_path = root_path_.string() + path.data();
+        std::size_t ext_start = path.find_last_of('.', path.size());
+        if (ext_start != path.npos) {
+            auto type = mapper_(path.substr(ext_start + 1, path.size() - ext_start + 1));
+            res.insert(http::field::content_type, type);
+        }
+        else {
+            full_path = root_path_.string() + "/index.html";
+            res.insert(http::field::content_type, ContentType::TEXT_HTML);
+        }
 
         http::file_body::value_type file;
 
-        std::string full_path = root_path_.string() + path.data();
         if (sys::error_code ec; file.open(full_path.data(), beast::file_mode::read, ec), ec) {
             SendResponse(http::status::not_found, FILE_NOT_FOUND_HTTP_BODY, http_version, std::move(send), ContentType::TEXT_PLAIN);
             return;

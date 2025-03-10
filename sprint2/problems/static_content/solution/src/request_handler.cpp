@@ -86,7 +86,7 @@ json::array RequestHandler::ProcessMapsRequestBody() const {
 
 RequestHandler::RequestType RequestHandler::CheckRequest(std::string_view target) const {
     auto request = SplitRequest(target.substr(1, target.length() - 1));
-    if (request[0] == RestApiLiterals::API && request[1] == RestApiLiterals::VERSION_1 && request[2] == RestApiLiterals::MAPS) {
+    if (request.size() > 2 && request[0] == RestApiLiterals::API && request[1] == RestApiLiterals::VERSION_1 && request[2] == RestApiLiterals::MAPS) {
         if (request.size() == 3) {
             return RequestHandler::RequestType::API_MAPS;
         }
@@ -97,18 +97,19 @@ RequestHandler::RequestType RequestHandler::CheckRequest(std::string_view target
             return RequestHandler::RequestType::BAD_REQUEST;
         }
     }
-    else {
-        auto temp_path = root_path_;
-        temp_path += target;
-        auto path = fs::weakly_canonical(temp_path);
-        auto canonical_root = fs::weakly_canonical(root_path_);
-        for (auto b = canonical_root.begin(), p = path.begin(); b != canonical_root.end(); ++b, ++p) {
-            if (p == path.end() || *p != *b) {
-                return RequestHandler::RequestType::BAD_REQUEST;
-            }
-        }
-        return RequestHandler::RequestType::FILE;
+    if (request[0] == RestApiLiterals::API) {
+        return RequestHandler::RequestType::BAD_REQUEST;
     }
+    auto temp_path = root_path_;
+    temp_path += target;
+    auto path = fs::weakly_canonical(temp_path);
+    auto canonical_root = fs::weakly_canonical(root_path_);
+    for (auto b = canonical_root.begin(), p = path.begin(); b != canonical_root.end(); ++b, ++p) {
+        if (p == path.end() || *p != *b) {
+            return RequestHandler::RequestType::BAD_REQUEST;
+        }
+    }
+    return RequestHandler::RequestType::FILE;
 }
 
 RequestHandler::ExtensionToConetntTypeMapper::ExtensionToConetntTypeMapper() {
