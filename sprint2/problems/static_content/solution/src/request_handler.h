@@ -72,7 +72,7 @@ json::array BuildingsToJson(const model::Map* map);
 
 class RequestHandler {
 public:
-    explicit RequestHandler(model::Game& game);
+    explicit RequestHandler(model::Game& game, const char* path_to_static);
 
     RequestHandler(const RequestHandler&) = delete;
     RequestHandler& operator=(const RequestHandler&) = delete;
@@ -124,6 +124,7 @@ private:
     };
 
     model::Game& game_;
+    const fs::path root_path_;
     ExtensionToConetntTypeMapper mapper_;
 
     enum RequestType {
@@ -136,7 +137,6 @@ private:
     constexpr static std::string_view BAD_REQUEST_HTTP_BODY = R"({ "code": "badRequest", "message": "Bad request" })"sv;
     constexpr static std::string_view MAP_NOT_FOUND_HTTP_BODY = R"({ "code": "mapNotFound", "message": "Map not found" })"sv;
     constexpr static std::string_view FILE_NOT_FOUND_HTTP_BODY = R"({ "code": "fileNotFound", "message": "File not found" })"sv;
-    const inline static fs::path ROOT_PATH = "../static";
 
     template<typename Send>
     void SendBadRequest(Send&& send, unsigned http_version) const {
@@ -154,7 +154,7 @@ private:
 
         http::file_body::value_type file;
 
-        std::string full_path = ROOT_PATH.string() + path.data();
+        std::string full_path = root_path_.string() + path.data();
         if (sys::error_code ec; file.open(full_path.data(), beast::file_mode::read, ec), ec) {
             SendResponse(http::status::not_found, FILE_NOT_FOUND_HTTP_BODY, http_version, std::move(send), ContentType::TEXT_PLAIN);
             return;

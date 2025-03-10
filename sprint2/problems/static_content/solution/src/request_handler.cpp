@@ -68,8 +68,9 @@ json::array BuildingsToJson(const model::Map* map) {
     return buildings;
 }
 
-RequestHandler::RequestHandler(model::Game& game)
-    : game_{ game } {
+RequestHandler::RequestHandler(model::Game& game, const char* path_to_static)
+    : game_{ game },
+    root_path_(path_to_static) {
 }
 
 json::array RequestHandler::ProcessMapsRequestBody() const {
@@ -97,10 +98,10 @@ RequestHandler::RequestType RequestHandler::CheckRequest(std::string_view target
         }
     }
     else {
-        auto temp_path = ROOT_PATH;
+        auto temp_path = root_path_;
         temp_path += target;
         auto path = fs::weakly_canonical(temp_path);
-        auto canonical_root = fs::weakly_canonical(ROOT_PATH);
+        auto canonical_root = fs::weakly_canonical(root_path_);
         for (auto b = canonical_root.begin(), p = path.begin(); b != canonical_root.end(); ++b, ++p) {
             if (p == path.end() || *p != *b) {
                 return RequestHandler::RequestType::BAD_REQUEST;
