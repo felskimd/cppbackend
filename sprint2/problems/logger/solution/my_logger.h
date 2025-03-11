@@ -33,8 +33,8 @@ class Logger {
     std::string GetFileTimeStamp() const {
         const auto now = GetTime();
         const auto t_c = std::chrono::system_clock::to_time_t(now);
-        char mbstr[10];
-        std::strftime(mbstr, 10, "%F", std::localtime(&t_c));
+        char mbstr[11];
+        std::strftime(mbstr, 11, "%F", std::localtime(&t_c));
         std::string date(mbstr);
         return "/var/log/sample_log_" + date + ".log";
     }
@@ -52,10 +52,13 @@ public:
     template<class... Ts>
     void Log(const Ts&... args) {
         std::lock_guard<std::mutex> lock(m_);
-        stream_.open(GetFileTimeStamp(), std::ios::app);
-        stream_ << GetTimeStamp() << ": ";
-        LogImpl(stream_, args...);
-        stream_ << std::endl;
+        auto log_path = GetFileTimeStamp();
+        stream_.open(log_path, std::ios::app);
+        if (stream_.is_open()) {
+            stream_ << GetTimeStamp() << ": ";
+            LogImpl(stream_, args...);
+            stream_ << std::endl;
+        }
     }
 
     // Установите manual_ts_. Учтите, что эта операция может выполняться
