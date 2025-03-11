@@ -15,7 +15,7 @@ using namespace std::literals;
 #define LOG(...) Logger::GetInstance().Log(__VA_ARGS__)
 
 class Logger {
-    auto GetTime() const {
+    std::chrono::system_clock::time_point GetTime() const {
         if (manual_ts_) {
             return *manual_ts_;
         }
@@ -53,7 +53,7 @@ public:
     void Log(const Ts&... args) {
         std::lock_guard<std::mutex> lock(m_);
         stream_.open(GetFileTimeStamp(), std::ios::app);
-        stream_ << GetTimeStamp << ": ";
+        stream_ << GetTimeStamp() << ": ";
         LogImpl(stream_, args...);
         stream_ << std::endl;
     }
