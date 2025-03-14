@@ -4,6 +4,10 @@
 
 #include <boost/json.hpp>
 #include <boost/log/trivial.hpp>
+#include <boost/log/common.hpp>
+#include <boost/log/sinks.hpp>
+#include <boost/log/sources/logger.hpp>
+#include <boost/log/utility/manipulators/add_value.hpp>
 #include <filesystem>
 
 namespace http_handler {

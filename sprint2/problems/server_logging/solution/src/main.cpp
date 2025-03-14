@@ -1,7 +1,7 @@
 #include "sdk.h"
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/io_context.hpp>
-#include <boost/log/trivial.hpp>
+//#include <boost/log/trivial.hpp>
 #include <iostream>
 #include <thread>
 
@@ -11,8 +11,9 @@
 using namespace std::literals;
 namespace net = boost::asio;
 namespace sys = boost::system;
+namespace logging = boost::log;
 
-BOOST_LOG_ATTRIBUTE_KEYWORD(additional_data, "AdditionalData", json::value)
+BOOST_LOG_ATTRIBUTE_KEYWORD(additional_data, "AdditionalData", boost::json::value);
 
 namespace {
 
@@ -65,7 +66,7 @@ int main(int argc, const char* argv[]) {
         });
 
         // Эта надпись сообщает тестам о том, что сервер запущен и готов обрабатывать запросы
-        boost::json::value starting_data{ {"code"s, 0} };
+        boost::json::value starting_data{ {"port"s, port}, {"address"s, address} };
         BOOST_LOG_TRIVIAL(info) << logging::add_value(additional_data, starting_data)
             << "server started"sv;
         //std::cout << "Server has started..."sv << std::endl;
