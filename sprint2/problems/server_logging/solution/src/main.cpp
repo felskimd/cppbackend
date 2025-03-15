@@ -66,7 +66,7 @@ int main(int argc, const char* argv[]) {
         });
 
         // Эта надпись сообщает тестам о том, что сервер запущен и готов обрабатывать запросы
-        boost::json::value starting_data{ {"port"s, port}, {"address"s, address} };
+        boost::json::value starting_data{ {"port"s, port}, {"address"s, address.to_string()}};
         BOOST_LOG_TRIVIAL(info) << logging::add_value(additional_data, starting_data)
             << "server started"sv;
         //std::cout << "Server has started..."sv << std::endl;
