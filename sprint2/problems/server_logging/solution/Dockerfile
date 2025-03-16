@@ -11,7 +11,7 @@ RUN apt update && \
 # Запуск conan как раньше
 COPY conanfile.txt /app/
 RUN mkdir /app/build && cd /app/build && \
-    conan install .. --build=missing -s build_type=Debug -s compiler.libcxx=libstdc++11
+    conan install .. --build=missing -s compiler.libcxx=libstdc++11
 
 #-s build_type=Release
 
@@ -20,8 +20,8 @@ COPY ./src /app/src
 COPY CMakeLists.txt /app/
 
 RUN cd /app/build && \
-    cmake -DCMAKE_BUILD_TYPE=Debug .. && \
-    #cmake -DCMAKE_BUILD_TYPE=Release .. && \
+    #cmake -DCMAKE_BUILD_TYPE=Debug .. && \
+    cmake -DCMAKE_BUILD_TYPE=Release .. && \
     cmake --build .
 
 # Второй контейнер в том же докерфайле
@@ -33,6 +33,9 @@ USER www
 
 # Скопируем приложение со сборочного контейнера в директорию /app.
 # Не забываем также папку data, она пригодится.
+
+RUN cd 
+
 COPY --from=build /app/build/bin/game_server /app/
 COPY ./data /app/data
 COPY ./static /app/static
