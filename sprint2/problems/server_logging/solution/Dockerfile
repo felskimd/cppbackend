@@ -11,9 +11,7 @@ RUN apt update && \
 # Запуск conan как раньше
 COPY conanfile.txt /app/
 RUN mkdir /app/build && cd /app/build && \
-    conan install .. --build=missing 
-
-#-s compiler.libcxx=libstdc++11
+    conan install .. --build=missing -s compiler.libcxx=libstdc++11
 #-s build_type=Release
 
 # Папка data больше не нужна
@@ -23,7 +21,7 @@ COPY CMakeLists.txt /app/
 RUN cd /app/build && \
     #cmake -DCMAKE_BUILD_TYPE=Debug .. && \
     cmake -DCMAKE_BUILD_TYPE=Release .. && \
-    cmake --build .
+    cmake --build . --verbose
 
 # Второй контейнер в том же докерфайле
 FROM ubuntu:22.04 as run
