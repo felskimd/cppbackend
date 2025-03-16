@@ -68,8 +68,8 @@ int main(int argc, const char* argv[]) {
 
         // Эта надпись сообщает тестам о том, что сервер запущен и готов обрабатывать запросы
         boost::json::value starting_data{ {"port"s, port}, {"address"s, address.to_string()}};
-        BOOST_LOG_TRIVIAL(info) << logging::add_value(additional_data, starting_data)
-            << "server started"sv;
+        //BOOST_LOG_TRIVIAL(info) << logging::add_value(additional_data, starting_data)
+        //    << "server started"sv;
         //std::cout << "Server has started..."sv << std::endl;
 
         // 6. Запускаем обработку асинхронных операций
@@ -78,8 +78,8 @@ int main(int argc, const char* argv[]) {
         });
 
         boost::json::value exiting_data{ {"code"s, 0} };
-        BOOST_LOG_TRIVIAL(info) << logging::add_value(additional_data, exiting_data)
-            << "server exited"sv;
+        //BOOST_LOG_TRIVIAL(info) << logging::add_value(additional_data, exiting_data)
+        //    << "server exited"sv;
 
     } catch (const std::exception& ex) {
         std::cerr << ex.what() << std::endl;
