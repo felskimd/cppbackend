@@ -1,6 +1,7 @@
 #include "sdk.h"
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/io_context.hpp>
+#include <boost/log/utility/setup/console.hpp >
 //#include <boost/log/trivial.hpp>
 #include <iostream>
 #include <thread>
@@ -30,6 +31,15 @@ void RunWorkers(unsigned n, const Fn& fn) {
     fn();
 }
 
+void InitLogger() {
+    logging::add_console_log(
+        std::clog,
+        //tru additional data & add message data
+        logging::keywords::format = R"({"timestamp":"%TimeStamp%", "data":%Message%", "message"://})",
+        logging::keywords::auto_flush = true
+    );
+}
+
 }  // namespace
 
 int main(int argc, const char* argv[]) {
@@ -38,6 +48,8 @@ int main(int argc, const char* argv[]) {
         return EXIT_FAILURE;
     }
     try {
+        InitLogger();
+
         // 1. Загружаем карту из файла и построить модель игры
         model::Game game = json_loader::LoadGame(argv[1]);
 
@@ -65,7 +77,7 @@ int main(int argc, const char* argv[]) {
             handler(std::forward<decltype(req)>(req), std::forward<decltype(send)>(send));
 
         });
-
+        //tru logger
         // Эта надпись сообщает тестам о том, что сервер запущен и готов обрабатывать запросы
         boost::json::value starting_data{ {"port"s, port}, {"address"s, address.to_string()}};
         BOOST_LOG_TRIVIAL(info) << logging::add_value(additional_data, starting_data)
@@ -77,6 +89,7 @@ int main(int argc, const char* argv[]) {
             ioc.run();
         });
 
+        //tru logger
         boost::json::value exiting_data{ {"code"s, 0} };
         BOOST_LOG_TRIVIAL(info) << logging::add_value(additional_data, exiting_data)
             << "server exited"sv;

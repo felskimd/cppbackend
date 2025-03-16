@@ -173,6 +173,8 @@ std::string RequestHandler::DecodeURL(std::string_view url) const {
     return std::string(text.data(), text.size());
 }
 
-
+void LoggingRequestHandler::LogResponse(const RequestHandler::ResponseData& r, std::chrono::system_clock::rep response_time) {
+    BOOST_LOG_TRIVIAL(info) << "\"response_time\"" << "\"code\"" << r.code << ", \"content_type\"" << r.content_type << "}";
+}
 
 }  // namespace http_handler

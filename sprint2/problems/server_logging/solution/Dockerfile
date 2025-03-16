@@ -21,7 +21,7 @@ COPY CMakeLists.txt /app/
 RUN cd /app/build && \
     #cmake -DCMAKE_BUILD_TYPE=Debug .. && \
     cmake -DCMAKE_BUILD_TYPE=Release .. && \
-    cmake --build . --verbose
+    cmake --build .
 
 # Второй контейнер в том же докерфайле
 FROM ubuntu:22.04 as run

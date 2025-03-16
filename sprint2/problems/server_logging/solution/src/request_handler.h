@@ -201,17 +201,12 @@ private:
     std::string DecodeURL(std::string_view url) const;
 };
 
-//template<class SomeRequestHandler>
 class LoggingRequestHandler {
-    //template<class SomeRequestHandler>
-    //LoggingRequestHandler(/*SomeRequestHandler&*/RequestHandler& handler) : decorated_(handler) {
-    //}
-
     template <typename Body, typename Allocator>
     static void LogRequest(const http::request<Body, http::basic_fields<Allocator>>&& r) {
-
+        BOOST_LOG_TRIVIAL(info) << "request received";
     }
-    static void LogResponse(const RequestHandler::ResponseData& r);
+    static void LogResponse(const RequestHandler::ResponseData& r, std::chrono::system_clock::rep response_time);
 public:
     LoggingRequestHandler(/*SomeRequestHandler&*/RequestHandler& handler) : decorated_(handler) {
     }
@@ -225,7 +220,7 @@ public:
             DurationMeasure measure(response_time);
             resp_data = decorated_(std::move(req), std::move(send));
         }
-        LogResponse(resp_data);
+        LogResponse(resp_data, response_time);
     }
 
 private:
