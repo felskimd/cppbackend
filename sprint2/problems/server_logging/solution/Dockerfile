@@ -35,7 +35,8 @@ USER www
 
 #RUN ls *
 
-COPY --from=build /app/build/bin/game_server /app/
+#COPY --from=build /app/build/bin/game_server /app/
+COPY --from=build /app/build/game_server /app/
 COPY ./data /app/data
 COPY ./static /app/static
 
