@@ -29,6 +29,6 @@ add_executable(game_server
 	src/request_handler.cpp
 	src/request_handler.h
 )
-#target_include_directories(game_server PRIVATE CONAN_PKG::boost)
+target_include_directories(game_server PRIVATE CONAN_PKG::boost)
 target_link_libraries(game_server PRIVATE CONAN_PKG::boost) 
 #target_link_libraries(game_server PRIVATE Boost::log Boost::log_setup Boost::filesystem Boost::system Boost::threads) 
