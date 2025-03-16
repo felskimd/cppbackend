@@ -9,6 +9,7 @@
 #include <boost/log/sources/logger.hpp>
 #include <boost/log/utility/manipulators/add_value.hpp>
 #include <filesystem>
+#include <chrono>
 
 namespace http_handler {
 
@@ -82,14 +83,20 @@ public:
     RequestHandler(const RequestHandler&) = delete;
     RequestHandler& operator=(const RequestHandler&) = delete;
 
+    struct ResponseData {
+        http::status code;
+        std::string_view content_type;
+    };
+
     template <typename Body, typename Allocator, typename Send>
-    void operator()(http::request<Body, http::basic_fields<Allocator>>&& req, Send&& send) {
+    ResponseData operator()(http::request<Body, http::basic_fields<Allocator>>&& req, Send&& send) {
         auto string_target = DecodeURL(req.target());
         std::string_view target(string_target);
         auto unslashed = target.substr(1, target.length() - 1);
         switch(CheckRequest(target)) {
         case RequestType::API_MAPS:
             SendResponse(http::status::ok, json::serialize(ProcessMapsRequestBody()), req.version(), std::move(send), ContentType::APP_JSON);
+            return { http::status::ok , ContentType::APP_JSON };
             break;
         case RequestType::API_MAP:
         {
@@ -99,20 +106,22 @@ public:
             const auto* map = game_.FindMap(id);
             if (map) {
                 SendResponse(http::status::ok, json::serialize(MapToJSON(map)), req.version(), std::move(send), ContentType::APP_JSON);
+                return { http::status::ok , ContentType::APP_JSON };
             }
             else {
                 SendResponse(http::status::not_found, MAP_NOT_FOUND_HTTP_BODY, req.version(), std::move(send), ContentType::APP_JSON);
+                return { http::status::not_found , ContentType::APP_JSON };
             }
             break;
         }
         case RequestType::FILE:
-            SendFileResponseOr404(target, std::move(send), req.version());
+            return SendFileResponseOr404(target, std::move(send), req.version());
             break;
         case RequestType::BAD_REQUEST:
-            SendBadRequest(std::move(send), req.version());
+            return SendBadRequest(std::move(send), req.version());
             break;
         default:
-            SendBadRequest(std::move(send), req.version());
+            return SendBadRequest(std::move(send), req.version());
             break;
         }
     }
@@ -144,19 +153,21 @@ private:
     constexpr static std::string_view FILE_NOT_FOUND_HTTP_BODY = R"({ "code": "fileNotFound", "message": "File not found" })"sv;
 
     template<typename Send>
-    void SendBadRequest(Send&& send, unsigned http_version) const {
+    ResponseData SendBadRequest(Send&& send, unsigned http_version) const {
         SendResponse(http::status::bad_request, BAD_REQUEST_HTTP_BODY, http_version, std::move(send), ContentType::APP_JSON);
+        return { http::status::bad_request, ContentType::APP_JSON };
     }
 
     template<typename Send>
-    void SendFileResponseOr404(std::string_view path, Send&& send, unsigned http_version) const {
+    ResponseData SendFileResponseOr404(std::string_view path, Send&& send, unsigned http_version) const {
         http::response<http::file_body> res;
         res.version(http_version);
         res.result(http::status::ok);
         std::string full_path = root_path_.string() + path.data();
         std::size_t ext_start = path.find_last_of('.', path.size());
+        std::string_view type = ContentType::TEXT_HTML;
         if (ext_start != path.npos) {
-            auto type = mapper_(path.substr(ext_start + 1, path.size() - ext_start + 1));
+            type = mapper_(path.substr(ext_start + 1, path.size() - ext_start + 1));
             res.insert(http::field::content_type, type);
         }
         else {
@@ -168,12 +179,13 @@ private:
 
         if (sys::error_code ec; file.open(full_path.data(), beast::file_mode::read, ec), ec) {
             SendResponse(http::status::not_found, FILE_NOT_FOUND_HTTP_BODY, http_version, std::move(send), ContentType::TEXT_PLAIN);
-            return;
+            return { http::status::not_found , ContentType::TEXT_PLAIN };
         }
 
         res.body() = std::move(file);
         res.prepare_payload();
         send(res);
+        return { http::status::ok, type };
     }
 
     template<typename Send>
@@ -189,24 +201,49 @@ private:
     std::string DecodeURL(std::string_view url) const;
 };
 
-template<class SomeRequestHandler>
+//template<class SomeRequestHandler>
 class LoggingRequestHandler {
     //template<class SomeRequestHandler>
-    LoggingRequestHandler(SomeRequestHandler& handler) : decorated_(handler) {
+    //LoggingRequestHandler(/*SomeRequestHandler&*/RequestHandler& handler) : decorated_(handler) {
+    //}
+
+    template <typename Body, typename Allocator>
+    static void LogRequest(const http::request<Body, http::basic_fields<Allocator>>&& r) {
+
+    }
+    static void LogResponse(const RequestHandler::ResponseData& r);
+public:
+    LoggingRequestHandler(/*SomeRequestHandler&*/RequestHandler& handler) : decorated_(handler) {
     }
 
-    //static void LogRequest(const Request& r);
-    //static void LogResponse(const Response& r);
-public:
-    /*Response operator () (Request req) {
+    template <typename Body, typename Allocator, typename Send>
+    void operator () (http::request<Body, http::basic_fields<Allocator>>&& req, Send&& send) {
         LogRequest(req);
-        Response resp = decorated_(std::move(req));
-        LogResponse(resp);
-        return resp;
-    }*/
+        std::chrono::system_clock::rep response_time;
+        RequestHandler::ResponseData resp_data;
+        {
+            DurationMeasure(response_time) measure;
+            resp_data = decorated_(std::move(req), std::move(send));
+        }
+        LogResponse(resp_data);
+    }
 
 private:
-    SomeRequestHandler& decorated_;
+    /*SomeRequestHandler&*/RequestHandler& decorated_;
+
+    class DurationMeasure {
+    public:
+        DurationMeasure(std::chrono::system_clock::rep& time_catcher) : time_catcher_(time_catcher){
+        }
+        ~DurationMeasure() {
+            std::chrono::system_clock::time_point end_ts = std::chrono::system_clock::now();
+            time_catcher_ = (end_ts - start_ts_).count();
+        }
+
+    private:
+        std::chrono::system_clock::time_point start_ts_ = std::chrono::system_clock::now();
+        std::chrono::system_clock::rep& time_catcher_;
+    };
 };
 
 }  // namespace http_handler
