@@ -1,7 +1,6 @@
 #include "sdk.h"
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/io_context.hpp>
-#include <boost/log/utility/setup/console.hpp >
 //#include <boost/log/trivial.hpp>
 #include <iostream>
 #include <thread>

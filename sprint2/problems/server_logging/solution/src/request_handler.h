@@ -8,6 +8,7 @@
 #include <boost/log/sinks.hpp>
 #include <boost/log/sources/logger.hpp>
 #include <boost/log/utility/manipulators/add_value.hpp>
+#include <boost/log/utility/setup/console.hpp>
 #include <filesystem>
 #include <chrono>
 
