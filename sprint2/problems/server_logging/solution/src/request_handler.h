@@ -222,7 +222,7 @@ public:
         std::chrono::system_clock::rep response_time;
         RequestHandler::ResponseData resp_data;
         {
-            DurationMeasure(response_time) measure;
+            DurationMeasure measure(response_time);
             resp_data = decorated_(std::move(req), std::move(send));
         }
         LogResponse(resp_data);
