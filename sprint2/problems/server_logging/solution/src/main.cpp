@@ -34,7 +34,7 @@ void InitLogger() {
     logging::add_console_log(
         std::clog,
         //tru additional data & add message data
-        logging::keywords::format = R"({"timestamp":"%TimeStamp%", "data":%Message%", "message"://})",
+        logging::keywords::format = R"({"timestamp":"[%TimeStamp%]", "data":"[%AdditionalData%]", "message":"[%Message%]"})",
         logging::keywords::auto_flush = true
     );
 }
