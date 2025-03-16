@@ -20,7 +20,8 @@ COPY ./src /app/src
 COPY CMakeLists.txt /app/
 
 RUN cd /app/build && \
-    cmake -DCMAKE_BUILD_TYPE=Release .. && \
+    cmake -DCMAKE_BUILD_TYPE=Debug .. && \
+    #cmake -DCMAKE_BUILD_TYPE=Release .. && \
     cmake --build .
 
 # Второй контейнер в том же докерфайле
