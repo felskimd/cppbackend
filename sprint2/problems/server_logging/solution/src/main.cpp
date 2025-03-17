@@ -32,7 +32,7 @@ void RunWorkers(unsigned n, const Fn& fn) {
 
 void InitLogger() {
     logging::add_console_log(
-        std::clog,
+        std::cout,
         //tru additional data & add message data
         logging::keywords::format = R"({"timestamp":"[%TimeStamp%]", "data":"[%AdditionalData%]", "message":"[%Message%]"})",
         logging::keywords::auto_flush = true
@@ -78,10 +78,9 @@ int main(int argc, const char* argv[]) {
         });
         //tru logger
         // Эта надпись сообщает тестам о том, что сервер запущен и готов обрабатывать запросы
-        boost::json::value starting_data{ {"port"s, port}, {"address"s, address.to_string()}};
+        boost::json::value starting_data{ {"port"s, /*type error*/port}, {"address"s, address.to_string()}};
         BOOST_LOG_TRIVIAL(info) << logging::add_value(additional_data, starting_data)
             << "server started"sv;
-        //std::cout << "Server has started..."sv << std::endl;
 
         // 6. Запускаем обработку асинхронных операций
         RunWorkers(std::max(1u, num_threads), [&ioc] {
