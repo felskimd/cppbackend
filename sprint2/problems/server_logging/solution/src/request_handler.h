@@ -9,8 +9,11 @@
 #include <boost/log/sources/logger.hpp>
 #include <boost/log/utility/manipulators/add_value.hpp>
 #include <boost/log/utility/setup/console.hpp>
+#include <boost/date_time.hpp>
 #include <filesystem>
 #include <chrono>
+
+BOOST_LOG_ATTRIBUTE_KEYWORD(timestamp, "TimeStamp", boost::posix_time::ptime)
 
 namespace http_handler {
 
@@ -20,6 +23,7 @@ namespace json = boost::json;
 namespace http = beast::http;
 namespace fs = std::filesystem;
 namespace sys = boost::system;
+namespace logging = boost::log;
 
 struct ContentType {
     ContentType() = delete;
@@ -210,6 +214,13 @@ class LoggingRequestHandler {
     static void LogResponse(const RequestHandler::ResponseData& r, std::chrono::system_clock::rep response_time);
 public:
     LoggingRequestHandler(/*SomeRequestHandler&*/RequestHandler& handler) : decorated_(handler) {
+    }
+
+    static void Formatter(logging::record_view const& rec, logging::formatting_ostream& strm) {
+        auto ts = *rec[timestamp];
+        strm << "{\"timestamp\":\"" << boost::posix_time::to_iso_extended_string(ts) << "\", ";
+        strm << "\"data\":\"" << json::serialize(*logging::extract<boost::json::value>("AdditionalData", rec)) << "\", ";
+        strm << "\"message\":\"" << rec[logging::expressions::smessage] << "\"}";
     }
 
     template <typename Body, typename Allocator, typename Send>

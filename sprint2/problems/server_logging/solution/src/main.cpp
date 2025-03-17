@@ -2,6 +2,7 @@
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/io_context.hpp>
 //#include <boost/log/trivial.hpp>
+//#include <boost/date_time.hpp>
 #include <iostream>
 #include <thread>
 
@@ -14,6 +15,7 @@ namespace sys = boost::system;
 namespace logging = boost::log;
 
 BOOST_LOG_ATTRIBUTE_KEYWORD(additional_data, "AdditionalData", boost::json::value);
+//BOOST_LOG_ATTRIBUTE_KEYWORD(timestamp, "TimeStamp", boost::posix_time::ptime)
 
 namespace {
 
@@ -34,7 +36,7 @@ void InitLogger() {
     logging::add_console_log(
         std::cout,
         //tru additional data & add message data
-        logging::keywords::format = R"({"timestamp":"[%TimeStamp%]", "data":"[%AdditionalData%]", "message":"[%Message%]"})",
+        logging::keywords::format = &http_handler::LoggingRequestHandler::Formatter, //R"({"timestamp":"%TimeStamp%", "data":"%AdditionalData%", "message":"%Message%"})",
         logging::keywords::auto_flush = true
     );
 }
@@ -78,7 +80,7 @@ int main(int argc, const char* argv[]) {
         });
         //tru logger
         // Эта надпись сообщает тестам о том, что сервер запущен и готов обрабатывать запросы
-        boost::json::value starting_data{ {"port"s, /*type error*/std::to_string(port)}, {"address"s, address.to_string()} };
+        boost::json::value starting_data{ {"port"s, std::to_string(port)}, {"address"s, address.to_string()} };
         BOOST_LOG_TRIVIAL(info) << logging::add_value(additional_data, starting_data)
             << "server started"sv;
 
