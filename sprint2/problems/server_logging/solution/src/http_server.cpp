@@ -1,7 +1,14 @@
 #include "http_server.h"
 
-#include <boost/asio/dispatch.hpp>
 #include <iostream>
+
+#include <boost/json.hpp>
+//#include <boost/log/attributes.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/utility/manipulators/add_value.hpp>
+
+BOOST_LOG_ATTRIBUTE_KEYWORD(error_data, "AdditionalData", boost::json::value);
 
 namespace http_server {
 
@@ -12,12 +19,13 @@ void SessionBase::Run() {
         beast::bind_front_handler(&SessionBase::Read, GetSharedThis()));
 }
 
-void ReportError(beast::error_code ec, std::string_view what) {
-    std::cerr << what << ": "sv << ec.message() << std::endl;
+void ReportError(beast::error_code ec, std::string_view where) {
+    boost::json::value data{ {"code", ec.value()}, {"text", ec.message()}, {"where", where}};
+    BOOST_LOG_TRIVIAL(error) << boost::log::add_value(error_data, data) << "error";
 }
 
 SessionBase::SessionBase(tcp::socket&& socket)
-    : stream_(std::move(socket)) {
+    : address_(socket.remote_endpoint().address()), stream_(std::move(socket)) {
 }
 
 void SessionBase::Read() {

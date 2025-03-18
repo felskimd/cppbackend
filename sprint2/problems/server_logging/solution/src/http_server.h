@@ -18,7 +18,7 @@ namespace http_server {
 
     using namespace std::literals;
 
-    void ReportError(beast::error_code ec, std::string_view what);
+    void ReportError(beast::error_code ec, std::string_view where);
 
     class SessionBase {
     public:
@@ -29,6 +29,7 @@ namespace http_server {
         void Run();
 
     protected:
+        beast::net::ip::address address_;
         using HttpRequest = http::request<http::string_body>;
 
         ~SessionBase() = default;
@@ -85,7 +86,7 @@ namespace http_server {
             // Используется generic-лямбда функция, способная принять response произвольного типа
             request_handler_(std::move(request), [self = this->shared_from_this()](auto&& response) {
                 self->Write(std::move(response));
-                });
+                }, address_);
         }
 
         std::shared_ptr<SessionBase> GetSharedThis() override {

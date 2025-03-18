@@ -39,6 +39,8 @@ void InitLogger() {
         logging::keywords::format = &http_handler::LoggingRequestHandler::Formatter, //R"({"timestamp":"%TimeStamp%", "data":"%AdditionalData%", "message":"%Message%"})",
         logging::keywords::auto_flush = true
     );
+
+    logging::add_common_attributes();
 }
 
 }  // namespace
@@ -74,13 +76,12 @@ int main(int argc, const char* argv[]) {
         // 5. Запустить обработчик HTTP-запросов, делегируя их обработчику запросов
         const auto address = net::ip::make_address("0.0.0.0");
         constexpr net::ip::port_type port = 8080;
-        http_server::ServeHttp(ioc, {address, port}, [&handler](auto&& req, auto&& send) {
-            handler(std::forward<decltype(req)>(req), std::forward<decltype(send)>(send));
-
+        http_server::ServeHttp(ioc, {address, port}, [&log_handler](auto&& req, auto&& send, const net::ip::address& address) {
+            log_handler(std::forward<decltype(req)>(req), std::forward<decltype(send)>(send), address);
         });
-        //tru logger
+
         // Эта надпись сообщает тестам о том, что сервер запущен и готов обрабатывать запросы
-        boost::json::value starting_data{ {"port"s, std::to_string(port)}, {"address"s, address.to_string()} };
+        boost::json::value starting_data{ {"port"s, port}, {"address"s, address.to_string()} };
         BOOST_LOG_TRIVIAL(info) << logging::add_value(additional_data, starting_data)
             << "server started"sv;
 
@@ -89,7 +90,6 @@ int main(int argc, const char* argv[]) {
             ioc.run();
         });
 
-        //tru logger
         boost::json::value exiting_data{ {"code"s, 0} };
         BOOST_LOG_TRIVIAL(info) << logging::add_value(additional_data, exiting_data)
             << "server exited"sv;

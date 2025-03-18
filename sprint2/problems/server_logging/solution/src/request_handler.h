@@ -3,17 +3,21 @@
 #include "model.h"
 
 #include <boost/json.hpp>
+#include <boost/log/attributes.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/log/common.hpp>
+#include <boost/log/expressions.hpp>
 #include <boost/log/sinks.hpp>
 #include <boost/log/sources/logger.hpp>
 #include <boost/log/utility/manipulators/add_value.hpp>
+#include <boost/log/utility/setup.hpp>
 #include <boost/log/utility/setup/console.hpp>
 #include <boost/date_time.hpp>
+#include <boost/chrono.hpp>
 #include <filesystem>
-#include <chrono>
 
 BOOST_LOG_ATTRIBUTE_KEYWORD(timestamp, "TimeStamp", boost::posix_time::ptime)
+BOOST_LOG_ATTRIBUTE_KEYWORD(data, "AdditionalData", boost::json::value)
 
 namespace http_handler {
 
@@ -115,7 +119,7 @@ public:
             }
             else {
                 SendResponse(http::status::not_found, MAP_NOT_FOUND_HTTP_BODY, req.version(), std::move(send), ContentType::APP_JSON);
-                return { http::status::not_found , ContentType::APP_JSON };
+                return { http::status::not_found , ContentType::APP_JSON};
             }
             break;
         }
@@ -160,7 +164,7 @@ private:
     template<typename Send>
     ResponseData SendBadRequest(Send&& send, unsigned http_version) const {
         SendResponse(http::status::bad_request, BAD_REQUEST_HTTP_BODY, http_version, std::move(send), ContentType::APP_JSON);
-        return { http::status::bad_request, ContentType::APP_JSON };
+        return { http::status::bad_request, ContentType::APP_JSON};
     }
 
     template<typename Send>
@@ -208,49 +212,41 @@ private:
 
 class LoggingRequestHandler {
     template <typename Body, typename Allocator>
-    static void LogRequest(const http::request<Body, http::basic_fields<Allocator>>&& r) {
-        BOOST_LOG_TRIVIAL(info) << "request received";
+    static void LogRequest(const http::request<Body, http::basic_fields<Allocator>>& r, const boost::beast::net::ip::address& address) {
+        json::object request_data;
+        request_data["ip"] = address.to_string();
+        request_data["URI"] = std::string(r.target());
+        request_data["method"] = r.method_string().data();
+        BOOST_LOG_TRIVIAL(info) << logging::add_value(data, request_data) << "request received";
     }
-    static void LogResponse(const RequestHandler::ResponseData& r, std::chrono::system_clock::rep response_time);
+    static void LogResponse(const RequestHandler::ResponseData& r, double response_time, const boost::beast::net::ip::address& address);
 public:
-    LoggingRequestHandler(/*SomeRequestHandler&*/RequestHandler& handler) : decorated_(handler) {
+    LoggingRequestHandler(RequestHandler& handler) : decorated_(handler) {
     }
 
     static void Formatter(logging::record_view const& rec, logging::formatting_ostream& strm) {
-        auto ts = *rec[timestamp];
+        auto ts = *logging::extract<boost::posix_time::ptime>("TimeStamp", rec);
+
         strm << "{\"timestamp\":\"" << boost::posix_time::to_iso_extended_string(ts) << "\", ";
-        strm << "\"data\":\"" << json::serialize(*logging::extract<boost::json::value>("AdditionalData", rec)) << "\", ";
+        strm << "\"data\":" << json::serialize(*logging::extract<boost::json::value>("AdditionalData", rec)) << ", ";
         strm << "\"message\":\"" << rec[logging::expressions::smessage] << "\"}";
     }
 
     template <typename Body, typename Allocator, typename Send>
-    void operator () (http::request<Body, http::basic_fields<Allocator>>&& req, Send&& send) {
-        LogRequest(req);
-        std::chrono::system_clock::rep response_time;
-        RequestHandler::ResponseData resp_data;
-        {
-            DurationMeasure measure(response_time);
-            resp_data = decorated_(std::move(req), std::move(send));
-        }
-        LogResponse(resp_data, response_time);
+    void operator () (http::request<Body, http::basic_fields<Allocator>>&& req, Send&& send, const boost::beast::net::ip::address& address) {
+        LogRequest(req, address);
+        boost::chrono::system_clock::time_point start = boost::chrono::system_clock::now();
+        RequestHandler::ResponseData resp_data = decorated_(std::move(req), std::move(send));
+        boost::chrono::duration<double> response_time = boost::chrono::system_clock::now() - start;
+        LogResponse(resp_data, response_time.count(), address);
     }
 
+    void LogServerStart() const;
+
+    void LogServerEnd() const;
+
 private:
-    /*SomeRequestHandler&*/RequestHandler& decorated_;
-
-    class DurationMeasure {
-    public:
-        DurationMeasure(std::chrono::system_clock::rep& time_catcher) : time_catcher_(time_catcher){
-        }
-        ~DurationMeasure() {
-            std::chrono::system_clock::time_point end_ts = std::chrono::system_clock::now();
-            time_catcher_ = (end_ts - start_ts_).count();
-        }
-
-    private:
-        std::chrono::system_clock::time_point start_ts_ = std::chrono::system_clock::now();
-        std::chrono::system_clock::rep& time_catcher_;
-    };
+    RequestHandler& decorated_;
 };
 
 }  // namespace http_handler

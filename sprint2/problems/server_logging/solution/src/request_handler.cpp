@@ -173,8 +173,13 @@ std::string RequestHandler::DecodeURL(std::string_view url) const {
     return std::string(text.data(), text.size());
 }
 
-void LoggingRequestHandler::LogResponse(const RequestHandler::ResponseData& r, std::chrono::system_clock::rep response_time) {
-    BOOST_LOG_TRIVIAL(info) << "\"response_time\"" << "\"code\"" << r.code << ", \"content_type\"" << r.content_type << "}";
+void LoggingRequestHandler::LogResponse(const RequestHandler::ResponseData& r, double response_time, const boost::beast::net::ip::address& address) {
+    json::object response_data;
+    response_data["ip"] = address.to_string();
+    response_data["response_time"] = (int)(response_time * 1000);
+    response_data["code"] = (int)r.code;
+    response_data["content_type"] = r.content_type.data();
+    BOOST_LOG_TRIVIAL(info) << logging::add_value(data, response_data) << "response sent";
 }
 
 }  // namespace http_handler
