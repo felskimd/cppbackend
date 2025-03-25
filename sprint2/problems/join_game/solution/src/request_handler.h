@@ -207,7 +207,7 @@ public:
 
     //bool head and handler
     template <typename Send>
-    ResponseData ProcessRequest(std::string_view target, unsigned http_version, std::string_view method, Send&& send, json::value&& body, std::string&& bearer) {
+    ResponseData ProcessRequest(std::string_view target, unsigned http_version, std::string_view method, Send&& send, json::object&& body, std::string_view bearer) {
         auto unslashed = target.substr(1, target.length() - 1);
         auto splitted = SplitRequest(unslashed);
         if (splitted[2] == RestApiLiterals::MAPS) {
@@ -241,7 +241,7 @@ public:
                     Sender::SendAPIResponse(http::status::not_found, HttpBodies::MAP_NOT_FOUND, http_version, std::move(send));
                     return { http::status::not_found, ContentType::APP_JSON };
                 }
-                auto user_name = body["userName"];
+                auto user_name = body["userName"].as_string();
                 if (user_name.size() == 0) {
                     Sender::SendAPIResponse(http::status::bad_request, HttpBodies::INVALID_NAME, http_version, std::move(send));
                     return { http::status::bad_request, ContentType::APP_JSON };
@@ -319,32 +319,39 @@ public:
         std::string_view target(string_target);
         switch(CheckRequest(target)) {
         case RequestType::API: 
-            json::value body;
+        {
+            json::object body;
             try {
-                body = json::parse(req.body());
+                body = json::parse(req.body()).as_object();
             } 
             catch (...) {
                 Sender::SendAPIResponse(http::status::bad_request, HttpBodies::JOIN_GAME_PARSE_ERROR, req.version(), std::move(send));
-                return { http::status::bad_request, ContentType::APP_JSON };
+                return handle({ http::status::bad_request, ContentType::APP_JSON });
             }
-            net::dispatch(api_handler_->GetStrand(), [self = shared_from_this(), string_target_ = std::move(string_target), req_ = std::move(req), send_ = std::move(send), api_handler__ = api_handler_->shared_from_this(), handle]() {
-                handle(std::move(api_handler__->ProcessRequest(string_target_, req_.version(), req_.method_string(), std::move(send_), std::move(body), req_.base()[http::field::authorization])));
+            net::dispatch(api_handler_->GetStrand(), [self = shared_from_this(), string_target_ = std::move(string_target)
+                                                     , req_ = std::move(req), send_ = std::move(send), api_handler__ = api_handler_->shared_from_this()
+                                                     , handle, body_ = std::move(body)]() {
+                    handle(api_handler__->ProcessRequest(/*std::string_view(*/string_target_, (unsigned)(req_.version()), req_.method_string()
+                                        , std::move(send_), std::move(body_), req_.base()[http::field::authorization]));
                 });
             return;
             //return api_handler_.ProcessRequest(target, req.version(), req.method_string(), std::move(send), req.body(), req.base()[http::field::authorization]);
-            //break;
+            break;
+        }
         case RequestType::FILE:
             //add methods
+        //{
             return handle(Sender::SendFileResponseOr404(root_path_, target, std::move(send), req.version()));
-            //break;
+            break;
+        //}
         case RequestType::BAD_REQUEST:
             //add methods
             return handle(Sender::SendBadRequest(std::move(send), req.version()));
-            //break;
+            break;
         default:
             //add methods
             return handle(Sender::SendBadRequest(std::move(send), req.version()));
-            //break;
+            break;
         }
     }
 
