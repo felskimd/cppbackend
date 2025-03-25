@@ -207,7 +207,7 @@ public:
 
     //bool head and handler
     template <typename Send>
-    ResponseData ProcessRequest(std::string_view target, unsigned http_version, std::string_view method, Send&& send, json::object&& body, const std::string_view bearer) {
+    ResponseData ProcessRequest(std::string_view target, unsigned http_version, std::string_view method, Send&& send, const json::object& body, const std::string_view bearer) {
         auto unslashed = target.substr(1, target.length() - 1);
         auto splitted = SplitRequest(unslashed);
         if (splitted[2] == RestApiLiterals::MAPS) {
@@ -277,7 +277,7 @@ public:
                     return { http::status::unauthorized, ContentType::APP_JSON };
                 }
                 auto dogs = player->GetSession()->GetDogsExceptOne(player->GetDog());
-                json::value result;
+                json::object result;
                 for (const auto* dog : dogs) {
                     result[std::to_string(dog->GetId())] = json::array{ "name", dog->GetName()};
                 }
@@ -332,7 +332,7 @@ public:
                                                      , req_ = std::move(req), send_ = std::move(send), api_handler__ = api_handler_->shared_from_this()
                                                      , handle, body_ = std::move(body)]() {
                     handle(api_handler__->ProcessRequest(std::string_view(string_target_), (unsigned)(req_.version()), std::string_view(req_.method_string().data())
-                                        , std::move(send_), std::move(body_), req_.base()[http::field::authorization]));
+                                        , std::move(send_), body_, req_.base()[http::field::authorization]));
                 });
             return;
             //return api_handler_.ProcessRequest(target, req.version(), req.method_string(), std::move(send), req.body(), req.base()[http::field::authorization]);
