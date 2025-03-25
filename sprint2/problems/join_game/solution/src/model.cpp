@@ -52,7 +52,7 @@ Dog* GameSession::AddDog(Dog&& dog) {
     return &dogs_.back();
 }
 
-//int Dog::start_id_ = 0;
+int Dog::start_id_ = 0;
 
 }  // namespace model
 
@@ -92,6 +92,6 @@ const Player* Players::FindByToken(const Token& token) const {
     return nullptr;
 }
 
-//int Player::start_id_ = 0;
+int Player::start_id_ = 0;
 
 }  // namespace app

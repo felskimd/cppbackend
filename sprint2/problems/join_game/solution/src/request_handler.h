@@ -210,9 +210,27 @@ public:
     ResponseData ProcessRequest(std::string_view target, unsigned http_version, std::string_view method, Send&& send, const json::object& body, const std::string_view bearer) {
         auto unslashed = target.substr(1, target.length() - 1);
         auto splitted = SplitRequest(unslashed);
+        if (splitted.size() < 3) {
+            return Sender::SendBadRequest(std::move(send), http_version);
+        }
         if (splitted[2] == RestApiLiterals::MAPS) {
-            Sender::SendAPIResponse(http::status::ok, json::serialize(ProcessMapsRequestBody()), http_version, std::move(send));
-            return { http::status::ok , ContentType::APP_JSON };
+            if (splitted.size() == 4) {
+                std::string id_text(splitted[3].data(), splitted[3].size());
+                model::Map::Id id(id_text);
+                const auto* map = game_.FindMap(id);
+                if (map) {
+                    Sender::SendAPIResponse(http::status::ok, json::serialize(MapToJSON(map)), http_version, std::move(send));
+                    return { http::status::ok , ContentType::APP_JSON };
+                }
+                else {
+                    Sender::SendAPIResponse(http::status::not_found, HttpBodies::MAP_NOT_FOUND, http_version, std::move(send));
+                    return { http::status::not_found , ContentType::APP_JSON };
+                }
+            }
+            if (splitted.size() == 3) {
+                Sender::SendAPIResponse(http::status::ok, json::serialize(ProcessMapsRequestBody()), http_version, std::move(send));
+                return { http::status::ok , ContentType::APP_JSON };
+            }
         }
         if (splitted[2] == RestApiLiterals::MAP) {
             if (splitted.size() != 4) {
@@ -231,22 +249,33 @@ public:
             }
         }
         if (splitted[2] == RestApiLiterals::GAME) {
+            if (splitted.size() < 4) {
+                return Sender::SendBadRequest(std::move(send), http_version);
+            }
             if (splitted[3] == RestApiLiterals::JOIN) {
                 if (method != "POST") {
                     return Sender::SendMethodNotAllowed(http_version, std::move(send), "POST");
                 }
-                auto id = model::Map::Id(body["mapId"]);
+                if (!body.contains("mapId")) {
+                    Sender::SendAPIResponse(http::status::bad_request, HttpBodies::JOIN_GAME_PARSE_ERROR, http_version, std::move(send));
+                    return { http::status::bad_request, ContentType::APP_JSON };
+                }
+                auto id = model::Map::Id(body.at("mapId").as_string().data());
                 auto* session = game_.FindSession(id);
                 if (!session) {
                     Sender::SendAPIResponse(http::status::not_found, HttpBodies::MAP_NOT_FOUND, http_version, std::move(send));
                     return { http::status::not_found, ContentType::APP_JSON };
                 }
-                auto user_name = body["userName"].as_string();
+                if (!body.contains("userName")) {
+                    Sender::SendAPIResponse(http::status::bad_request, HttpBodies::JOIN_GAME_PARSE_ERROR, http_version, std::move(send));
+                    return { http::status::bad_request, ContentType::APP_JSON };
+                }
+                auto user_name = body.at("userName").as_string();
                 if (user_name.size() == 0) {
                     Sender::SendAPIResponse(http::status::bad_request, HttpBodies::INVALID_NAME, http_version, std::move(send));
                     return { http::status::bad_request, ContentType::APP_JSON };
                 }
-                model::Dog dog{ body["userName"] };
+                model::Dog dog{ std::move(std::string(user_name.data())) };
                 auto& player = players_.AddPlayer(std::move(dog), session);
                 json::object result;
                 //app::Token token = player.GetToken();
@@ -321,12 +350,14 @@ public:
         case RequestType::API: 
         {
             json::object body;
-            try {
-                body = json::parse(req.body()).as_object();
-            } 
-            catch (...) {
-                Sender::SendAPIResponse(http::status::bad_request, HttpBodies::JOIN_GAME_PARSE_ERROR, req.version(), std::move(send));
-                return handle({ http::status::bad_request, ContentType::APP_JSON });
+            if (req.body().size() != 0) {
+                try {
+                    body = json::parse(req.body()).as_object();
+                }
+                catch (...) {
+                    Sender::SendAPIResponse(http::status::bad_request, HttpBodies::JOIN_GAME_PARSE_ERROR, req.version(), std::move(send));
+                    return handle({ http::status::bad_request, ContentType::APP_JSON });
+                }
             }
             net::dispatch(api_handler_->GetStrand(), [self = shared_from_this(), string_target_ = std::move(string_target)
                                                      , req_ = std::move(req), send_ = std::move(send), api_handler__ = api_handler_->shared_from_this()
