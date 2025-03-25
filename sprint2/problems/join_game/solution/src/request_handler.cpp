@@ -180,11 +180,11 @@ void LoggingRequestHandler::LogResponse(const ResponseData& r, boost::chrono::sy
     BOOST_LOG_TRIVIAL(info) << logging::add_value(data, response_data) << "response sent";
 }
 
-bool APIRequestHandler::ParseBearer(std::string&& auth_header, std::string& token_to_write) const {
+bool APIRequestHandler::ParseBearer(const std::string_view auth_header, std::string_view& token_to_write) const {
     if (!auth_header.starts_with("Bearer ")) {
         return false;
     }
-    std::string str = auth_header.substr(7);
+    std::string_view str = auth_header.substr(7);
     if (str.size() != 32) {
         return false;
     }

@@ -207,7 +207,7 @@ public:
 
     //bool head and handler
     template <typename Send>
-    ResponseData ProcessRequest(std::string_view target, unsigned http_version, std::string_view method, Send&& send, json::object&& body, std::string_view bearer) {
+    ResponseData ProcessRequest(std::string_view target, unsigned http_version, std::string_view method, Send&& send, json::object&& body, const std::string_view bearer) {
         auto unslashed = target.substr(1, target.length() - 1);
         auto splitted = SplitRequest(unslashed);
         if (splitted[2] == RestApiLiterals::MAPS) {
@@ -265,13 +265,13 @@ public:
                 if (method != "GET" || method != "HEAD") {
                     return Sender::SendMethodNotAllowed(http_version, std::move(send), "GET, HEAD");
                 }
-                std::string token = "";
+                std::string_view token = ""sv;
                 auto token_valid = ParseBearer(std::move(bearer), token);
                 if (!token_valid) {
                     Sender::SendAPIResponse(http::status::unauthorized, HttpBodies::INVALID_TOKEN, http_version, std::move(send));
                     return { http::status::unauthorized, ContentType::APP_JSON };
                 }
-                auto* player = players_.FindByToken(std::move(token));
+                auto* player = players_.FindByToken(app::Token(token.data()));
                 if (!player) {
                     Sender::SendAPIResponse(http::status::unauthorized, HttpBodies::TOKEN_UNKNOWN, http_version, std::move(send));
                     return { http::status::unauthorized, ContentType::APP_JSON };
@@ -301,7 +301,7 @@ private:
 
     json::array ProcessMapsRequestBody() const;
 
-    bool ParseBearer(std::string&& auth_header, std::string& token_to_write) const;
+    bool ParseBearer(const std::string_view auth_header, std::string_view& token_to_write) const;
 };
 
 class RequestHandler : public std::enable_shared_from_this<RequestHandler> {
@@ -331,7 +331,7 @@ public:
             net::dispatch(api_handler_->GetStrand(), [self = shared_from_this(), string_target_ = std::move(string_target)
                                                      , req_ = std::move(req), send_ = std::move(send), api_handler__ = api_handler_->shared_from_this()
                                                      , handle, body_ = std::move(body)]() {
-                    handle(api_handler__->ProcessRequest(/*std::string_view(*/string_target_, (unsigned)(req_.version()), req_.method_string()
+                    handle(api_handler__->ProcessRequest(std::string_view(string_target_), (unsigned)(req_.version()), std::string_view(req_.method_string().data())
                                         , std::move(send_), std::move(body_), req_.base()[http::field::authorization]));
                 });
             return;
