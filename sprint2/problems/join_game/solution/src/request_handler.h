@@ -291,10 +291,10 @@ public:
                 return { http::status::ok, ContentType::APP_JSON };
             }
             if (splitted[3] == RestApiLiterals::PLAYERS) {
-                if (method != "GET" || method != "HEAD") {
+                if (method != "GET" && method != "HEAD") {
                     return Sender::SendMethodNotAllowed(http_version, std::move(send), "GET, HEAD");
                 }
-                std::string_view token = ""sv;
+                std::string token = "";
                 auto token_valid = ParseBearer(std::move(bearer), token);
                 if (!token_valid) {
                     Sender::SendAPIResponse(http::status::unauthorized, HttpBodies::INVALID_TOKEN, http_version, std::move(send));
@@ -330,7 +330,7 @@ private:
 
     json::array ProcessMapsRequestBody() const;
 
-    bool ParseBearer(const std::string_view auth_header, std::string_view& token_to_write) const;
+    bool ParseBearer(const std::string_view auth_header, std::string& token_to_write) const;
 };
 
 class RequestHandler : public std::enable_shared_from_this<RequestHandler> {

@@ -275,7 +275,7 @@ using Token = util::Tagged<std::string, detail::TokenTag>;
 
 class TokensGen {
 public:
-    Token GetToken() const;
+    Token GetToken();
 
 private:
     std::random_device random_device_;

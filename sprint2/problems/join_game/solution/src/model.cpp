@@ -32,13 +32,14 @@ void Game::AddMap(Map map) {
             map_id_to_index_.erase(it);
             throw;
         }
+        sessions_.push_back(GameSession{ &maps_.back() });
     }
 }
 
 std::vector<const Dog*> GameSession::GetDogsExceptOne(const Dog* not_included_dog) const {
     std::vector<const Dog*> result;
     result.reserve(dogs_.size()-1);
-    for (const auto dog : dogs_) {
+    for (const auto& dog : dogs_) {
         if (dog.GetId() == not_included_dog->GetId()) {
             continue;
         }
@@ -58,9 +59,9 @@ int Dog::start_id_ = 0;
 
 namespace app {
 
-Token TokensGen::GetToken() const {
+Token TokensGen::GetToken() {
     std::stringstream ss;
-    ss << std::hex << std::setw(16) << std::setfill('0') << generator1_ << generator2_;
+    ss << std::hex << std::setw(16) << std::setfill('0') << generator1_() << std::setw(16) << generator2_();
     return Token(ss.str());
 }
 
