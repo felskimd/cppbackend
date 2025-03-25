@@ -3,12 +3,8 @@
 #include "model.h"
 
 #include <boost/json.hpp>
-#include <boost/log/attributes.hpp>
 #include <boost/log/trivial.hpp>
-#include <boost/log/common.hpp>
 #include <boost/log/expressions.hpp>
-#include <boost/log/sinks.hpp>
-#include <boost/log/sources/logger.hpp>
 #include <boost/log/utility/manipulators/add_value.hpp>
 #include <boost/log/utility/setup.hpp>
 #include <boost/log/utility/setup/console.hpp>
@@ -240,10 +236,6 @@ public:
         boost::chrono::duration<double> response_time = boost::chrono::system_clock::now() - start;
         LogResponse(resp_data, response_time.count(), address);
     }
-
-    void LogServerStart() const;
-
-    void LogServerEnd() const;
 
 private:
     RequestHandler& decorated_;
