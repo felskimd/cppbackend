@@ -261,11 +261,11 @@ public:
                     return { http::status::bad_request, ContentType::APP_JSON };
                 }
                 auto map_id = body.at("mapId");
-                if (!map_id.is_string()) {
+                if (!map_id.is_string() || map_id.get_string().starts_with(' ') || map_id.get_string().ends_with(' ')) {
                     Sender::SendAPIResponse(http::status::bad_request, HttpBodies::JOIN_GAME_PARSE_ERROR, http_version, std::move(send));
                     return { http::status::bad_request, ContentType::APP_JSON };
                 }
-                auto id = model::Map::Id(map_id.as_string().data());
+                auto id = model::Map::Id(map_id.get_string().data());
                 auto* session = game_.FindSession(id);
                 if (!session) {
                     Sender::SendAPIResponse(http::status::not_found, HttpBodies::MAP_NOT_FOUND, http_version, std::move(send));
