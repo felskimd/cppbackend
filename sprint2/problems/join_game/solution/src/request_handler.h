@@ -260,7 +260,12 @@ public:
                     Sender::SendAPIResponse(http::status::bad_request, HttpBodies::JOIN_GAME_PARSE_ERROR, http_version, std::move(send));
                     return { http::status::bad_request, ContentType::APP_JSON };
                 }
-                auto id = model::Map::Id(body.at("mapId").as_string().data());
+                auto map_id = body.at("mapId");
+                if (!map_id.is_string()) {
+                    Sender::SendAPIResponse(http::status::bad_request, HttpBodies::JOIN_GAME_PARSE_ERROR, http_version, std::move(send));
+                    return { http::status::bad_request, ContentType::APP_JSON };
+                }
+                auto id = model::Map::Id(map_id.as_string().data());
                 auto* session = game_.FindSession(id);
                 if (!session) {
                     Sender::SendAPIResponse(http::status::not_found, HttpBodies::MAP_NOT_FOUND, http_version, std::move(send));
@@ -278,14 +283,11 @@ public:
                 model::Dog dog{ std::move(std::string(user_name.data())) };
                 auto& player = players_.AddPlayer(std::move(dog), session);
                 json::object result;
-                //app::Token token = player.GetToken();
                 player.GetDog();
                 player.GetSession();
                 app::Token token = player.GetToken();
                 std::string tokenStr = *token;
                 result["authToken"] = tokenStr;
-                //result["authToken"] = *player.GetToken();
-                //result["authToken"] = token;
                 result["playerId"] = player.GetId();
                 Sender::SendAPIResponse(http::status::ok, json::serialize(result), http_version, std::move(send));
                 return { http::status::ok, ContentType::APP_JSON };
