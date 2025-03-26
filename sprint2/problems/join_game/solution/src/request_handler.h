@@ -305,7 +305,7 @@ public:
                     Sender::SendAPIResponse(http::status::unauthorized, HttpBodies::TOKEN_UNKNOWN, http_version, std::move(send));
                     return { http::status::unauthorized, ContentType::APP_JSON };
                 }
-                auto dogs = player->GetSession()->GetDogsExceptOne(player->GetDog());
+                auto dogs = player->GetSession()->GetDogs();
                 json::object result;
                 for (const auto* dog : dogs) {
                     result[std::to_string(dog->GetId())] = json::array{ "name", dog->GetName()};

@@ -221,7 +221,7 @@ public:
     explicit GameSession(Map* map) : map_(map) {
     }
 
-    std::vector<const Dog*> GetDogsExceptOne(const Dog* dog) const;
+    std::vector<const Dog*> GetDogs() const;
 
     Dog* AddDog(Dog&& dog);
 

@@ -36,13 +36,10 @@ void Game::AddMap(Map map) {
     }
 }
 
-std::vector<const Dog*> GameSession::GetDogsExceptOne(const Dog* not_included_dog) const {
+std::vector<const Dog*> GameSession::GetDogs() const {
     std::vector<const Dog*> result;
     result.reserve(dogs_.size()-1);
     for (const auto& dog : dogs_) {
-        if (dog.GetId() == not_included_dog->GetId()) {
-            continue;
-        }
         result.emplace_back(&dog);
     }
     return result;
