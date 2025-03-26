@@ -256,21 +256,6 @@ public:
                 if (method != "POST") {
                     return Sender::SendMethodNotAllowed(http_version, std::move(send), "POST");
                 }
-                if (!body.contains("mapId")) {
-                    Sender::SendAPIResponse(http::status::bad_request, HttpBodies::JOIN_GAME_PARSE_ERROR, http_version, std::move(send));
-                    return { http::status::bad_request, ContentType::APP_JSON };
-                }
-                auto map_id = body.at("mapId");
-                if (!map_id.is_string() || map_id.get_string().starts_with(' ') || map_id.get_string().ends_with(' ')) {
-                    Sender::SendAPIResponse(http::status::bad_request, HttpBodies::JOIN_GAME_PARSE_ERROR, http_version, std::move(send));
-                    return { http::status::bad_request, ContentType::APP_JSON };
-                }
-                auto id = model::Map::Id(map_id.get_string().data());
-                auto* session = game_.FindSession(id);
-                if (!session) {
-                    Sender::SendAPIResponse(http::status::not_found, HttpBodies::MAP_NOT_FOUND, http_version, std::move(send));
-                    return { http::status::not_found, ContentType::APP_JSON };
-                }
                 if (!body.contains("userName")) {
                     Sender::SendAPIResponse(http::status::bad_request, HttpBodies::JOIN_GAME_PARSE_ERROR, http_version, std::move(send));
                     return { http::status::bad_request, ContentType::APP_JSON };
@@ -279,6 +264,21 @@ public:
                 if (user_name.size() == 0) {
                     Sender::SendAPIResponse(http::status::bad_request, HttpBodies::INVALID_NAME, http_version, std::move(send));
                     return { http::status::bad_request, ContentType::APP_JSON };
+                }
+                if (!body.contains("mapId")) {
+                    Sender::SendAPIResponse(http::status::bad_request, HttpBodies::JOIN_GAME_PARSE_ERROR, http_version, std::move(send));
+                    return { http::status::bad_request, ContentType::APP_JSON };
+                }
+                auto map_id = body.at("mapId");
+                if (!map_id.is_string()) {
+                    Sender::SendAPIResponse(http::status::bad_request, HttpBodies::JOIN_GAME_PARSE_ERROR, http_version, std::move(send));
+                    return { http::status::bad_request, ContentType::APP_JSON };
+                }
+                auto id = model::Map::Id(map_id.get_string().data());
+                auto* session = game_.FindSession(id);
+                if (!session) {
+                    Sender::SendAPIResponse(http::status::not_found, HttpBodies::MAP_NOT_FOUND, http_version, std::move(send));
+                    return { http::status::not_found, ContentType::APP_JSON };
                 }
                 model::Dog dog{ std::move(std::string(user_name.data())) };
                 auto& player = players_.AddPlayer(std::move(dog), session);
