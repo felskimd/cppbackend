@@ -32,7 +32,6 @@ void Game::AddMap(Map map) {
             map_id_to_index_.erase(it);
             throw;
         }
-        sessions_.push_back(GameSession{ &maps_.back() });
     }
 }
 

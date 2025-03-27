@@ -252,7 +252,6 @@ private:
     Speed speed_ = {0., 0.};
     Direction direction_ = Direction::NORTH;
 
-
     static int start_id_;
 
     static int GetNextId() {
@@ -296,6 +295,14 @@ public:
             return &sessions_.at(it->second);
         }
         return nullptr;
+    }
+
+    void StartSessions() {
+        sessions_.clear();
+        sessions_.reserve(maps_.size());
+        for (auto& map : maps_) {
+            sessions_.push_back(GameSession{ &map });
+        }
     }
 
 private:

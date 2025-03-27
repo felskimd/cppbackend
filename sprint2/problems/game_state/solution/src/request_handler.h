@@ -309,6 +309,7 @@ public:
                 for (const auto* dog : dogs) {
                     result[std::to_string(dog->GetId())] = json::array{ "name", dog->GetName()};
                 }
+                //head check
                 Sender::SendAPIResponse(http::status::ok, json::serialize(result), http_version, std::move(send));
                 return { http::status::ok, ContentType::APP_JSON };
             }
@@ -352,6 +353,7 @@ public:
                     players[std::to_string(dog->GetId())] = data;
                 }
                 result["players"] = players;
+                //head check
                 Sender::SendAPIResponse(http::status::ok, json::serialize(result), http_version, std::move(send));
                 return { http::status::ok, ContentType::APP_JSON };
             }

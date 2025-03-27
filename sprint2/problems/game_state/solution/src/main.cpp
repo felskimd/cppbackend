@@ -55,6 +55,7 @@ int main(int argc, const char* argv[]) {
 
         // 1. Загружаем карту из файла и построить модель игры
         model::Game game = json_loader::LoadGame(argv[1]);
+        game.StartSessions();
 
         // 2. Инициализируем io_context
         const unsigned num_threads = std::thread::hardware_concurrency();
