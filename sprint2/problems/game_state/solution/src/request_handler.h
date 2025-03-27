@@ -81,6 +81,7 @@ struct RestApiLiterals {
     constexpr static std::string_view GAME = "game"sv;
     constexpr static std::string_view JOIN = "join"sv;
     constexpr static std::string_view PLAYERS = "players"sv;
+    constexpr static std::string_view STATE = "state"sv;
 };
 
 struct HttpBodies {
@@ -308,6 +309,49 @@ public:
                 for (const auto* dog : dogs) {
                     result[std::to_string(dog->GetId())] = json::array{ "name", dog->GetName()};
                 }
+                Sender::SendAPIResponse(http::status::ok, json::serialize(result), http_version, std::move(send));
+                return { http::status::ok, ContentType::APP_JSON };
+            }
+            if (splitted[3] == RestApiLiterals::STATE) {
+                if (method != "GET" && method != "HEAD") {
+                    return Sender::SendMethodNotAllowed(http_version, std::move(send), "GET, HEAD");
+                }
+                std::string token = "";
+                auto token_valid = ParseBearer(std::move(bearer), token);
+                if (!token_valid) {
+                    Sender::SendAPIResponse(http::status::unauthorized, HttpBodies::INVALID_TOKEN, http_version, std::move(send));
+                    return { http::status::unauthorized, ContentType::APP_JSON };
+                }
+                auto* player = players_.FindByToken(app::Token(token.data()));
+                if (!player) {
+                    Sender::SendAPIResponse(http::status::unauthorized, HttpBodies::TOKEN_UNKNOWN, http_version, std::move(send));
+                    return { http::status::unauthorized, ContentType::APP_JSON };
+                }
+                json::object result;
+                json::object players;
+                for (const auto& dog : player->GetSession()->GetDogs()) {
+                    json::object data;
+                    auto pos = dog->GetPosition();
+                    auto speed = dog->GetSpeed();
+                    data["pos"] = {pos.x, pos.y};
+                    data["speed"] = {speed.vx, speed.vy};
+                    switch (dog->GetDirection()) {
+                    case model::Direction::NORTH:
+                        data["dir"] = "U";
+                        break;
+                    case model::Direction::SOUTH:
+                        data["dir"] = "D";
+                        break;
+                    case model::Direction::EAST:
+                        data["dir"] = "R";
+                        break;
+                    case model::Direction::WEST:
+                        data["dir"] = "L";
+                        break;
+                    }
+                    players[std::to_string(dog->GetId())] = data;
+                }
+                result["players"] = players;
                 Sender::SendAPIResponse(http::status::ok, json::serialize(result), http_version, std::move(send));
                 return { http::status::ok, ContentType::APP_JSON };
             }
