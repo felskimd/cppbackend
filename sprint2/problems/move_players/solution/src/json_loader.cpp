@@ -23,7 +23,12 @@ model::Game LoadGame(const std::filesystem::path& json_path) {
         auto parsed_id = object_map.at(std::string(model::ModelLiterals::ID)).as_string().c_str();
         model::Map model_map(model::Map::Id(parsed_id), object_map.at(std::string(model::ModelLiterals::NAME)).as_string().c_str());
         if (auto speed = object_map.find(std::string(model::ModelLiterals::DOG_SPEED)); speed != obj.end()) {
-            model_map.SetSpeed(speed->value().as_double());
+            if (speed->value().is_double()) {
+                model_map.SetSpeed(speed->value().get_double());
+            }
+            else {
+                model_map.SetSpeed(default_speed);
+            }
         }
         else {
             model_map.SetSpeed(default_speed);
