@@ -96,6 +96,9 @@ RequestHandler::RequestType RequestHandler::CheckRequest(std::string_view target
     if (target.starts_with(RestApiLiterals::API_V1)) {
         return RequestHandler::RequestType::API;
     }
+    if (target.starts_with("/api")) {
+        return RequestHandler::RequestType::BAD_REQUEST;
+    }
     auto request = SplitRequest(target.substr(1, target.length() - 1));
     auto temp_path = root_path_;
     temp_path += target;
