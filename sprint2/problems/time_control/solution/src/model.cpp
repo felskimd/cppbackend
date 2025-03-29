@@ -146,7 +146,7 @@ std::pair<bool, Position> GameSession::CalculateMove(Position pos, Speed speed, 
     bool stop = false;
     double in_seconds = (double)delta / 1000;
     Position end_pos = {pos.x + speed.vx * in_seconds, pos.y + speed.vy * in_seconds };
-    Point rounded = {std::round(pos.x), std::round(pos.y)};
+    Point rounded = {(int)std::round(pos.x), (int)std::round(pos.y)};
     for (const auto& road : roads_graph_.at(rounded)) {
         if (InBounds(road, end_pos)) {
             return {false, end_pos};

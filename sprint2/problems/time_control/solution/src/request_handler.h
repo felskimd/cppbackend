@@ -455,7 +455,7 @@ public:
                     return { http::status::bad_request, ContentType::APP_JSON };
                 }
                 auto tick = body.find("timeDelta");
-                if (tick != body.end() || !tick->value().is_int64()) {
+                if (tick == body.end() || !tick->value().is_int64()) {
                     Sender::SendAPIResponse(http::status::bad_request, HttpBodies::TICK_PARSE_ERROR, req.version(), std::move(send));
                     return { http::status::bad_request, ContentType::APP_JSON };
                 }
