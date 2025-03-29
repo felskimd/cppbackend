@@ -407,7 +407,7 @@ public:
                         return { http::status::bad_request, ContentType::APP_JSON };
                     }
                     auto move = body.find("move");
-                    if (move != body.end() || !move->value().is_string()) {
+                    if (move == body.end() || !move->value().is_string()) {
                         Sender::SendAPIResponse(http::status::bad_request, HttpBodies::ACTION_PARSE_ERROR, req.version(), std::move(send));
                         return { http::status::bad_request, ContentType::APP_JSON };
                     }
