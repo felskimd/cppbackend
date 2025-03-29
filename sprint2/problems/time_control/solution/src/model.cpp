@@ -38,7 +38,7 @@ void Game::AddMap(Map map) {
 
 std::vector<const Dog*> GameSession::GetDogs() const {
     std::vector<const Dog*> result;
-    result.reserve(dogs_.size()-1);
+    //result.reserve(dogs_.size()-1);
     for (const auto& dog : dogs_) {
         result.emplace_back(&dog);
     }
@@ -64,8 +64,8 @@ Dog* GameSession::AddDog(Dog&& dog) {
     //temp
     dog.ResetDirection();
     dog.Stop();
-    dogs_.emplace_back(std::move(dog));
-    return &dogs_.back();
+    dogs_.push_front(std::move(dog));
+    return &dogs_.front();
 }
 
 int Dog::start_id_ = 0;

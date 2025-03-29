@@ -1,5 +1,6 @@
 #pragma once
 #include <compare>
+#include <forward_list>
 #include <iomanip>
 #include <iostream>
 #include <random>
@@ -334,7 +335,7 @@ public:
     }
 
 private:
-    std::vector<Dog> dogs_;
+    std::forward_list<Dog> dogs_;
     Map* map_;
     std::unordered_map<Point, std::vector<const Road*>, PointHash> roads_graph_;
 
