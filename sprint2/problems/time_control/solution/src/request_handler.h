@@ -443,6 +443,9 @@ public:
                 }
             }
             if (splitted[3] == RestApiLiterals::TICK) {
+                if (method != "POST") {
+                    return Sender::SendMethodNotAllowed(http_version, std::move(send), "POST");
+                }
                 json::object body;
                 try {
                     body = json::parse(req.body()).as_object();
