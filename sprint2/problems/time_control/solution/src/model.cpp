@@ -142,14 +142,39 @@ bool InBounds(const Road* road, Position pos) {
     return false;
 }
 
+double GetMaxPossible(const Road* road, Direction dir) {
+    switch (dir) {
+    case Direction::NORTH:
+        return (double)std::min(road->GetEnd().y, road->GetStart().y) - 0.4;
+    case Direction::SOUTH:
+        return (double)std::max(road->GetEnd().y, road->GetStart().y) + 0.4;
+    case Direction::EAST:
+        return (double)std::max(road->GetEnd().x, road->GetStart().x) + 0.4;
+    case Direction::WEST:
+        return (double)std::min(road->GetEnd().x, road->GetStart().x) - 0.4;
+    }
+}
+
 std::pair<bool, Position> GameSession::CalculateMove(Position pos, Speed speed, int delta) const {
-    bool stop = false;
+    //bool stop = false;
     double in_seconds = (double)delta / 1000;
     Position end_pos = {pos.x + speed.vx * in_seconds, pos.y + speed.vy * in_seconds };
     Point rounded = {(int)std::round(pos.x), (int)std::round(pos.y)};
     for (const auto& road : roads_graph_.at(rounded)) {
         if (InBounds(road, end_pos)) {
             return {false, end_pos};
+        }
+        if (road->IsHorizontal() && speed.vy == 0.) {
+            if (speed.vx > 0) {
+                return {true, {GetMaxPossible(road, Direction::EAST), pos.y}};
+            }
+            return {true, {GetMaxPossible(road, Direction::WEST), pos.y}};
+        }
+        if (road->IsVertical() && speed.vx == 0.) {
+            if (speed.vy > 0) {
+                return {true, {pos.x, GetMaxPossible(road, Direction::SOUTH)}};
+            }
+            return {true, {pos.x, GetMaxPossible(road, Direction::NORTH)}};
         }
     }
     if (speed.vx == 0) {
