@@ -47,21 +47,23 @@ std::vector<const Dog*> GameSession::GetDogs() const {
 
 Dog* GameSession::AddDog(Dog&& dog) {
     auto roads = map_->GetRoads();
-    /*std::default_random_engine generator(roads.size());
-    std::uniform_int_distribution rand_road{0, (int)roads.size()-1};
-    auto& road = roads[rand_road(generator)];
-    if (road.IsHorizontal()) {
-        std::uniform_real_distribution rand_pos{ (double)road.GetStart().x, (double)road.GetEnd().x };
-        dog.SetPosition({rand_pos(generator), (double)road.GetStart().y });
+    if (randomize_spawn_) {
+        std::default_random_engine generator(roads.size());
+        std::uniform_int_distribution rand_road{0, (int)roads.size()-1};
+        auto& road = roads[rand_road(generator)];
+        if (road.IsHorizontal()) {
+            std::uniform_real_distribution rand_pos{ (double)road.GetStart().x, (double)road.GetEnd().x };
+            dog.SetPosition({rand_pos(generator), (double)road.GetStart().y });
+        }
+        else {
+            std::uniform_real_distribution rand_pos{ (double)road.GetStart().y, (double)road.GetEnd().y };
+            dog.SetPosition({ (double)road.GetStart().x, rand_pos(generator) });
+        }
     }
     else {
-        std::uniform_real_distribution rand_pos{ (double)road.GetStart().y, (double)road.GetEnd().y };
-        dog.SetPosition({ (double)road.GetStart().x, rand_pos(generator) });
-    }*/
-    //temp
-    const auto& road_start = roads[0].GetStart();
-    dog.SetPosition({(double)road_start.x, (double)road_start.y});
-    //temp
+        const auto& road_start = roads[0].GetStart();
+        dog.SetPosition({ (double)road_start.x, (double)road_start.y });
+    }
     dog.ResetDirection();
     dog.Stop();
     dogs_.push_front(std::move(dog));
@@ -70,7 +72,10 @@ Dog* GameSession::AddDog(Dog&& dog) {
 
 int Dog::start_id_ = 0;
 
-GameSession::GameSession(Map* map) : map_(map) {
+GameSession::GameSession(Map* map, bool randomize_spawn) 
+        : map_(map), 
+        randomize_spawn_(randomize_spawn) 
+{
     for (const auto& road : map_->GetRoads()) {
         auto start = road.GetStart();
         auto end = road.GetEnd();
@@ -156,7 +161,7 @@ double GetMaxPossible(const Road* road, Direction dir) {
     return 0.;
 }
 
-std::pair<bool, Position> GameSession::CalculateMove(Position pos, Speed speed, int delta) const {
+std::pair<bool, Position> GameSession::CalculateMove(Position pos, Speed speed, unsigned delta) const {
     double in_seconds = (double)delta / 1000;
     Position end_pos = {pos.x + speed.vx * in_seconds, pos.y + speed.vy * in_seconds };
     Point rounded = {(int)std::round(pos.x), (int)std::round(pos.y)};
@@ -219,5 +224,11 @@ Player* Players::FindByToken(const Token& token) {
 }
 
 int Player::start_id_ = 0;
+
+Application::Application(model::Game&& game, bool randomize_spawn) 
+    :game_(std::move(game)) 
+{
+    game_.StartSessions(randomize_spawn);
+}
 
 }  // namespace app
