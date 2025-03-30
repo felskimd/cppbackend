@@ -169,6 +169,7 @@ public:
     template<typename Send>
     static void SendResponse(http::status status, std::string_view body, Send&& send, std::string_view type, bool is_head_method = false) {
         http::response<http::string_body> response(status, 11);
+        response.insert(http::field::cache_control, "no-cache");
         response.insert(http::field::content_type, type);
         if (!is_head_method) {
             response.body() = body;
