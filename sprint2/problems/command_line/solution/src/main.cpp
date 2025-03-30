@@ -3,6 +3,7 @@
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/io_context.hpp>
 #include <iostream>
+#include <optional>
 #include <thread>
 
 #include "json_loader.h"
