@@ -70,15 +70,15 @@ json::array BuildingsToJson(const model::Map* map) {
     return buildings;
 }
 
-RequestHandler::RequestHandler(app::Application& app, const char* path_to_static, net::io_context& ioc, bool auto_tick)
+RequestHandler::RequestHandler(app::Application& app, const char* path_to_static, net::io_context& ioc, bool no_auto_tick)
     : root_path_(path_to_static),
-    api_handler_(std::make_shared<APIRequestHandler>(app, ioc, auto_tick)){
+    api_handler_(std::make_shared<APIRequestHandler>(app, ioc, no_auto_tick)){
 }
 
-APIRequestHandler::APIRequestHandler(app::Application& app, net::io_context& ioc, bool auto_tick)
+APIRequestHandler::APIRequestHandler(app::Application& app, net::io_context& ioc, bool no_auto_tick)
     : app_{ app },
     strand_(net::make_strand(ioc)),
-    auto_tick_(auto_tick){
+    auto_tick_(!no_auto_tick){
 }
 
 json::array APIRequestHandler::ProcessMapsRequestBody() const {

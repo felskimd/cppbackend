@@ -23,7 +23,7 @@ struct Args {
     std::string static_path;
     int tick_time;
     bool randomize_spawn = false;
-    bool auto_tick = true;
+    bool no_auto_tick = true;
 };
 
 [[nodiscard]] std::optional<Args> ParseCommandLine(int argc, const char* const argv[]) {
@@ -58,7 +58,7 @@ struct Args {
         throw std::runtime_error("No path to static"s);
     }
     if (vm.contains("tick-period"s)) {
-        args.auto_tick = false;
+        args.no_auto_tick = false;
     }
     if (vm.contains("randomize-spawn-points")) {
         args.randomize_spawn = true;
@@ -174,10 +174,10 @@ int main(int argc, const char* argv[]) {
             });
 
         // 4. Создаём обработчик HTTP-запросов и связываем его с моделью игры
-        auto handler = std::make_shared<http_handler::RequestHandler>(app, args->static_path.data(), ioc, args->auto_tick);
+        auto handler = std::make_shared<http_handler::RequestHandler>(app, args->static_path.data(), ioc, args->no_auto_tick);
         http_handler::LoggingRequestHandler log_handler{handler};
 
-        if (!args->auto_tick) {
+        if (!args->no_auto_tick) {
             if (args->tick_time < 1) {
                 throw std::runtime_error("Wrong tick time");
             }

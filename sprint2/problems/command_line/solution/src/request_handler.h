@@ -208,14 +208,14 @@ class APIRequestHandler : public std::enable_shared_from_this<APIRequestHandler>
 public:
     using Strand = net::strand<net::io_context::executor_type>;
 
-    explicit APIRequestHandler(app::Application& app, net::io_context& ioc, bool auto_tick);
+    explicit APIRequestHandler(app::Application& app, net::io_context& ioc, bool no_auto_tick);
 
     APIRequestHandler(const APIRequestHandler&) = delete;
     APIRequestHandler& operator=(const APIRequestHandler&) = delete;
 
     //bool head and handler
     template <typename Body, typename Allocator, typename Send>
-    ResponseData ProcessRequest(std::string_view target, /*unsigned http_version, std::string_view method, */Send&& send, const http::request<Body, http::basic_fields<Allocator>>&& req/*const json::object& body, const std::string_view bearer*/) {
+    ResponseData ProcessRequest(std::string_view target, Send&& send, const http::request<Body, http::basic_fields<Allocator>>&& req/*const json::object& body, const std::string_view bearer*/) {
         auto unslashed = target.substr(1, target.length() - 1);
         auto splitted = SplitRequest(unslashed);
         std::string_view method = std::string_view(req.method_string().data());
@@ -302,7 +302,7 @@ public:
                 if (method != "POST") {
                     return Sender::SendMethodNotAllowed(std::move(send), "POST");
                 }
-                TickRequest(req.body(), std::move(send));
+                return TickRequest(req.body(), std::move(send));
             }
         }
         return Sender::SendBadRequest(std::move(send));
@@ -508,7 +508,7 @@ private:
 
 class RequestHandler : public std::enable_shared_from_this<RequestHandler> {
 public:
-    explicit RequestHandler(app::Application& app, const char* path_to_static, net::io_context& ioc, bool auto_tick);
+    explicit RequestHandler(app::Application& app, const char* path_to_static, net::io_context& ioc, bool no_auto_tick);
 
     RequestHandler(const RequestHandler&) = delete;
     RequestHandler& operator=(const RequestHandler&) = delete;
