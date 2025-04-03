@@ -336,7 +336,7 @@ private:
         try {
             json_body = json::parse(body.data()).as_object();
         }
-        catch (std::system_error& ex) {
+        catch (std::exception& ex) {
             Sender::SendAPIResponse(http::status::bad_request, HttpBodies::JOIN_GAME_PARSE_ERROR, std::move(send));
             return { http::status::bad_request, ContentType::APP_JSON };
         }
@@ -433,7 +433,7 @@ private:
         try {
             json_body = json::parse(body.data()).as_object();
         }
-        catch (std::system_error& ex) {
+        catch (std::exception& ex) {
             Sender::SendAPIResponse(http::status::bad_request, HttpBodies::ACTION_PARSE_ERROR, std::move(send));
             return { http::status::bad_request, ContentType::APP_JSON };
         }
@@ -478,7 +478,7 @@ private:
         try {
             json_body = json::parse(body.data()).as_object();
         }
-        catch (std::system_error& ex) {
+        catch (std::exception& ex) {
             Sender::SendAPIResponse(http::status::bad_request, HttpBodies::TICK_PARSE_ERROR, std::move(send));
             return { http::status::bad_request, ContentType::APP_JSON };
         }
