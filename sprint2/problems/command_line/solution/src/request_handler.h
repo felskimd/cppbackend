@@ -74,8 +74,6 @@ struct FileExtensions {
 struct RestApiLiterals {
     RestApiLiterals() = delete;
     constexpr static std::string_view API_V1 = "/api/v1/"sv;
-    //constexpr static std::string_view API = "api"sv;
-    //constexpr static std::string_view VERSION_1 = "v1"sv;
     constexpr static std::string_view MAPS = "maps"sv;
     constexpr static std::string_view MAP = "map"sv;
     constexpr static std::string_view GAME = "game"sv;
@@ -213,7 +211,6 @@ public:
     APIRequestHandler(const APIRequestHandler&) = delete;
     APIRequestHandler& operator=(const APIRequestHandler&) = delete;
 
-    //bool head and handler
     template <typename Body, typename Allocator, typename Send>
     ResponseData ProcessRequest(std::string_view target, Send&& send, const http::request<Body, http::basic_fields<Allocator>>&& req/*const json::object& body, const std::string_view bearer*/) {
         auto unslashed = target.substr(1, target.length() - 1);
@@ -316,8 +313,6 @@ private:
     app::Application& app_;
     Strand strand_;
     bool auto_tick_;
-    //net::io_context& ioc_;
-    //мб хранить мапу сессий к стрендам
 
     json::array ProcessMapsRequestBody() const;
 
@@ -341,7 +336,7 @@ private:
         try {
             json_body = json::parse(body.data()).as_object();
         }
-        catch (...) {
+        catch (std::system_error& ex) {
             Sender::SendAPIResponse(http::status::bad_request, HttpBodies::JOIN_GAME_PARSE_ERROR, std::move(send));
             return { http::status::bad_request, ContentType::APP_JSON };
         }
@@ -387,7 +382,6 @@ private:
         for (const auto* dog : app_.GetDogs(player)) {
             result[std::to_string(dog->GetId())] = json::array{ "name", dog->GetName() };
         }
-        //head check
         Sender::SendAPIResponse(http::status::ok, json::serialize(result), std::move(send));
         return { http::status::ok, ContentType::APP_JSON };
     }
@@ -439,7 +433,7 @@ private:
         try {
             json_body = json::parse(body.data()).as_object();
         }
-        catch (...) {
+        catch (std::system_error& ex) {
             Sender::SendAPIResponse(http::status::bad_request, HttpBodies::ACTION_PARSE_ERROR, std::move(send));
             return { http::status::bad_request, ContentType::APP_JSON };
         }
@@ -484,7 +478,7 @@ private:
         try {
             json_body = json::parse(body.data()).as_object();
         }
-        catch (...) {
+        catch (std::system_error& ex) {
             Sender::SendAPIResponse(http::status::bad_request, HttpBodies::TICK_PARSE_ERROR, std::move(send));
             return { http::status::bad_request, ContentType::APP_JSON };
         }
@@ -498,7 +492,7 @@ private:
             Sender::SendAPIResponse(http::status::bad_request, HttpBodies::TICK_PARSE_ERROR, std::move(send));
             return { http::status::bad_request, ContentType::APP_JSON };
         }
-        app_.Tick(tick_val);//tru app
+        app_.Tick(tick_val);
         Sender::SendAPIResponse(http::status::ok, "{}"sv, std::move(send));
         return { http::status::ok, ContentType::APP_JSON };
     }
@@ -571,7 +565,7 @@ class LoggingRequestHandler {
     }
     static void LogResponse(const ResponseData& r, boost::chrono::system_clock::time_point start_time, const boost::beast::net::ip::address&& address);
 public:
-    LoggingRequestHandler(std::shared_ptr<RequestHandler> handler) : decorated_(handler) {
+    explicit LoggingRequestHandler(std::shared_ptr<RequestHandler> handler) : decorated_(handler) {
     }
 
     static void Formatter(logging::record_view const& rec, logging::formatting_ostream& strm) {
@@ -586,12 +580,10 @@ public:
     void operator () (http::request<Body, http::basic_fields<Allocator>>&& req, Send&& send, const boost::beast::net::ip::address& address) {
         LogRequest(req, address);
         boost::chrono::system_clock::time_point start = boost::chrono::system_clock::now();
-        //tru handler
         auto handle { [address, start](ResponseData&& resp_data) {
                 LogResponse(std::move(resp_data), start, std::move(address));
             }};
         decorated_->operator()(std::move(req), std::move(send), handle);
-        //LogResponse(resp_data, start, std::move(address));
     }
 
 private:
