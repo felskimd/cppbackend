@@ -212,7 +212,7 @@ public:
     APIRequestHandler& operator=(const APIRequestHandler&) = delete;
 
     template <typename Body, typename Allocator, typename Send>
-    ResponseData ProcessRequest(std::string_view target, Send&& send, const http::request<Body, http::basic_fields<Allocator>>&& req/*const json::object& body, const std::string_view bearer*/) {
+    ResponseData ProcessRequest(std::string_view target, Send&& send, const http::request<Body, http::basic_fields<Allocator>>&& req) {
         auto unslashed = target.substr(1, target.length() - 1);
         auto splitted = SplitRequest(unslashed);
         std::string_view method = std::string_view(req.method_string().data());
