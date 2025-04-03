@@ -138,7 +138,6 @@ void RunWorkers(unsigned n, const Fn& fn) {
 void InitLogger() {
     logging::add_console_log(
         std::cout,
-        //tru additional data & add message data
         logging::keywords::format = &http_handler::LoggingRequestHandler::Formatter, //R"({"timestamp":"%TimeStamp%", "data":"%AdditionalData%", "message":"%Message%"})",
         logging::keywords::auto_flush = true
     );
