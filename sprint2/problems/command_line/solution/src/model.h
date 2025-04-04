@@ -86,11 +86,11 @@ struct Offset {
 
 class Road {
     struct HorizontalTag {
-        explicit HorizontalTag() = default;
+        HorizontalTag() = default;
     };
 
     struct VerticalTag {
-        explicit VerticalTag() = default;
+        VerticalTag() = default;
     };
 
 public:
@@ -261,14 +261,6 @@ public:
     void SetPosition(Position pos) {
         position_ = pos;
     }
-    /*
-    void SetDirection(Direction dir) {
-        direction_ = dir;
-    }
-
-    void SetSpeed(Speed speed) {
-        speed_ = speed;
-    }*/
 
     void Move(Direction dir, double speed) {
         direction_ = dir;
