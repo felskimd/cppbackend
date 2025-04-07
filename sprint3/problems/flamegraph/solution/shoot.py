@@ -60,7 +60,8 @@ stop(perf, True)
 graph = run(GRAPH_COMMAND)
 graph.wait()
 if graph.returncode != 0:
-    print("Error:", graph.stderr.read().decode())
+    print("Error:")
+    print(graph.stderr.read())
 else:
     print("Flamegraph created")
 print(os.path.getsize('perf.data'))
