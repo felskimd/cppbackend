@@ -6,7 +6,7 @@ import shlex
 
 RANDOM_LIMIT = 1000
 SEED = 123456789
-PERF_COMMAND = 'sudo perf record -p'
+PERF_COMMAND = 'sudo perf record -p '
 GRAPH_COMMAND = 'sudo perf script | ./FlameGraph/stackcollapse-perf.pl | ./FlameGraph/flamegraph.pl > graph.svg'
 random.seed(SEED)
 
@@ -50,7 +50,7 @@ def make_shots():
 
 
 server = run(start_server())
-run([PERF_COMMAND, server.pid, 'sleep 10'])
+run(PERF_COMMAND + server.pid + ' sleep 10')
 make_shots()
 stop(server)
 time.sleep(1)
