@@ -720,7 +720,7 @@ FodyWeavers.xsd
 
 # End of https://www.toptal.com/developers/gitignore/api/qtcreator,clion,cmake,visualstudiocode,visualstudio,eclipse,vim,emacs,kate
 .idea/
-sprint3/problems/flamegraph/solution/FlameGraph
+#sprint3/problems/flamegraph/solution/FlameGraph
 sprint3/problems/flamegraph/solution/perf.*
 sprint3/problems/flamegraph/solution/graph.svg
 */**/build/
