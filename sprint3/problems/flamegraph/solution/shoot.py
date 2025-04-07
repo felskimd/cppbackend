@@ -57,7 +57,7 @@ perf = run(PERF_COMMAND + str(server.pid))
 make_shots()
 stop(server)
 stop(perf, True)
-graph = run(GRAPH_COMMAND)
+graph = subprocess.run(GRAPH_COMMAND, stderr=subprocess.PIPE, shell=True)
 graph.wait()
 if graph.returncode != 0:
         print("Error:", graph.stderr.read().decode())
