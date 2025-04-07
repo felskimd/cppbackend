@@ -57,8 +57,21 @@ perf = run(PERF_COMMAND + str(server.pid))
 make_shots()
 stop(server)
 stop(perf, True)
-test = subprocess.run('sudo perf script -i perf.data | ./FlameGraph/stackcollapse-perf.pl', shell=True, stdout=subprocess.PIPE)
-print(test.stdout.decode())
+perf = subprocess.Popen(
+            ['sudo', 'perf', 'script', '-i', 'perf.data'],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+
+        # иру 2: stackcollapse
+collapse = subprocess.Popen(
+            ['./FlameGraph/stackcollapse-perf.pl'],
+            stdin=perf.stdout,
+            #stdout=subprocess.PIPE,
+            stdout=sys.stdout,
+            stderr=subprocess.PIPE
+        )
+perf.stdout.close()
 graph = subprocess.run(GRAPH_COMMAND, stderr=subprocess.PIPE, shell=True)
 with open('graph.svg', 'r', encoding='utf-8') as file:
     print(file.read())
