@@ -60,9 +60,9 @@ stop(perf, True)
 graph = run(GRAPH_COMMAND)
 graph.wait()
 if graph.returncode != 0:
-    print("Ошибка:", graph.stderr.decode())
+    print("Error:", graph.stderr.decode())
 else:
-    print("Flamegraph создан")
+    print("Flamegraph created")
 print(os.path.getsize('perf.data'))
 process = run('ls -l', subprocess.PIPE)
 for line in process.stdout:
