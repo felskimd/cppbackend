@@ -98,6 +98,8 @@ perf = subprocess.Popen(
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE
     )
+
+print(perf.stdout.read())
         
 collapse = subprocess.Popen(
         ['./FlameGraph/stackcollapse-perf.pl'],
