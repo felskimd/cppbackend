@@ -29,7 +29,7 @@ def start_server():
 
 
 def run(command, output=None):
-    process = subprocess.Popen(shlex.split(command), stdout=output, stderr=subprocess.DEVNULL)
+    process = subprocess.Popen(shlex.split(command), stdout=output, stderr=subprocess.PIPE)
     return process
 
 
@@ -57,8 +57,10 @@ perf = run(PERF_COMMAND + str(server.pid))
 make_shots()
 stop(server)
 stop(perf, True)
-graph = run(GRAPH_COMMAND, sys.stdout)
+graph = run(GRAPH_COMMAND)
 graph.wait()
+if graph.returncode != 0:
+        print("Error:", graph.stderr.read().decode())
 process = run('ls -l', subprocess.PIPE)
 for line in process.stdout:
     print(line)
