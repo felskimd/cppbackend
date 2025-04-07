@@ -93,12 +93,37 @@ stop(perf, True)
 # except Exception as e:
 #     print(f"Error: {str(e)}")
 
-subprocess.run(['sudo perf script -i perf.data -o perf.script | sudo ./FlameGraph/stackcollapse-perf.pl perf.script'], stdout=subprocess.PIPE, check=True, shell=True)
+perf = subprocess.Popen(
+        ['sudo', 'perf', 'script', '-i', 'perf.data'],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+        
+collapse = subprocess.Popen(
+        ['./FlameGraph/stackcollapse-perf.pl'],
+        stdin=perf.stdout,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
+    )
+perf.stdout.close()
+        
+with open('flamegraph.svg', 'w') as f:
+    flame = subprocess.Popen(
+        ['./FlameGraph/flamegraph.pl', '--title', 'Python FlameGraph'],
+        stdin=collapse.stdout,
+        stdout=f,
+        stderr=subprocess.PIPE,
+        text=True
+    )
+    collapse.stdout.close()
+            
+    flame.wait()
+    if flame.returncode != 0:
+        print("Generation error:")
+        print(flame.stderr.read())
 
-with open('perf.script', 'r') as f:
-    print(f.read())
-
-graph = subprocess.run(GRAPH_COMMAND, stderr=subprocess.PIPE, shell=True)
-with open('graph.svg', 'r', encoding='utf-8') as file:
-    print(file.read())
+# graph = subprocess.run(GRAPH_COMMAND, stderr=subprocess.PIPE, shell=True)
+# with open('graph.svg', 'r', encoding='utf-8') as file:
+#     print(file.read())
 print('Job done')
