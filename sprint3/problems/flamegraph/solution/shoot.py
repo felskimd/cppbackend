@@ -58,7 +58,6 @@ make_shots()
 stop(server)
 stop(perf, True)
 graph = subprocess.run(GRAPH_COMMAND, stderr=subprocess.PIPE, shell=True)
-graph.wait()
 if graph.returncode != 0:
         print("Error:", graph.stderr.read().decode())
 process = run('ls -l', subprocess.PIPE)
