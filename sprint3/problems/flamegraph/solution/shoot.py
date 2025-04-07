@@ -62,16 +62,7 @@ perf = subprocess.Popen(
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
-
-        # иру 2: stackcollapse
-collapse = subprocess.Popen(
-            ['./FlameGraph/stackcollapse-perf.pl'],
-            stdin=perf.stdout,
-            #stdout=subprocess.PIPE,
-            stdout=sys.stdout,
-            stderr=subprocess.PIPE,
-            encoding='utf-8'
-        )
+collapse = subprocess.Popen(['./FlameGraph/stackcollapse-perf.pl'], stdin=perf.stdout, stdout=sys.stdout, stderr=subprocess.PIPE,)
 perf.stdout.close()
 graph = subprocess.run(GRAPH_COMMAND, stderr=subprocess.PIPE, shell=True)
 with open('graph.svg', 'r', encoding='utf-8') as file:
