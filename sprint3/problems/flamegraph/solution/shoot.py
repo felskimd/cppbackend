@@ -4,7 +4,7 @@ import time
 import random
 import shlex
 
-import os
+#import os
 import sys
 
 RANDOM_LIMIT = 1000
@@ -57,14 +57,8 @@ perf = run(PERF_COMMAND + str(server.pid))
 make_shots()
 stop(server)
 stop(perf, True)
-graph = run(GRAPH_COMMAND)
+graph = run(GRAPH_COMMAND, sys.stdout)
 graph.wait()
-if graph.returncode != 0:
-    print("Error:")
-    #print(graph.stderr.read())
-else:
-    print("Flamegraph created")
-print(os.path.getsize('perf.data'))
 process = run('ls -l', subprocess.PIPE)
 for line in process.stdout:
     print(line)
