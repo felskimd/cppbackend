@@ -57,8 +57,7 @@ perf = run(PERF_COMMAND + str(server.pid))
 make_shots()
 stop(server)
 stop(perf, True)
-with open('perf.data', 'r', encoding='ASCII') as file:
-    print(file.read())
+subprocess.run(['sudo', 'perf', 'script', '-i', 'perf.data'], check=True)
 graph = subprocess.run(GRAPH_COMMAND, stderr=subprocess.PIPE, shell=True)
 with open('graph.svg', 'r', encoding='utf-8') as file:
     print(file.read())
