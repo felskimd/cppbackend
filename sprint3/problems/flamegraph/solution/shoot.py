@@ -69,7 +69,8 @@ collapse = subprocess.Popen(
             stdin=perf.stdout,
             #stdout=subprocess.PIPE,
             stdout=sys.stdout,
-            stderr=subprocess.PIPE
+            stderr=subprocess.PIPE,
+            encoding='utf-8'
         )
 perf.stdout.close()
 graph = subprocess.run(GRAPH_COMMAND, stderr=subprocess.PIPE, shell=True)
