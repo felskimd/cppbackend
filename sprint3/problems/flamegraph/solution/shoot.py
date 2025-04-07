@@ -18,8 +18,8 @@ AMMUNITION = [
     'localhost:8080/api/v1/maps'
 ]
 
-SHOOT_COUNT = 100
-COOLDOWN = 0.1
+SHOOT_COUNT = 1000
+COOLDOWN = 0.05
 
 
 def start_server():
@@ -57,7 +57,7 @@ perf = run(PERF_COMMAND + str(server.pid))
 make_shots()
 stop(server)
 stop(perf, True)
-subprocess.run(['sudo', 'perf', 'script', '-i', 'perf.data'], check=True)
+subprocess.run('sudo perf script -i perf.data | ./FlameGraph/stackcollapse-perf.pl', shell=True)
 graph = subprocess.run(GRAPH_COMMAND, stderr=subprocess.PIPE, shell=True)
 with open('graph.svg', 'r', encoding='utf-8') as file:
     print(file.read())
