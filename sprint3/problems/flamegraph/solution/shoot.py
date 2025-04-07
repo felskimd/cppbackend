@@ -7,7 +7,7 @@ import shlex
 RANDOM_LIMIT = 1000
 SEED = 123456789
 PERF_COMMAND = 'sudo perf record -o perf.data -p '
-GRAPH_COMMAND = 'sudo perf script | ./FlameGraph/stackcollapse-perf.pl | ./FlameGraph/flamegraph.pl > graph.svg'
+GRAPH_COMMAND = 'sudo perf script -i perf.data | ./FlameGraph/stackcollapse-perf.pl | ./FlameGraph/flamegraph.pl > graph.svg'
 random.seed(SEED)
 
 AMMUNITION = [
