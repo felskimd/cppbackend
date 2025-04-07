@@ -18,8 +18,8 @@ AMMUNITION = [
     'localhost:8080/api/v1/maps'
 ]
 
-SHOOT_COUNT = 1000
-COOLDOWN = 0.05
+SHOOT_COUNT = 100
+COOLDOWN = 0.1
 
 
 def start_server():
@@ -62,14 +62,16 @@ try:
     perf = subprocess.Popen(
         ['sudo', 'perf', 'script', '-i', 'perf.data'],
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
+        stderr=subprocess.PIPE,
+        encoding='utf-8'
     )
 
     collapse = subprocess.Popen(
         ['./FlameGraph/stackcollapse-perf.pl'],
         stdin=perf.stdout,
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
+        stderr=subprocess.PIPE,
+        encoding='utf-8'
     )
     perf.stdout.close()
 
@@ -78,7 +80,8 @@ try:
             ['./FlameGraph/flamegraph.pl'],
             stdin=collapse.stdout,
             stdout=f,
-            stderr=subprocess.PIPE
+            stderr=subprocess.PIPE,
+            encoding='utf-8'
         )
         collapse.stdout.close()
 
@@ -90,7 +93,7 @@ try:
 except Exception as e:
     print(f"Error: {str(e)}")
 
-graph = subprocess.run(GRAPH_COMMAND, stderr=subprocess.PIPE, shell=True)
+graph = subprocess.run(GRAPH_COMMAND, stderr=subprocess.PIPE, shell=True, encoding='utf-8')
 with open('graph.svg', 'r', encoding='utf-8') as file:
     print(file.read())
 print('Job done')
