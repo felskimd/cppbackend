@@ -50,7 +50,7 @@ def make_shots():
 
 
 server = run(start_server())
-run(PERF_COMMAND + server.pid + ' sleep 10')
+run(PERF_COMMAND + str(server.pid) + ' sleep 10')
 make_shots()
 stop(server)
 time.sleep(1)
