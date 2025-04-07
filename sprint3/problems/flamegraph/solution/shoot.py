@@ -107,6 +107,8 @@ collapse = subprocess.Popen(
         text=True
     )
 perf.stdout.close()
+
+print(collapse.stdout.read())
         
 with open('flamegraph.svg', 'w') as f:
     flame = subprocess.Popen(
