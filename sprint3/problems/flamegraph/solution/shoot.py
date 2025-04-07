@@ -56,5 +56,7 @@ stop(server)
 stop(perf, True)
 graph = run(GRAPH_COMMAND)
 graph.wait()
-run('ls', sys.stdout)
+process = run('ls -l', subprocess.PIPE)
+for line in process.stdout:
+    print(line, end='')
 print('Job done')
