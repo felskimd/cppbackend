@@ -9,8 +9,8 @@ import os
 
 RANDOM_LIMIT = 1000
 SEED = 123456789
-PERF_COMMAND = 'sudo perf record -o perf.data -p '
-GRAPH_COMMAND = 'sudo perf script -i perf.data | sudo ./FlameGraph/stackcollapse-perf.pl | sudo ./FlameGraph/flamegraph.pl > graph.svg'
+PERF_COMMAND = 'sudo perf record -g -o perf.data -p '
+GRAPH_COMMAND = 'sudo perf script -i perf.data | ./FlameGraph/stackcollapse-perf.pl | ./FlameGraph/flamegraph.pl > graph.svg'
 random.seed(SEED)
 
 AMMUNITION = [
@@ -93,41 +93,41 @@ stop(perf, True)
 # except Exception as e:
 #     print(f"Error: {str(e)}")
 
-perf = subprocess.Popen(
-        ['sudo', 'perf', 'script', '-i', 'perf.data'],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
-    )
+# perf = subprocess.Popen(
+#         ['sudo', 'perf', 'script', '-i', 'perf.data'],
+#         stdout=subprocess.PIPE,
+#         stderr=subprocess.PIPE
+#     )
 
-print(perf.stdout.read())
+# print(perf.stdout.read())
         
-collapse = subprocess.Popen(
-        ['./FlameGraph/stackcollapse-perf.pl'],
-        stdin=perf.stdout,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True
-    )
-perf.stdout.close()
+# collapse = subprocess.Popen(
+#         ['./FlameGraph/stackcollapse-perf.pl'],
+#         stdin=perf.stdout,
+#         stdout=subprocess.PIPE,
+#         stderr=subprocess.PIPE,
+#         text=True
+#     )
+# perf.stdout.close()
 
-print(collapse.stdout.read())
+# print(collapse.stdout.read())
         
-with open('flamegraph.svg', 'w') as f:
-    flame = subprocess.Popen(
-        ['./FlameGraph/flamegraph.pl', '--title', 'Python FlameGraph'],
-        stdin=collapse.stdout,
-        stdout=f,
-        stderr=subprocess.PIPE,
-        text=True
-    )
-    collapse.stdout.close()
+# with open('flamegraph.svg', 'w') as f:
+#     flame = subprocess.Popen(
+#         ['./FlameGraph/flamegraph.pl', '--title', 'Python FlameGraph'],
+#         stdin=collapse.stdout,
+#         stdout=f,
+#         stderr=subprocess.PIPE,
+#         text=True
+#     )
+#     collapse.stdout.close()
             
-    flame.wait()
-    if flame.returncode != 0:
-        print("Generation error:")
-        print(flame.stderr.read())
+#     flame.wait()
+#     if flame.returncode != 0:
+#         print("Generation error:")
+#         print(flame.stderr.read())
 
-# graph = subprocess.run(GRAPH_COMMAND, stderr=subprocess.PIPE, shell=True)
-# with open('graph.svg', 'r', encoding='utf-8') as file:
-#     print(file.read())
+graph = subprocess.run(GRAPH_COMMAND, stderr=subprocess.PIPE, shell=True)
+with open('graph.svg', 'r', encoding='utf-8') as file:
+    print(file.read())
 print('Job done')
