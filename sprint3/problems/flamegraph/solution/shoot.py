@@ -94,7 +94,7 @@ stop(perf, True)
 #     print(f"Error: {str(e)}")
 
 with open('perf_output.txt', 'w') as f:
-    subprocess.run('sudo perf script -i perf.data | ./FlameGraph/stackcollapse-perf.pl', stdout=f, check=True)
+    subprocess.run(['sudo perf script -i perf.data | ./FlameGraph/stackcollapse-perf.pl'], stdout=f, check=True)
 
 with open('perf_output.txt', 'r') as f:
     print(f.read())
