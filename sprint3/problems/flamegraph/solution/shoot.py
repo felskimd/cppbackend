@@ -59,7 +59,7 @@ stop(server)
 stop(perf, True)
 graph = subprocess.run(GRAPH_COMMAND, stderr=subprocess.PIPE, shell=True)
 if graph.returncode != 0:
-        print("Error:", graph.stderr.read().decode())
+        print("Error:", graph.stderr.decode())
 process = run('ls -l', subprocess.PIPE)
 for line in process.stdout:
     print(line)
