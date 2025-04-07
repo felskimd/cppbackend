@@ -57,15 +57,39 @@ perf = run(PERF_COMMAND + str(server.pid))
 make_shots()
 stop(server)
 stop(perf, True)
-perf = subprocess.Popen(
-            ['sudo', 'perf', 'script', '-i', 'perf.data'],
-            stdout=subprocess.PIPE,
+
+try:
+    perf = subprocess.Popen(
+        ['sudo', 'perf', 'script', '-i', 'perf.data'],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+
+    collapse = subprocess.Popen(
+        ['./FlameGraph/stackcollapse-perf.pl'],
+        stdin=perf.stdout,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+    perf.stdout.close()
+
+    with open('graph.svg', 'wb') as f:
+        flame = subprocess.Popen(
+            ['./FlameGraph/flamegraph.pl'],
+            stdin=collapse.stdout,
+            stdout=f,
             stderr=subprocess.PIPE
         )
-collapse = subprocess.Popen(['./FlameGraph/stackcollapse-perf.pl'], stdin=perf.stdout, stdout=sys.stdout, stderr=subprocess.PIPE,)
-collapse.wait()
-#perf.stdout.close()
-print(collapse.stdout.read())
+        collapse.stdout.close()
+
+        _, flame_err = flame.communicate()
+        if flame.returncode != 0:
+            print(f"Flamegraph error: {flame_err.decode()}")
+    print("Success")
+
+except Exception as e:
+    print(f"Error: {str(e)}")
+
 graph = subprocess.run(GRAPH_COMMAND, stderr=subprocess.PIPE, shell=True)
 with open('graph.svg', 'r', encoding='utf-8') as file:
     print(file.read())
