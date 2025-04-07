@@ -87,13 +87,13 @@ try:
 
         _, flame_err = flame.communicate()
         if flame.returncode != 0:
-            print(f"Flamegraph error: {flame_err.decode()}")
+            print(f"Flamegraph error: {flame_err}")
     print("Success")
 
 except Exception as e:
     print(f"Error: {str(e)}")
 
-graph = subprocess.run(GRAPH_COMMAND, stderr=subprocess.PIPE, shell=True, encoding='utf-8')
+graph = subprocess.run(GRAPH_COMMAND, stderr=subprocess.PIPE, shell=True)
 with open('graph.svg', 'r', encoding='utf-8') as file:
     print(file.read())
 print('Job done')
