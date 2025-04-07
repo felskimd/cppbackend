@@ -10,7 +10,7 @@ import os
 RANDOM_LIMIT = 1000
 SEED = 123456789
 PERF_COMMAND = 'sudo perf record -o perf.data -p '
-GRAPH_COMMAND = 'sudo perf script -i perf.data -o script.data | ./FlameGraph/stackcollapse-perf.pl script.data | ./FlameGraph/flamegraph.pl > graph.svg'
+GRAPH_COMMAND = 'sudo perf script -i perf.data | ./FlameGraph/stackcollapse-perf.pl | ./FlameGraph/flamegraph.pl > graph.svg'
 random.seed(SEED)
 
 AMMUNITION = [
@@ -93,10 +93,9 @@ stop(perf, True)
 # except Exception as e:
 #     print(f"Error: {str(e)}")
 
-with open('perf_output.txt', 'w') as f:
-    subprocess.run(['sudo perf script -i perf.data | ./FlameGraph/stackcollapse-perf.pl'], stdout=f, check=True, shell=True)
+subprocess.run(['sudo perf script -i perf.data -o perf.script | ./FlameGraph/stackcollapse-perf.pl perf.script'], stdout=subprocess.PIPE, check=True, shell=True)
 
-with open('perf_output.txt', 'r') as f:
+with open('perf.script', 'r') as f:
     print(f.read())
 
 graph = subprocess.run(GRAPH_COMMAND, stderr=subprocess.PIPE, shell=True)
