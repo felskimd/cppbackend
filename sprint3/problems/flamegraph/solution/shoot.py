@@ -4,8 +4,8 @@ import time
 import random
 import shlex
 
-#import os
 import sys
+import os
 
 RANDOM_LIMIT = 1000
 SEED = 123456789
@@ -58,9 +58,6 @@ make_shots()
 stop(server)
 stop(perf, True)
 graph = subprocess.run(GRAPH_COMMAND, stderr=subprocess.PIPE, shell=True)
-if graph.returncode != 0:
-        print("Error:", graph.stderr.decode())
-process = run('ls -l', subprocess.PIPE)
-for line in process.stdout:
-    print(line)
+with open('graph.svg', 'r', encoding='utf-8') as file:
+    print(file.read())
 print('Job done')
