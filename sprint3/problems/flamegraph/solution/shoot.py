@@ -4,6 +4,9 @@ import time
 import random
 import shlex
 
+import os
+import sys
+
 RANDOM_LIMIT = 1000
 SEED = 123456789
 PERF_COMMAND = 'sudo perf record -o perf.data -p '
@@ -56,6 +59,11 @@ stop(server)
 stop(perf, True)
 graph = run(GRAPH_COMMAND)
 graph.wait()
+if graph.returncode != 0:
+    print("Ошибка:", graph.stderr.decode())
+else:
+    print("Flamegraph создан")
+print(os.path.getsize('perf.data'))
 process = run('ls -l', subprocess.PIPE)
 for line in process.stdout:
     print(line)
