@@ -58,40 +58,46 @@ make_shots()
 stop(server)
 stop(perf, True)
 
-try:
-    perf = subprocess.Popen(
-        ['sudo', 'perf', 'script', '-i', 'perf.data'],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        encoding='utf-8'
-    )
+# try:
+#     perf = subprocess.Popen(
+#         ['sudo', 'perf', 'script', '-i', 'perf.data'],
+#         stdout=subprocess.PIPE,
+#         stderr=subprocess.PIPE,
+#         encoding='utf-8'
+#     )
 
-    collapse = subprocess.Popen(
-        ['./FlameGraph/stackcollapse-perf.pl'],
-        stdin=perf.stdout,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        encoding='utf-8'
-    )
-    perf.stdout.close()
+#     collapse = subprocess.Popen(
+#         ['./FlameGraph/stackcollapse-perf.pl'],
+#         stdin=perf.stdout,
+#         stdout=subprocess.PIPE,
+#         stderr=subprocess.PIPE,
+#         encoding='utf-8'
+#     )
+#     perf.stdout.close()
 
-    with open('graph.svg', 'wb') as f:
-        flame = subprocess.Popen(
-            ['./FlameGraph/flamegraph.pl'],
-            stdin=collapse.stdout,
-            stdout=f,
-            stderr=subprocess.PIPE,
-            encoding='utf-8'
-        )
-        collapse.stdout.close()
+#     with open('graph.svg', 'wb') as f:
+#         flame = subprocess.Popen(
+#             ['./FlameGraph/flamegraph.pl'],
+#             stdin=collapse.stdout,
+#             stdout=f,
+#             stderr=subprocess.PIPE,
+#             encoding='utf-8'
+#         )
+#         collapse.stdout.close()
 
-        _, flame_err = flame.communicate()
-        if flame.returncode != 0:
-            print(f"Flamegraph error: {flame_err}")
-    print("Success")
+#         _, flame_err = flame.communicate()
+#         if flame.returncode != 0:
+#             print(f"Flamegraph error: {flame_err}")
+#     print("Success")
 
-except Exception as e:
-    print(f"Error: {str(e)}")
+# except Exception as e:
+#     print(f"Error: {str(e)}")
+
+with open('perf_output.txt', 'w') as f:
+    subprocess.run(['sudo', 'perf', 'script', '-i', 'perf.data'], stdout=f, check=True)
+
+with open('perf_output.txt', 'r') as f:
+    print(f.read())
 
 graph = subprocess.run(GRAPH_COMMAND, stderr=subprocess.PIPE, shell=True)
 with open('graph.svg', 'r', encoding='utf-8') as file:
