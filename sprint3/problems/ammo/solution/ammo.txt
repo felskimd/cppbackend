@@ -1,0 +1,13 @@
+[Connection: close]
+[Host: cppserver]
+[Cookie: None]
+/api/v1/maps 
+/api/v1
+/api/v1/maps/map1
+38 /api/v1/game/player/action
+{"userName":"felskimd","mapId":"map1"}
+/api/v1/game/state
+38 /api/v1/game/join
+{"userName":"felskimd","mapId":"map1"}
+/api/v1/game/players
+/api/v1/game/tick
