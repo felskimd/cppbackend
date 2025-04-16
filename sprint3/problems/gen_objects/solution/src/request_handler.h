@@ -223,6 +223,9 @@ namespace http_handler {
             }
             if (splitted[2] == RestApiLiterals::MAPS) {
                 if (splitted.size() == 4) {
+                    if (method != "GET" && method != "HEAD") {
+                        return Sender::SendMethodNotAllowed(std::move(send), "GET, HEAD");
+                    }
                     return MapRequest(std::string(splitted[3].data(), splitted[3].size()), std::move(send));
                 }
                 if (splitted.size() == 3) {
@@ -233,6 +236,9 @@ namespace http_handler {
             if (splitted[2] == RestApiLiterals::MAP) {
                 if (splitted.size() != 4) {
                     return Sender::SendBadRequest(std::move(send));
+                }
+                if (method != "GET" && method != "HEAD") {
+                    return Sender::SendMethodNotAllowed(std::move(send), "GET, HEAD");
                 }
                 return MapRequest(std::string(splitted[3].data(), splitted[3].size()), std::move(send));
             }
