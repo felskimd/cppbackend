@@ -8,6 +8,8 @@ using namespace collision_detector;
 
 class TestingProvider : public collision_detector::ItemGathererProvider {
 public:
+	TestingProvider() = default;
+
 	TestingProvider(std::vector<Item>&& items, std::vector<Gatherer>&& gatherers)
 		:items_(std::move(items)), gatherers_(std::move(gatherers)) {
 	}
