@@ -77,14 +77,15 @@ TEST_CASE_METHOD(BadProviders, "Test bad providers with no events") {
 
 TEST_CASE_METHOD(GoodProviders, "Test good providers") {
 	auto one_gatherer_result = FindGatherEvents(one_gatherer_provider);
-	CHECK(one_gatherer_result.size() == 3);
+	CHECK(one_gatherer_result.size() == 2);
 	CHECK(one_gatherer_result[0].gatherer_id == 0);
 	CHECK(one_gatherer_result[0].item_id == 0);
 	CHECK(one_gatherer_result[1].item_id == 2);
-	CHECK(one_gatherer_result[2].item_id == 3);
 	auto one_item_result = FindGatherEvents(one_item_provider);
-	CHECK(one_item_result.size() == 1);
+	CHECK(one_item_result.size() == 3);
 	CHECK(one_item_result[0].gatherer_id == 0);
+	CHECK(one_item_result[1].gatherer_id == 1);
+	CHECK(one_item_result[2].gatherer_id == 2);
 }
 
 // Напишите здесь тесты для функции collision_detector::FindGatherEvents
