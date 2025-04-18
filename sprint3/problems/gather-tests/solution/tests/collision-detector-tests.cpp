@@ -45,10 +45,46 @@ struct BadProviders {
 	TestingProvider no_gatherers_provider{ {{}, {}, {}}, {} };
 };
 
-TEST_CASE_METHOD(BadProviders, "Test no events") {
+struct GoodProviders {
+	TestingProvider one_gatherer_provider{
+		{
+			{{0,1}, 2.}, 
+			{{-2,0}, 1.},
+			{{5,0}, 0.2},
+			{{11,0}, 0.9}
+		}, 
+		{
+			{{0, 0}, {10, 0}, 1.}
+		} 
+	};
+	TestingProvider one_item_provider{ 
+		{
+			{{0,0}, 1.}
+		}, 
+		{
+			{{0, 0}, {10, 0}, 1.},
+			{{0, 10}, {0, 0}, 1.},
+			{{-10, 0}, {0, 0}, 1.}
+		} 
+	};
+};
+
+TEST_CASE_METHOD(BadProviders, "Test bad providers with no events") {
 	CHECK(FindGatherEvents(empty_provider).size() == 0);
 	CHECK(FindGatherEvents(no_items_provider).size() == 0);
 	CHECK(FindGatherEvents(no_gatherers_provider).size() == 0);
+}
+
+TEST_CASE_METHOD(GoodProviders, "Test good providers") {
+	auto one_gatherer_result = FindGatherEvents(one_gatherer_provider);
+	CHECK(one_gatherer_result.size() == 3);
+	CHECK(one_gatherer_result[0].gatherer_id == 0);
+	CHECK(one_gatherer_result[0].item_id == 0);
+	CHECK(one_gatherer_result[1].item_id == 2);
+	CHECK(one_gatherer_result[2].item_id == 3);
+	auto one_item_result = FindGatherEvents(one_item_provider);
+	CHECK(one_item_result.size() == 1);
+	CHECK(one_item_result[0].gatherer_id == 0);
 }
 
 // Напишите здесь тесты для функции collision_detector::FindGatherEvents
