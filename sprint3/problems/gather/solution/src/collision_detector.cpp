@@ -26,15 +26,15 @@ CollectionResult TryCollectPoint(geom::Point2D a, geom::Point2D b, geom::Point2D
 // она будет линковаться извне.
 
 std::vector<GatheringEvent> FindGatherEvents(const ItemGathererProvider& provider) {
-    int gatherers = provider.GatherersCount();
-    int items = provider.ItemsCount();
+    size_t gatherers = provider.GatherersCount();
+    size_t items = provider.ItemsCount();
     std::vector<GatheringEvent> events;
-    for (int i = 0; i < gatherers; ++i) {
+    for (size_t i = 0; i < gatherers; ++i) {
         auto gatherer = provider.GetGatherer(i);
         if (gatherer.start_pos.x == gatherer.end_pos.x && gatherer.start_pos.y == gatherer.end_pos.y) {
             continue;
         }
-        for (int j = 0; j < items; ++j) {
+        for (size_t j = 0; j < items; ++j) {
             auto item = provider.GetItem(j);
             auto collect_result = TryCollectPoint(gatherer.start_pos, gatherer.end_pos, item.position);
             if (collect_result.IsCollected(gatherer.width + item.width)) {
