@@ -273,7 +273,7 @@ namespace model {
 
         void AddItem(Item item) {
             if (!CanStoreOne()) {
-                throw std::exception("No space");
+                throw std::logic_error("No space");
             }
             items_.push_back(item);
         }
