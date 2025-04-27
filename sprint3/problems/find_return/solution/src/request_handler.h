@@ -423,6 +423,14 @@ namespace http_handler {
                     data["dir"] = "L";
                     break;
                 }
+                json::array bag;
+                for (const auto& item : dog->GetItems()) {
+                    bag.push_back(json::value{ 
+                        { "id", item.id },
+                        { "type", item.type } 
+                    });
+                }
+                data["bag"] = bag;
                 players[std::to_string(dog->GetId())] = data;
             }
             result["players"] = players;

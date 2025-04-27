@@ -365,6 +365,10 @@ namespace model {
             return items;
         }
 
+        const std::deque<Item>& GetItems() const {
+            return pockets_.GetItems();
+        }
+
     private:
         const int id_;
         std::string name_;
