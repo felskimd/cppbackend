@@ -509,7 +509,7 @@ namespace http_handler {
             try {
                 json_body = json::parse(body.data()).as_object();
             }
-            catch (std::exception&) {
+            catch (std::exception& ex) {
                 Sender::SendAPIResponse(http::status::bad_request, HttpBodies::TICK_PARSE_ERROR, std::move(send));
                 return { http::status::bad_request, ContentType::APP_JSON };
             }
