@@ -2,5 +2,4 @@
 [Host: cppserver]
 [Cookie: None]
 
-38 /api/v1/game/join
-{"userName":"felskimd","mapId":"map1"}
+/api/v1/maps/town
