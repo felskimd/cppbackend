@@ -42,7 +42,7 @@ model::Game LoadGame(const std::filesystem::path& json_path) {
         default_speed = speed->value().as_double();
     }
     if (auto capacity = obj.find(std::string(model::ModelLiterals::DEFAULT_BAG_CAPACITY)); capacity != obj.end()) {
-        default_bag_capacity = capacity->value().as_uint64();
+        default_bag_capacity = capacity->value().as_int64();
     }
     for (const auto& parsed_map : obj.at(std::string(model::ModelLiterals::MAPS)).as_array()) {
         json::object object_map = parsed_map.as_object();
@@ -54,7 +54,7 @@ model::Game LoadGame(const std::filesystem::path& json_path) {
         extra::ExtraDataGiver::SetLoot(std::string(parsed_id), loot_array);
         unsigned map_bag_capacity;
         if (auto capacity = object_map.find(std::string(model::ModelLiterals::BAG_CAPACITY)); capacity != object_map.end()) {
-            map_bag_capacity = capacity->value().as_uint64();
+            map_bag_capacity = capacity->value().as_int64();
         }
         else {
             map_bag_capacity = default_bag_capacity;
@@ -64,7 +64,7 @@ model::Game LoadGame(const std::filesystem::path& json_path) {
         std::unordered_map<size_t, size_t> loot_map;
         size_t loot_id = 0;
         for (const auto& loot : loot_array) {
-            loot_map[loot_id] = loot.as_object().at("value").as_uint64();
+            loot_map[loot_id] = loot.as_object().at("value").as_int64();
         }
         model_map.SetLootValues(std::move(loot_map));
         if (auto speed = object_map.find(std::string(model::ModelLiterals::DOG_SPEED)); speed != obj.end()) {
