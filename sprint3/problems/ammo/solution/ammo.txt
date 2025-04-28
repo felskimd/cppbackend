@@ -2,5 +2,8 @@
 [Host: cppserver]
 [Cookie: None]
 /api/v1/maps 
+/api/v1
 /api/v1/maps/map1
 /api/v1/maps/town
+38 /api/v1/game/join
+{"userName":"felskimd","mapId":"map1"}
