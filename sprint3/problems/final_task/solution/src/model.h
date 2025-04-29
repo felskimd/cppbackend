@@ -52,6 +52,8 @@ namespace model {
         constexpr static double ITEM_WIDTH = 0.;
     };
 
+    constexpr static unsigned MILLISECONDS_IN_SECOND = 1000;
+
     struct Position {
         double x, y;
 

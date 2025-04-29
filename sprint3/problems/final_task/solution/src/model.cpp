@@ -168,7 +168,7 @@ namespace model {
     }
 
     std::pair<bool, Position> GameSession::CalculateMove(Position pos, Speed speed, unsigned delta) const {
-        double in_seconds = static_cast<double>(delta) / 1000;
+        double in_seconds = static_cast<double>(delta) / MILLISECONDS_IN_SECOND;
         Position end_pos = { pos.x + speed.vx * in_seconds, pos.y + speed.vy * in_seconds };
         Point rounded = { static_cast<int>(std::round(pos.x)), static_cast<int>(std::round(pos.y)) };
         for (const auto& road : roads_graph_.at(rounded)) {
@@ -246,7 +246,7 @@ namespace model {
         size_t i = 0;
         for (const auto& office : map_->GetOffices()) {
             auto pos = office.GetPosition();
-            geom::Point2D position;// { static_cast<double>(pos.x), static_cast<double>(pos.y) };
+            geom::Point2D position;
             position.x = static_cast<double>(pos.x);
             position.y = static_cast<double>(pos.y);
             collision_detector::Item item{ position, CollisionWidths::OFFICE_WIDTH / 2 };
