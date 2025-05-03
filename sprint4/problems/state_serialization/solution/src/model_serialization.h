@@ -175,6 +175,7 @@ void Serialize(const std::string& filename, const app::Application& app) {
         players.emplace_back(player);
     }
     archive << players << loot;
+    file.close();
     std::filesystem::rename(temp_name, filename);
 }
 
@@ -194,6 +195,7 @@ void Deserialize(const std::string& filename, app::Application& app) {
             app.AddLoot(map_id, item.id, item.type, item.pos);
         }
     }
+    file.close();
 }
 
 class SerializingListener : public app::ApplicationListener {
