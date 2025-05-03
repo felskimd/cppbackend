@@ -9,7 +9,6 @@ conan_basic_setup(TARGETS)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 add_library(GameLib STATIC
-	src/model_serialization.h 
 	src/model.h 
 	src/model.cpp 
 	src/loot_generator.h 
@@ -19,9 +18,10 @@ add_library(GameLib STATIC
 	src/collision_detector.cpp
 )
 
-target_link_libraries(GameLib PUBLIC CONAN_PKG::boost Threads::Threads)
+target_link_libraries(GameLib PUBLIC CONAN_PKG::boost)
 
 add_executable(game_server
+	src/model_serialization.h 
 	src/main.cpp
 	src/http_server.cpp
 	src/http_server.h

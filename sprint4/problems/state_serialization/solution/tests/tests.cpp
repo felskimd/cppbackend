@@ -96,7 +96,7 @@ class TestingProvider : public collision_detector::ItemGathererProvider {
 public:
 	TestingProvider() = default;
 
-	TestingProvider(std::vector<Item>&& items, std::vector<Gatherer>&& gatherers)
+	TestingProvider(std::vector<collision_detector::Item>&& items, std::vector<Gatherer>&& gatherers)
 		:items_(std::move(items)), gatherers_(std::move(gatherers)) {
 	}
 
@@ -105,7 +105,7 @@ public:
 		return items_.size();
 	}
 
-	Item GetItem(size_t idx) const override
+    collision_detector::Item GetItem(size_t idx) const override
 	{
 		return items_.at(idx);
 	}
@@ -121,7 +121,7 @@ public:
 	}
 
 private:
-	std::vector<Item> items_;
+	std::vector<collision_detector::Item> items_;
 	std::vector<Gatherer> gatherers_;
 };
 
@@ -193,11 +193,11 @@ SCENARIO_METHOD(Fixture, "Point serialization") {
 SCENARIO_METHOD(Fixture, "Dog Serialization") {
     GIVEN("a dog") {
         const auto dog = [] {
-            Dog dog{Dog::Id{42}, "Pluto"s, {42.2, 12.5}, 3};
+            Dog dog{"Pluto"s, 3};
             dog.AddScore(42);
-            CHECK(dog.PutToBag({FoundObject::Id{10}, 2u}));
-            dog.SetDirection(Direction::EAST);
-            dog.SetSpeed({2.3, -1.2});
+            CHECK(dog.CanTakeLoot());
+            dog.TakeLoot({0, 0});
+            dog.Move(Direction::EAST, 12);
             return dog;
         }();
 
@@ -217,8 +217,8 @@ SCENARIO_METHOD(Fixture, "Dog Serialization") {
                 CHECK(dog.GetName() == restored.GetName());
                 CHECK(dog.GetPosition() == restored.GetPosition());
                 CHECK(dog.GetSpeed() == restored.GetSpeed());
-                CHECK(dog.GetBagCapacity() == restored.GetBagCapacity());
-                CHECK(dog.GetBagContent() == restored.GetBagContent());
+                CHECK(dog.GetPocketsCapacity() == restored.GetPocketsCapacity());
+                CHECK(dog.GetItems() == restored.GetItems());
             }
         }
     }
