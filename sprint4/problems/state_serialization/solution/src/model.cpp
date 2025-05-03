@@ -336,17 +336,19 @@ namespace app {
         while (tokens_to_players_.contains(token)) {
             token = token_gen_.GetToken();
         }
-        Player player(std::move(token), session, doggy);
+        auto token_copy = token;
+        Player player(std::move(token_copy), session, doggy);
         players_.push_back(std::move(player));
-        tokens_to_players_.emplace(token, players_.size() - 1);
+        tokens_to_players_.emplace(std::move(token), players_.size() - 1);
         return players_.back();
     }
 
     void Players::AddPlayer(size_t id, Token&& token, model::Dog&& dog, model::GameSession* session) {
         auto* doggy = session->AddDog(std::move(dog));
-        Player player(id, std::move(token), session, doggy);
+        auto token_copy = token;
+        Player player(id, std::move(token_copy), session, doggy);
         players_.push_back(std::move(player));
-        tokens_to_players_.emplace(token, players_.size() - 1);
+        tokens_to_players_.emplace(std::move(token), players_.size() - 1);
     }
 
     Player* Players::FindByToken(const Token& token) {
