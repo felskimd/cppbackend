@@ -19,7 +19,7 @@ add_library(GameLib STATIC
 	src/collision_detector.cpp
 )
 
-target_link_libraries(GameLib PUBLIC Threads::Threads)
+target_link_libraries(GameLib PUBLIC CONAN_PKG::boost Threads::Threads)
 
 add_executable(game_server
 	src/model_serialization.h 
@@ -40,5 +40,5 @@ add_executable(game_server_tests
     tests/tests.cpp
 )
 
-target_link_libraries(game_server PRIVATE CONAN_PKG::boost GameLib)
+target_link_libraries(game_server PRIVATE GameLib)
 target_link_libraries(game_server_tests PRIVATE CONAN_PKG::catch2 GameLib)
