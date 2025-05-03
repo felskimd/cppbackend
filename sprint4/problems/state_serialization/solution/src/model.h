@@ -600,7 +600,7 @@ namespace model {
         std::unordered_map<std::string, std::vector<LostItem>> GetLostItems() const {
             std::unordered_map<std::string, std::vector<LostItem>> result;
             for (const auto& session : sessions_) {
-                std::string& map_id = *session.GetMapId();
+                std::string map_id = *session.GetMapId();
                 for (const auto& loot : session.GetLootMap()) {
                     result[map_id].emplace_back(loot.first, loot.second.first, loot.second.second);
                 }
@@ -671,7 +671,7 @@ namespace app {
         }
 
         const model::Dog& GetDog() const noexcept {
-            return GetDog();
+            return *dog_;
         }
 
     private:

@@ -139,8 +139,8 @@ public:
 
 private:
     size_t id_ = 0;
-    app::Token token_ = app::Token{ 0u };
-    model::Map::Id map_id_ = model::Map::Id{ 0u };
+    app::Token token_ = app::Token{ "" };
+    model::Map::Id map_id_ = model::Map::Id{ "" };
     DogRepr dog_;
 };
 
