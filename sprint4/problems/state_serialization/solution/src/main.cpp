@@ -176,7 +176,6 @@ int main(int argc, const char* argv[]) {
         serialization::SerializingListener sl{ static_cast<unsigned>(args->saving_period), args->state_path, app };
 
         if (args->auto_save) {
-            //sl.emplace(std::make_optional<serialization::SerializingListener>(args->saving_period, args->state_path, app));
             app.SetAppListener(sl);
         }
         

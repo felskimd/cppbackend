@@ -7,6 +7,7 @@ include(${CMAKE_BINARY_DIR}/conanbuildinfo_multi.cmake)
 conan_basic_setup(TARGETS)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
 
 add_library(GameLib STATIC
 	src/model.h 
@@ -18,7 +19,7 @@ add_library(GameLib STATIC
 	src/collision_detector.cpp
 )
 
-target_link_libraries(GameLib PUBLIC CONAN_PKG::boost)
+target_link_libraries(GameLib PUBLIC Threads::Threads)
 
 add_executable(game_server
 	src/model_serialization.h 
