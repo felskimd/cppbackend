@@ -46,7 +46,7 @@ struct Args {
         ("www-root,w", po::value(&args.static_path)->value_name("path"s), "set static files root")
         ("randomize-spawn-points", "spawn dogs at random positions")
         ("state-file", po::value(&args.state_path)->value_name("path"s), "set saving file path")
-        ("save_state_period", po::value(&args.saving_period)->value_name("milliseconds"s), "set autosave period");
+        ("save-state-period", po::value(&args.saving_period)->value_name("milliseconds"s), "set autosave period");
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -74,7 +74,7 @@ struct Args {
     if (!vm.contains("state-file"s)) {
         args.no_saving_file = true;
     }
-    if (!args.no_saving_file && vm.contains("save_state_period"s)) {
+    if (!args.no_saving_file && vm.contains("save-state-period"s)) {
         args.auto_save = true;
     }
 

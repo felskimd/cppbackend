@@ -20,7 +20,6 @@ COPY ./tests /app/tests
 COPY CMakeLists.txt /app/
 
 RUN cd /app/build && \
-    #cmake -DCMAKE_BUILD_TYPE=Debug .. && \
     cmake -DCMAKE_BUILD_TYPE=Release .. && \
     cmake --build .
 
