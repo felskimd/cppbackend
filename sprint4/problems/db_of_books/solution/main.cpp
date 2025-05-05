@@ -107,6 +107,7 @@ int main(int argc, const char* argv[]) {
             auto [action, data] = ParseQuery(query);
             switch (action) {
                 case Action::ADD_BOOK: 
+                {
                     pqxx::work w(conn);
                     auto result = w.exec_prepared(tag_add_book, data.title, data.author, data.year, data.isbn ? *data.isbn : "null"_zv);
                     w.commit();
@@ -119,6 +120,7 @@ int main(int argc, const char* argv[]) {
                     }
                     std::cout << "}" << std::endl;
                     break;
+                }
                 case Action::ALL_BOOKS:
                     pqxx::read_transaction r(conn);
                     std::cout << "[";
