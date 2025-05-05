@@ -87,6 +87,7 @@ std::pair<Action, PayloadData> ParseQuery(std::string_view query) {
         case Action::EXIT:
             return {action, PayloadData{}};
     }
+    throw std::exception();
 }
 
 int main(int argc, const char* argv[]) {
