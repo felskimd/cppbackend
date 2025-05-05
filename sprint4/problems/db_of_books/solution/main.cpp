@@ -27,10 +27,10 @@ enum Action {
 };
 
 struct PayloadData {
-    std::string_view title;
-    std::string_view author;
+    std::string title;
+    std::string author;
     int year;
-    std::optional<std::string_view> isbn;
+    std::optional<std::string> isbn;
 };
 
 std::pair<Action, PayloadData> ParseQuery(const std::string& query) {
