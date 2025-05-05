@@ -32,7 +32,7 @@ struct PayloadData {
 };
 
 Action ParseAction(std::string_view query) {
-    size_t action_end_pos = query.find("\"action\":\""sv) + 10;
+    size_t action_end_pos = query.find("\"action\": \""sv) + 10;
     std::string_view parsed_action = query.substr(
         action_end_pos
         , query.find('"', action_end_pos + 1) - action_end_pos
@@ -50,25 +50,25 @@ Action ParseAction(std::string_view query) {
 }
 
 PayloadData ParseData(std::string_view query) {
-    size_t title_start = query.find("\"title\":\""sv) + 9;
+    size_t title_start = query.find("\"title\": \""sv) + 9;
     std::string_view title = query.substr(
         title_start
         , query.find('"', title_start + 1) - title_start
     );
-    size_t author_start = query.find("\"author\":\""sv) + 10;
+    size_t author_start = query.find("\"author\": \""sv) + 10;
     std::string_view author = query.substr(
         author_start
         , query.find('"', author_start + 1) - author_start
     );
-    size_t year_start = query.find("\"year\":"sv) + 7;
+    size_t year_start = query.find("\"year\": "sv) + 7;
     std::string_view year_text = query.substr(
         year_start
         , query.find(',', year_start + 1) - year_start
     );
     int year = std::stoi(std::string(year_text));
-    size_t isbn_start = query.find("\"ISBN\":"sv) + 7;
+    size_t isbn_start = query.find("\"ISBN\": "sv) + 7;
     std::optional<std::string_view> isbn;
-    if (query.find("\"ISBN\":\""sv) != query.npos) {
+    if (query.find("\"ISBN\": \""sv) != query.npos) {
         isbn.emplace(query.substr(
             isbn_start
             , query.find('"', isbn_start + 1) - isbn_start
