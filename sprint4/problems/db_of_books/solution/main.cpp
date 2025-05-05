@@ -22,14 +22,14 @@ enum Action {
     ADD_BOOK,
     ALL_BOOKS,
     EXIT
-}
+};
 
 struct PayloadData {
     std::string_view title;
     std::string_view author;
     int year;
     std::optional<std::string_view> isbn;
-}
+};
 
 Action ParseAction(std::string_view query) {
     size_t action_end_pos = query.find("\"action\":\""sv) + 10;
