@@ -8,21 +8,14 @@ using namespace std::literals;
 using pqxx::operator"" _zv;
 
 constexpr auto tag_add_book = "add_book"_zv;
-constexpr auto get_books_query = "SELECT * FROM books (id, title, author, year, ISBN) 
-        ORDER BY year DESC, title ASC, author ASC, ISBN ASC;"_zv;
+constexpr auto get_books_query = "SELECT * FROM books (id, title, author, year, ISBN) ORDER BY year DESC, title ASC, author ASC, ISBN ASC;"_zv;
 
 void InitializeDB(pqxx::connection& conn) {
     pqxx::work w(conn);
-    w.exec("CREATE TABLE IF NOT EXISTS books (
-        id SERIAL PRIMARY KEY
-        , title varchar(100) NOT NULL
-        , author varchar(100) NOT NULL
-        , year integer NOT NULL
-        , ISBN char(13) UNIQUE);"_zv);
+    w.exec("CREATE TABLE IF NOT EXISTS books (id SERIAL PRIMARY KEY, title varchar(100) NOT NULL, author varchar(100) NOT NULL, year integer NOT NULL, ISBN char(13) UNIQUE);"_zv);
     w.exec("DELETE FROM books;"_zv);
     w.commit();
-    conn.prepare(tag_add_book, "INSERT INTO books (title, author, year, ISBN) 
-        VALUES ($1, $2, $3, $4);"_zv); 
+    conn.prepare(tag_add_book, "INSERT INTO books (title, author, year, ISBN) VALUES ($1, $2, $3, $4);"_zv); 
 }
 
 enum Action {
@@ -135,7 +128,7 @@ int main(int argc, const char* argv[]) {
                         std::cout << "{\"id\":" << id << ",\"title\":\"" << title;
                         std::cout << "\",\"author\":\"" << author << "\",\"year\":" << std::to_string(year);
                         std::cout << "\",\"ISBN\":" << isbn ? "\"" + *isbn + "\"" : "null";
-                        std::cout << "}"
+                        std::cout << "}";
                     }
                     std::cout << "]" << std::endl;
                 case Action::EXIT:
