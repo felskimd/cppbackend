@@ -136,7 +136,7 @@ int main(int argc, const char* argv[]) {
                         }
                         std::cout << "{\"id\":" << id << ",\"title\":\"" << title;
                         std::cout << "\",\"author\":\"" << author << "\",\"year\":" << std::to_string(year);
-                        std::cout << "\",\"ISBN\":";
+                        std::cout << ",\"ISBN\":";
                         if (isbn) {
                             std::cout << "\"" << *isbn << "\"";
                         }
