@@ -122,6 +122,7 @@ int main(int argc, const char* argv[]) {
                     break;
                 }
                 case Action::ALL_BOOKS:
+                {
                     pqxx::read_transaction r(conn);
                     std::cout << "[";
                     bool first = true;
@@ -146,6 +147,7 @@ int main(int argc, const char* argv[]) {
                     }
                     std::cout << "]" << std::endl;
                     break;
+                }
                 case Action::EXIT:
                     return 0;
             }
