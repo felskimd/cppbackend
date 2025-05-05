@@ -43,7 +43,7 @@ std::pair<Action, PayloadData> ParseQuery(const std::string& query) {
         auto year = payload.at("year").as_int64();
         std::optional<std::string_view> isbn;
         if (!payload.at(ISBN).is_null()) {
-            isbn.emplace(payload.at(ISBN).as_string());
+            isbn.emplace(payload.at("ISBN").as_string());
         }
         return { Action::ADD_BOOK, { title, author, year, isbn } };
     }
