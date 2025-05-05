@@ -135,7 +135,13 @@ int main(int argc, const char* argv[]) {
                         }
                         std::cout << "{\"id\":" << id << ",\"title\":\"" << title;
                         std::cout << "\",\"author\":\"" << author << "\",\"year\":" << std::to_string(year);
-                        std::cout << "\",\"ISBN\":" << isbn ? "\"" + *isbn + "\"" : "null";
+                        std::cout << "\",\"ISBN\":";
+                        if (isbn) {
+                            std::cout << "\"" << *isbn << "\"";
+                        }
+                        else {
+                            std::cout << "null";
+                        }
                         std::cout << "}";
                     }
                     std::cout << "]" << std::endl;
