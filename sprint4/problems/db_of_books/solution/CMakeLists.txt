@@ -13,4 +13,4 @@ add_executable(book_manager
 	main.cpp
 )
 
-target_link_libraries(book_manager PUBLIC CONAN_PKG::libpqxx)
+target_link_libraries(book_manager PUBLIC CONAN_PKG::libpqxx CONAN_PKG::boost)

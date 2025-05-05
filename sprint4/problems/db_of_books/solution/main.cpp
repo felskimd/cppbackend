@@ -1,7 +1,9 @@
+#include <boost/json.hpp>
 #include <iostream>
 #include <optional>
 #include <pqxx/pqxx>
 #include <string_view>
+#include <string>
 
 using namespace std::literals;
 // libpqxx использует zero-terminated символьные литералы вроде "abc"_zv;
@@ -31,61 +33,27 @@ struct PayloadData {
     std::optional<std::string_view> isbn;
 };
 
-Action ParseAction(std::string_view query) {
-    size_t action_end_pos = query.find("\"action\": \""sv) + 11;
-    std::string_view parsed_action = query.substr(
-        action_end_pos
-        , query.find('"', action_end_pos + 1) - action_end_pos
-    );
-    if (parsed_action == "add_book"sv) {
-        return Action::ADD_BOOK;
+std::pair<Action, PayloadData> ParseQuery(const std::string& query) {
+    auto json = boost::json::parse(query).as_object();
+    auto action = json.at("action").as_string();
+    if (action == "add_book") {
+        auto payload = json.at("payload").as_object();
+        auto title = payload.at("title").as_string();
+        auto author = payload.at("author").as_string();
+        auto year = payload.at("year").as_int64();
+        std::optional<std::string_view> isbn;
+        if (!payload.at(ISBN).is_null()) {
+            isbn.emplace(payload.at(ISBN).as_string());
+        }
+        return { Action::ADD_BOOK, { title, author, year, isbn } };
     }
-    if (parsed_action == "all_books"sv) {
-        return Action::ALL_BOOKS;
-    }
-    if (parsed_action == "exit"sv) {
-        return Action::EXIT;
-    }
-    throw std::exception();
-}
-
-PayloadData ParseData(std::string_view query) {
-    size_t title_start = query.find("\"title\": \""sv) + 10;
-    std::string_view title = query.substr(
-        title_start
-        , query.find('"', title_start + 1) - title_start
-    );
-    size_t author_start = query.find("\"author\": \""sv) + 11;
-    std::string_view author = query.substr(
-        author_start
-        , query.find('"', author_start + 1) - author_start
-    );
-    size_t year_start = query.find("\"year\": "sv) + 8;
-    std::string_view year_text = query.substr(
-        year_start
-        , query.find(',', year_start + 1) - year_start
-    );
-    int year = std::stoi(std::string(year_text));
-    size_t isbn_start = query.find("\"ISBN\": "sv) + 8;
-    std::optional<std::string_view> isbn;
-    if (query.find("\"ISBN\": \""sv) != query.npos) {
-        isbn.emplace(query.substr(
-            isbn_start
-            , query.find('"', isbn_start + 1) - isbn_start
-        ));
-    }
-    return {title, author, year, isbn};
-}
-
-std::pair<Action, PayloadData> ParseQuery(std::string_view query) {
-    auto action = ParseAction(query);
-    switch(action) {
-        case Action::ADD_BOOK: 
-            return {action, ParseData(query)};
-        case Action::ALL_BOOKS:
-            return {action, PayloadData{}};
-        case Action::EXIT:
-            return {action, PayloadData{}};
+    else {
+        if (action == "all_books") {
+            return { Action::ALL_BOOKS, PayloadData{} };
+        }
+        else {
+            return { Action::EXIT, PayloadData{} };
+        }
     }
     throw std::exception();
 }
