@@ -67,8 +67,8 @@ PayloadData ParseData(std::string_view query) {
     );
     int year = std::stoi(std::string(year_text));
     size_t isbn_start = query.find("\"ISBN\":"sv) + 7;
-    std::optional<std::string_veiw> isbn;
-    if (query.find("\"ISBN\":\""sv) != query.npos()) {
+    std::optional<std::string_view> isbn;
+    if (query.find("\"ISBN\":\""sv) != query.npos) {
         isbn.emplace(query.substr(
             isbn_start
             , query.find('"', isbn_start + 1) - isbn_start
