@@ -44,6 +44,7 @@ std::pair<Action, PayloadData> ParseQuery(const std::string& query) {
         std::optional<std::string> isbn;
         if (!payload.at("ISBN").is_null()) {
             isbn.emplace(std::string(payload.at("ISBN").as_string().c_str()));
+            std::runtime_error(std::string(payload.at("ISBN").as_string().c_str()));
         }
         return { Action::ADD_BOOK, PayloadData{ std::string(title.c_str()), std::string(author.c_str()), static_cast<int>(year), isbn } };
     }
