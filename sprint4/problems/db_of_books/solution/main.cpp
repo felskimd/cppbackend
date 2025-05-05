@@ -110,10 +110,14 @@ int main(int argc, const char* argv[]) {
                     pqxx::work w(conn);
                     auto result = w.exec_prepared(tag_add_book, data.title, data.author, data.year, data.isbn ? *data.isbn : "null"_zv);
                     w.commit();
-                    std::cout << "{\"result\":" 
-                        << result.affected_rows() == 0 ? "false" : "true" 
-                        << "}"
-                        << std::endl;
+                    std::cout << "{\"result\":";
+                    if (result.affected_rows() > 0) {
+                        std::cout << "true";
+                    }
+                    else {
+                        std::cout << "false";
+                    }
+                    std::cout << "}" << std::endl;
                 case Action::ALL_BOOKS:
                     pqxx::read_transaction r(conn);
                     std::cout << "[";
