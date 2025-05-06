@@ -33,20 +33,42 @@ struct PayloadData {
     std::optional<std::string> isbn;
 };
 
+std::string_view FindAndParse(std::string_view key, std::string_view query) {
+    size_t key_pos = query.find(key);
+    size_t key_end_pos = query.find("\"", key_pos);
+    size_t value_pos = query.find("\"", key_end_pos);
+    if (value_pos == query.npos) {
+        return ""sv;
+    }
+    size_t value_end_pos = query.find("\"", value_pos);
+    return query.substr(value_pos, value_end_pos - value_pos);
+}
+
 std::pair<Action, PayloadData> ParseQuery(const std::string& query) {
-    auto json = boost::json::parse(query).as_object();
-    auto action = json.at("action").as_string();
-    if (action == "add_book") {
-        auto payload = json.at("payload").as_object();
-        auto title = payload.at("title").as_string();
-        auto author = payload.at("author").as_string();
-        auto year = payload.at("year").as_int64();
+    //auto json = boost::json::parse(query).as_object();
+    //auto action = json.at("action").as_string();
+    auto action = FindAndParse("action", query);
+    if (action == "add_book"sv) {
+        //auto payload = json.at("payload").as_object();
+        //auto payload = FindAndParse("payload", query);
+        //auto title = payload.at("title").as_string();
+        auto title = FindAndParse("title", query);
+        //auto author = payload.at("author").as_string();
+        auto author = FindAndParse("author", query);
+        //auto year = payload.at("year").as_int64();
+        auto year = FindAndParse("year", query);
         std::optional<std::string> isbn;
+        auto isbn_parsed = FindAndParse("ISBN", query);
+        if (isbn_parsed.size() != 0) {
+            isbn.emplace(isbn_parsed.data(), isbn_parsed.size());
+        }
+        /*std::optional<std::string> isbn;
         if (!payload.at("ISBN").is_null()) {
             isbn.emplace(std::string(payload.at("ISBN").as_string().c_str()));
             
             throw std::runtime_error(std::string(title.c_str()) + " + " + std::string(author.c_str()) + " + " + std::to_string(year) + " + " + *isbn);
-        }
+        }*/
+        throw std::runtime_error(std::string(title.c_str()) + " + " + std::string(author.c_str()) + " + " + std::to_string(year) + " + " + *isbn);
         return { Action::ADD_BOOK, PayloadData{ std::string(title.c_str()), std::string(author.c_str()), static_cast<int>(year), isbn } };
     }
     else {
