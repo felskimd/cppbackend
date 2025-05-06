@@ -73,6 +73,7 @@ std::pair<Action, PayloadData> ParseQuery(const std::string& query) {
     //auto json = boost::json::parse(query).as_object();
     //auto action = json.at("action").as_string();
     auto action = FindAndParse("action", query);
+    throw std::runtime_error(action);
     if (action == "add_book"sv) {
         //auto payload = json.at("payload").as_object();
         //auto payload = FindAndParse("payload", query);
@@ -96,13 +97,11 @@ std::pair<Action, PayloadData> ParseQuery(const std::string& query) {
         throw std::runtime_error(std::string(title.data(), title.size()) + " + " + std::string(author.data(), author.size()) + " + " + std::to_string(year) + " + " + *isbn);
         return { Action::ADD_BOOK, PayloadData{ std::string(title.data(), title.size()), std::string(author.data(), author.size()), static_cast<int>(year), isbn } };
     }
-    else {
-        if (action == "all_books") {
-            return { Action::ALL_BOOKS, PayloadData{} };
-        }
-        else {
-            return { Action::EXIT, PayloadData{} };
-        }
+    if (action == "all_books") {
+        return { Action::ALL_BOOKS, PayloadData{} };
+    }
+    if (action == "exit") {
+        return { Action::EXIT, PayloadData{} };
     }
     throw std::exception();
 }
