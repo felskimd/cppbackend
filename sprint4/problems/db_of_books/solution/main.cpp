@@ -94,7 +94,7 @@ std::pair<Action, PayloadData> ParseQuery(const std::string& query) {
 
             throw std::runtime_error(std::string(title.c_str()) + " + " + std::string(author.c_str()) + " + " + std::to_string(year) + " + " + *isbn);
         }*/
-        throw std::runtime_error(std::string(title.data(), title.size()) + " + " + std::string(author.data(), author.size()) + " + " + std::to_string(year) + " + " + *isbn);
+        //throw std::runtime_error(std::string(title.data(), title.size()) + " + " + std::string(author.data(), author.size()) + " + " + std::to_string(year) + " + " + *isbn);
         return { Action::ADD_BOOK, PayloadData{ std::string(title.data(), title.size()), std::string(author.data(), author.size()), static_cast<int>(year), isbn } };
     }
     if (action == "all_books") {
