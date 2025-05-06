@@ -119,7 +119,7 @@ int main(int argc, const char* argv[]) {
             switch (action) {
                 case Action::ADD_BOOK: 
                 {
-                    if (*data.isbn.size() > 13) {
+                    if (data.isbn->size() > 13) {
                         continue;
                     }
                     pqxx::work w(conn);
