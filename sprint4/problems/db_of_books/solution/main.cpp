@@ -1,4 +1,5 @@
 #include <boost/json.hpp>
+#include <cctype>
 #include <iostream>
 #include <optional>
 #include <pqxx/pqxx>
@@ -44,6 +45,30 @@ std::string_view FindAndParse(std::string_view key, std::string_view query) {
     return query.substr(value_pos, value_end_pos - value_pos);
 }
 
+int FindAndParseInt(std::string_view key, std::string_view query) {
+    size_t key_pos = query.find(key);
+    size_t key_end_pos = query.find("\"", key_pos);
+    size_t value_pos = query.find("\:", key_end_pos);
+    std::string parsed = "";
+    bool number_ended = false;
+    bool number_started = false;
+    while (!number_ended) {
+        if (std::isdigit(query.at(value_pos)) == 0) {
+            if (!number_started) {
+                number_started = true;
+            }
+            parsed += query.at(value_pos);
+        }
+        else {
+            if (number_started) {
+                number_ended = true;
+            }
+        }
+        ++value_pos;
+    }
+    return std::stoi(parsed);
+}
+
 std::pair<Action, PayloadData> ParseQuery(const std::string& query) {
     //auto json = boost::json::parse(query).as_object();
     //auto action = json.at("action").as_string();
@@ -56,7 +81,7 @@ std::pair<Action, PayloadData> ParseQuery(const std::string& query) {
         //auto author = payload.at("author").as_string();
         auto author = FindAndParse("author", query);
         //auto year = payload.at("year").as_int64();
-        auto year = FindAndParse("year", query);
+        auto year = FindAndParseInt("year", query);
         std::optional<std::string> isbn;
         auto isbn_parsed = FindAndParse("ISBN", query);
         if (isbn_parsed.size() != 0) {
@@ -68,8 +93,8 @@ std::pair<Action, PayloadData> ParseQuery(const std::string& query) {
             
             throw std::runtime_error(std::string(title.c_str()) + " + " + std::string(author.c_str()) + " + " + std::to_string(year) + " + " + *isbn);
         }*/
-        throw std::runtime_error(std::string(title.c_str()) + " + " + std::string(author.c_str()) + " + " + std::to_string(year) + " + " + *isbn);
-        return { Action::ADD_BOOK, PayloadData{ std::string(title.c_str()), std::string(author.c_str()), static_cast<int>(year), isbn } };
+        throw std::runtime_error(std::string(title.data(), title.size()) + " + " + std::string(author.data(), author.size()) + " + " + std::to_string(year) + " + " + *isbn);
+        return { Action::ADD_BOOK, PayloadData{ std::string(title.data(), title.size()), std::string(author.data(), author.size()), static_cast<int>(year), isbn } };
     }
     else {
         if (action == "all_books") {
