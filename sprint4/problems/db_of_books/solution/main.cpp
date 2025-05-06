@@ -11,13 +11,11 @@ using namespace std::literals;
 using pqxx::operator"" _zv;
 
 constexpr auto tag_add_book = "add_book"_zv;
-//constexpr auto get_books_query = "SELECT * FROM books (id, title, author, year, ISBN) ORDER BY year DESC, title ASC, author ASC, ISBN ASC;"_zv;
 constexpr auto get_books_query = "SELECT * FROM books ORDER BY year DESC, title ASC, author ASC, ISBN ASC;"_zv;
 
 void InitializeDB(pqxx::connection& conn) {
     pqxx::work w(conn);
     w.exec("CREATE TABLE IF NOT EXISTS books (id SERIAL PRIMARY KEY, title varchar(100) NOT NULL, author varchar(100) NOT NULL, year integer NOT NULL, ISBN char(13) UNIQUE);"_zv);
-    //w.exec("DELETE FROM books;"_zv);
     w.commit();
     conn.prepare(tag_add_book, "INSERT INTO books (title, author, year, ISBN) VALUES ($1, $2, $3, $4);"_zv); 
 }
@@ -36,6 +34,17 @@ struct PayloadData {
 };
 
 std::string_view FindAndParse(std::string_view key, std::string_view query) {
+    size_t key_pos = query.find(key);
+    size_t key_end_pos = query.find("\"", key_pos);
+    size_t value_pos = query.find("\"", key_end_pos + 1);
+    if (value_pos == query.npos) {
+        return ""sv;
+    }
+    size_t value_end_pos = query.find("\"", value_pos + 1);
+    return query.substr(value_pos + 1, value_end_pos - value_pos - 1);
+}
+
+std::string_view FindAndParseNullable(std::string_view key, std::string_view query) {
     size_t key_pos = query.find(key);
     size_t key_end_pos = query.find("\"", key_pos);
     size_t value_pos = query.find("\"", key_end_pos + 1);
@@ -126,7 +135,7 @@ int main(int argc, const char* argv[]) {
                 case Action::ADD_BOOK: 
                 {
                     pqxx::work w(conn);
-                    auto result = w.exec_prepared(tag_add_book, data.title, data.author, data.year, data.isbn ? *data.isbn : "null"_zv);
+                    auto result = w.exec_prepared(tag_add_book, data.title, data.author, data.year, data.isbn); //? *data.isbn : "null"_zv);
                     w.commit();
                     std::cout << "{\"result\":";
                     if (result.affected_rows() > 0) {
