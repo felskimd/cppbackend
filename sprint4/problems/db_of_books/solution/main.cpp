@@ -114,17 +114,18 @@ int main(int argc, const char* argv[]) {
         InitializeDB(conn);
         
         std::string query;
-        while(true) {
-        //while (std::getline(std::cin, query)) {
-
-            std::cin >> query;
+        //while(true) {
+        while (std::getline(std::cin, query)) {
+            if (query.empty())
+                continue;
+            //std::cin >> query;
 
             auto [action, data] = ParseQuery(query);
             switch (action) {
                 case Action::ADD_BOOK: 
                 {
                     pqxx::work w(conn);
-                    throw std::runtime_error(data.title + " + " + data.author + " + " + *data.isbn + " :: " + query);
+                    //throw std::runtime_error(data.title + " + " + data.author + " + " + *data.isbn + " :: " + query);
                     auto result = w.exec_prepared(tag_add_book, data.title, data.author, data.year, data.isbn);
                     w.commit();
                     std::cout << "{\"result\":";
