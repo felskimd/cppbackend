@@ -16,7 +16,7 @@ constexpr auto get_books_query = "SELECT * FROM books (id, title, author, year, 
 void InitializeDB(pqxx::connection& conn) {
     pqxx::work w(conn);
     w.exec("CREATE TABLE IF NOT EXISTS books (id SERIAL PRIMARY KEY, title varchar(100) NOT NULL, author varchar(100) NOT NULL, year integer NOT NULL, ISBN char(13) UNIQUE);"_zv);
-    w.exec("DELETE FROM books;"_zv);
+    //w.exec("DELETE FROM books;"_zv);
     w.commit();
     conn.prepare(tag_add_book, "INSERT INTO books (title, author, year, ISBN) VALUES ($1, $2, $3, $4);"_zv); 
 }
