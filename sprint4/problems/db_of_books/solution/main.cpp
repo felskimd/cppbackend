@@ -11,7 +11,8 @@ using namespace std::literals;
 using pqxx::operator"" _zv;
 
 constexpr auto tag_add_book = "add_book"_zv;
-constexpr auto get_books_query = "SELECT * FROM books (id, title, author, year, ISBN) ORDER BY year DESC, title ASC, author ASC, ISBN ASC;"_zv;
+//constexpr auto get_books_query = "SELECT * FROM books (id, title, author, year, ISBN) ORDER BY year DESC, title ASC, author ASC, ISBN ASC;"_zv;
+constexpr auto get_books_query = "SELECT * FROM books ORDER BY year DESC, title ASC, author ASC, ISBN ASC;"_zv;
 
 void InitializeDB(pqxx::connection& conn) {
     pqxx::work w(conn);
