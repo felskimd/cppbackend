@@ -37,12 +37,12 @@ struct PayloadData {
 std::string_view FindAndParse(std::string_view key, std::string_view query) {
     size_t key_pos = query.find(key);
     size_t key_end_pos = query.find("\"", key_pos);
-    size_t value_pos = query.find("\"", key_end_pos);
+    size_t value_pos = query.find("\"", key_end_pos + 1);
     if (value_pos == query.npos) {
         return ""sv;
     }
-    size_t value_end_pos = query.find("\"", value_pos);
-    return query.substr(value_pos, value_end_pos - value_pos);
+    size_t value_end_pos = query.find("\"", value_pos + 1);
+    return query.substr(value_pos + 1, value_end_pos - value_pos - 1);
 }
 
 int FindAndParseInt(std::string_view key, std::string_view query) {
@@ -53,7 +53,7 @@ int FindAndParseInt(std::string_view key, std::string_view query) {
     bool number_ended = false;
     bool number_started = false;
     while (!number_ended) {
-        if (std::isdigit(query.at(value_pos)) == 0) {
+        if (std::isdigit(query.at(value_pos)) != 0) {
             if (!number_started) {
                 number_started = true;
             }
@@ -73,7 +73,7 @@ std::pair<Action, PayloadData> ParseQuery(const std::string& query) {
     //auto json = boost::json::parse(query).as_object();
     //auto action = json.at("action").as_string();
     auto action = FindAndParse("action", query);
-    throw std::runtime_error(std::string(action.data(), action.size()));
+    //throw std::runtime_error(std::string(action.data(), action.size()));
     if (action == "add_book"sv) {
         //auto payload = json.at("payload").as_object();
         //auto payload = FindAndParse("payload", query);
@@ -91,10 +91,10 @@ std::pair<Action, PayloadData> ParseQuery(const std::string& query) {
         /*std::optional<std::string> isbn;
         if (!payload.at("ISBN").is_null()) {
             isbn.emplace(std::string(payload.at("ISBN").as_string().c_str()));
-            
+
             throw std::runtime_error(std::string(title.c_str()) + " + " + std::string(author.c_str()) + " + " + std::to_string(year) + " + " + *isbn);
         }*/
-        throw std::runtime_error(std::string(title.data(), title.size()) + " + " + std::string(author.data(), author.size()) + " + " + std::to_string(year) + " + " + *isbn);
+        //throw std::runtime_error(std::string(title.data(), title.size()) + " + " + std::string(author.data(), author.size()) + " + " + std::to_string(year) + " + " + *isbn);
         return { Action::ADD_BOOK, PayloadData{ std::string(title.data(), title.size()), std::string(author.data(), author.size()), static_cast<int>(year), isbn } };
     }
     if (action == "all_books") {
