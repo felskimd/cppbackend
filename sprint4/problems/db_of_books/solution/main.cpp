@@ -48,7 +48,7 @@ std::string_view FindAndParse(std::string_view key, std::string_view query) {
 int FindAndParseInt(std::string_view key, std::string_view query) {
     size_t key_pos = query.find(key);
     size_t key_end_pos = query.find("\"", key_pos);
-    size_t value_pos = query.find("\:", key_end_pos);
+    size_t value_pos = query.find(":", key_end_pos);
     std::string parsed = "";
     bool number_ended = false;
     bool number_started = false;
@@ -73,7 +73,7 @@ std::pair<Action, PayloadData> ParseQuery(const std::string& query) {
     //auto json = boost::json::parse(query).as_object();
     //auto action = json.at("action").as_string();
     auto action = FindAndParse("action", query);
-    throw std::runtime_error(action);
+    throw std::runtime_error(std::string(action.data(), action.size());
     if (action == "add_book"sv) {
         //auto payload = json.at("payload").as_object();
         //auto payload = FindAndParse("payload", query);
