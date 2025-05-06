@@ -139,6 +139,7 @@ int main(int argc, const char* argv[]) {
 
                     bool success = false;
                     if (data.isbn) {
+                        throw std::runtime_error("INSERT INTO books (title, author, year, ISBN) VALUES ('" + w.esc(data.title) + "', '" + w.esc(data.author) + "', " + std::to_string(data.year) + ", '" + w.esc(*data.isbn) + "');");
                         auto result = w.exec("INSERT INTO books (title, author, year, ISBN) VALUES ('" + w.esc(data.title) + "', '" + w.esc(data.author) + "', " + std::to_string(data.year) + ", '" + w.esc(*data.isbn) + "');");
                         if (result.affected_rows() > 0) {
                             success = true;
