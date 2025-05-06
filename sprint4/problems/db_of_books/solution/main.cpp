@@ -135,10 +135,25 @@ int main(int argc, const char* argv[]) {
                 case Action::ADD_BOOK: 
                 {
                     pqxx::work w(conn);
-                    auto result = w.exec_prepared(tag_add_book, data.title, data.author, data.year, data.isbn); //? *data.isbn : "null"_zv);
+                    //auto result = w.exec_prepared(tag_add_book, data.title, data.author, data.year, data.isbn);
+
+                    bool success = false;
+                    if (data.isbn) {
+                        auto result = w.exec("INSERT INTO books (title, author, year, ISBN) VALUES ('" + w.esc(data.title) + "', '" + w.esc(data.author) + "', " + std::to_string(data.year) + ", '" + w.esc(*data.isbn) + "');");
+                        if (result.affected_rows() > 0) {
+                            success = true;
+                        }
+                    }
+                    else {
+                        auto result = w.exec("INSERT INTO books (title, author, year) VALUES ('" + w.esc(data.title) + "', '" + w.esc(data.author) + "', " + std::to_string(data.year) + ");");
+                        if (result.affected_rows() > 0) {
+                            success = true;
+                        }
+                    }
+
                     w.commit();
                     std::cout << "{\"result\":";
-                    if (result.affected_rows() > 0) {
+                    if (/*result.affected_rows() > 0*/ success) {
                         std::cout << "true";
                     }
                     else {
