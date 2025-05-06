@@ -73,7 +73,7 @@ std::pair<Action, PayloadData> ParseQuery(const std::string& query) {
     //auto json = boost::json::parse(query).as_object();
     //auto action = json.at("action").as_string();
     auto action = FindAndParse("action", query);
-    throw std::runtime_error(std::string(action.data(), action.size());
+    throw std::runtime_error(std::string(action.data(), action.size()));
     if (action == "add_book"sv) {
         //auto payload = json.at("payload").as_object();
         //auto payload = FindAndParse("payload", query);
