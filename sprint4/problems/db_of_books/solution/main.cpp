@@ -114,7 +114,11 @@ int main(int argc, const char* argv[]) {
         InitializeDB(conn);
         
         std::string query;
-        while (std::getline(std::cin, query)) {
+        while(true) {
+        //while (std::getline(std::cin, query)) {
+
+            std::cin >> query;
+
             auto [action, data] = ParseQuery(query);
             switch (action) {
                 case Action::ADD_BOOK: 
