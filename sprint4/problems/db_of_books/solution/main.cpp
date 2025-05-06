@@ -33,9 +33,9 @@ struct PayloadData {
     std::optional<std::string> isbn;
 };
 
-std::string_view FindAndParse(std::string_view key, std::string_view query) {
+std::string_view FindAndParseNullable(std::string_view key, std::string_view query) {
     size_t key_pos = query.find(key);
-    size_t key_end_pos = query.find("\"", key_pos);
+    size_t key_end_pos = query.find("\"", key_pos + 1);
     size_t value_pos = query.find("\"", key_end_pos + 1);
     if (value_pos == query.npos) {
         return ""sv;
@@ -44,9 +44,9 @@ std::string_view FindAndParse(std::string_view key, std::string_view query) {
     return query.substr(value_pos + 1, value_end_pos - value_pos - 1);
 }
 
-std::string_view FindAndParseNullable(std::string_view key, std::string_view query) {
+std::string_view FindAndParse(std::string_view key, std::string_view query) {
     size_t key_pos = query.find(key);
-    size_t key_end_pos = query.find("\"", key_pos);
+    size_t key_end_pos = query.find("\"", key_pos + 1);
     size_t value_pos = query.find("\"", key_end_pos + 1);
     if (value_pos == query.npos) {
         return ""sv;
@@ -57,7 +57,7 @@ std::string_view FindAndParseNullable(std::string_view key, std::string_view que
 
 int FindAndParseInt(std::string_view key, std::string_view query) {
     size_t key_pos = query.find(key);
-    size_t key_end_pos = query.find("\"", key_pos);
+    size_t key_end_pos = query.find("\"", key_pos + 1);
     size_t value_pos = query.find(":", key_end_pos);
     std::string parsed = "";
     bool number_ended = false;
@@ -80,31 +80,16 @@ int FindAndParseInt(std::string_view key, std::string_view query) {
 }
 
 std::pair<Action, PayloadData> ParseQuery(const std::string& query) {
-    //auto json = boost::json::parse(query).as_object();
-    //auto action = json.at("action").as_string();
-    auto action = FindAndParse("action", query);
-    //throw std::runtime_error(std::string(action.data(), action.size()));
+    auto action = FindAndParse("\"action\"", query);
     if (action == "add_book"sv) {
-        //auto payload = json.at("payload").as_object();
-        //auto payload = FindAndParse("payload", query);
-        //auto title = payload.at("title").as_string();
-        auto title = FindAndParse("title", query);
-        //auto author = payload.at("author").as_string();
-        auto author = FindAndParse("author", query);
-        //auto year = payload.at("year").as_int64();
-        auto year = FindAndParseInt("year", query);
+        auto title = FindAndParse("\"title\"", query);
+        auto author = FindAndParse("\"author\"", query);
+        auto year = FindAndParseInt("\"year\"", query);
         std::optional<std::string> isbn;
-        auto isbn_parsed = FindAndParse("ISBN", query);
+        auto isbn_parsed = FindAndParse("\"ISBN\"", query);
         if (isbn_parsed.size() != 0) {
             isbn.emplace(isbn_parsed.data(), isbn_parsed.size());
         }
-        /*std::optional<std::string> isbn;
-        if (!payload.at("ISBN").is_null()) {
-            isbn.emplace(std::string(payload.at("ISBN").as_string().c_str()));
-
-            throw std::runtime_error(std::string(title.c_str()) + " + " + std::string(author.c_str()) + " + " + std::to_string(year) + " + " + *isbn);
-        }*/
-        //throw std::runtime_error(std::string(title.data(), title.size()) + " + " + std::string(author.data(), author.size()) + " + " + std::to_string(year) + " + " + *isbn);
         return { Action::ADD_BOOK, PayloadData{ std::string(title.data(), title.size()), std::string(author.data(), author.size()), static_cast<int>(year), isbn } };
     }
     if (action == "all_books") {
@@ -135,26 +120,10 @@ int main(int argc, const char* argv[]) {
                 case Action::ADD_BOOK: 
                 {
                     pqxx::work w(conn);
-                    //auto result = w.exec_prepared(tag_add_book, data.title, data.author, data.year, data.isbn);
-
-                    bool success = false;
-                    if (data.isbn) {
-                        throw std::runtime_error("INSERT INTO books (title, author, year, ISBN) VALUES ('" + w.esc(data.title) + "', '" + w.esc(data.author) + "', " + std::to_string(data.year) + ", '" + w.esc(*data.isbn) + "');");
-                        auto result = w.exec("INSERT INTO books (title, author, year, ISBN) VALUES ('" + w.esc(data.title) + "', '" + w.esc(data.author) + "', " + std::to_string(data.year) + ", '" + w.esc(*data.isbn) + "');");
-                        if (result.affected_rows() > 0) {
-                            success = true;
-                        }
-                    }
-                    else {
-                        auto result = w.exec("INSERT INTO books (title, author, year) VALUES ('" + w.esc(data.title) + "', '" + w.esc(data.author) + "', " + std::to_string(data.year) + ");");
-                        if (result.affected_rows() > 0) {
-                            success = true;
-                        }
-                    }
-
+                    auto result = w.exec_prepared(tag_add_book, data.title, data.author, data.year, data.isbn);
                     w.commit();
                     std::cout << "{\"result\":";
-                    if (/*result.affected_rows() > 0*/ success) {
+                    if (result.affected_rows() > 0) {
                         std::cout << "true";
                     }
                     else {
