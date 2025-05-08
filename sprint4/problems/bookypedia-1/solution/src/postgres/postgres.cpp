@@ -55,7 +55,7 @@ void BookRepositoryImpl::Save(const domain::Book& book) {
     work.exec_params(
         R"(
 INSERT INTO books (id, author_id, title, publication_year) VALUES ($1, $2, $3, $4)
-ON CONFLICT (id) DO UPDATE SET author_id=$2 title=$3 publication_year=$4;
+ON CONFLICT (id) DO UPDATE SET author_id=$2, title=$3, publication_year=$4;
 )"_zv,
         book.GetId().ToString(), book.GetAuthor().ToString(), book.GetTitle(), book.GetYear());
     work.commit();
@@ -65,7 +65,7 @@ std::vector<domain::Book> BookRepositoryImpl::GetBooksByAuthor(const domain::Aut
     pqxx::read_transaction trans{ connection_ };
     std::vector<domain::Book> result;
     for (auto [book_id, author_id, title, year] : trans.query<std::string, std::string, std::string, int>(R"(
-SELECT * FROM books WHERE author_id=)" + id.ToString() + R"( ORDER BY title ASC
+SELECT * FROM books WHERE author_id=')" + id.ToString() + R"(' ORDER BY title ASC
 )")) {
         result.emplace_back(
             domain::BookId::FromString(book_id)
@@ -88,7 +88,7 @@ CREATE TABLE IF NOT EXISTS authors (
 )"_zv);
 
     work.exec(R"(
-CREATE TABLE IF NOT EXISTS authors (
+CREATE TABLE IF NOT EXISTS books (
     id UUID CONSTRAINT book_id_constraint PRIMARY KEY,
     author_id UUID CONSTRAINT author_id_constraint NOT NULL,
     title varchar(100) NOT NULL,
