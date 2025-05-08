@@ -65,8 +65,8 @@ std::vector<domain::Book> BookRepositoryImpl::GetBooksByAuthor(const domain::Aut
     pqxx::read_transaction trans{ connection_ };
     std::vector<domain::Book> result;
     for (auto [book_id, author_id, title, year] : trans.query<std::string, std::string, std::string, int>(R"(
-SELECT * FROM books WHERE author_id=')" 
-+ id.ToString() + R"(' ORDER BY publication_year ASC, title ASC
+SELECT * FROM books WHERE author_id=)" 
++ id.ToString() + R"( ORDER BY publication_year ASC, title ASC
 )")) {
         result.emplace_back(
             domain::BookId::FromString(book_id)
