@@ -27,7 +27,7 @@ std::vector<domain::Author> AuthorRepositoryImpl::GetAuthors() {
     pqxx::read_transaction trans{connection_};
     std::vector<domain::Author> result;
     for (auto [id, name] : trans.query<std::string, std::string>(R"(
-SELECT * FROM authors ORDER BY name ASC
+SELECT id, name FROM authors ORDER BY name ASC
 )"_zv)) {
         result.emplace_back(domain::AuthorId::FromString(id), std::move(name));
     }
@@ -38,7 +38,7 @@ std::vector<domain::Book> BookRepositoryImpl::GetBooks() {
     pqxx::read_transaction trans{ connection_ };
     std::vector<domain::Book> result;
     for (auto [id, author_id, title, year] : trans.query<std::string, std::string, std::string, int>(R"(
-SELECT * FROM books ORDER BY title ASC
+SELECT id, author_id, title, publication_year FROM books ORDER BY title ASC
 )"_zv)) {
         result.emplace_back(
             domain::BookId::FromString(id)
