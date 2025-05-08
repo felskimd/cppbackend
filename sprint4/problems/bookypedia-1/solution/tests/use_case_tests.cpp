@@ -2,6 +2,7 @@
 
 #include "../src/app/use_cases_impl.h"
 #include "../src/domain/author.h"
+#include "../src/domain/book.h"
 
 namespace {
 
@@ -11,17 +12,38 @@ struct MockAuthorRepository : domain::AuthorRepository {
     void Save(const domain::Author& author) override {
         saved_authors.emplace_back(author);
     }
+
+    std::vector<domain::Author> GetAuthors() {
+        return saved_authors;
+    }
+};
+
+struct MockBookRepository : domain::BookRepository {
+    std::vector<domain::Book> saved_books;
+
+    void Save(const domain::Book& author) override {
+        saved_books.emplace_back(author);
+    }
+
+    std::vector<domain::Book> GetBooks() {
+        return saved_books;
+    }
+
+    std::vector<domain::Book> GetBooksByAuthor(const domain::AuthorId&) {
+        return {};
+    }
 };
 
 struct Fixture {
     MockAuthorRepository authors;
+    MockBookRepository books;
 };
 
 }  // namespace
 
 SCENARIO_METHOD(Fixture, "Book Adding") {
     GIVEN("Use cases") {
-        app::UseCasesImpl use_cases{authors};
+        app::UseCasesImpl use_cases{authors, books};
 
         WHEN("Adding an author") {
             const auto author_name = "Joanne Rowling";
