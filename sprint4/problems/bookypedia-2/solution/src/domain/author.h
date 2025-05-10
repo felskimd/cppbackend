@@ -1,4 +1,5 @@
 #pragma once
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -36,6 +37,7 @@ class AuthorRepository {
 public:
     virtual void Save(const Author& author) = 0;
     virtual std::vector<Author> GetAuthors() = 0;
+    virtual std::optional<domain::Author> GetAuthorIfExists(const std::string& name) = 0;
 
 protected:
     ~AuthorRepository() = default;

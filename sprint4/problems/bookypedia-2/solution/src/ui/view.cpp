@@ -1,10 +1,13 @@
 #include "view.h"
 
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <sstream>
+#include <string>
 
-#include "../app/use_cases.h"
 #include "../menu/menu.h"
 
 using namespace std::literals;
@@ -33,6 +36,43 @@ void PrintVector(std::ostream& out, const std::vector<T>& vector) {
     }
 }
 
+std::string RemoveExtraSpaces(const std::string& input) {
+    std::istringstream iss(input);
+    std::string word;
+    std::string result;
+
+    while (iss >> word) {
+        if (!result.empty()) {
+            result += " ";
+        }
+        result += word;
+    }
+
+    return result;
+}
+
+std::vector<std::string> ParseTags(std::istream& cmd_input) {
+    std::string str;
+    if (!std::getline(cmd_input, str) || str.empty()) {
+        return {};
+    }
+    std::vector<std::string> result;
+    boost::split(result, str, boost::is_any_of(","));
+
+    result.erase(std::remove_if(result.begin(), result.end(),
+        [](const std::string& s) { return s.empty(); }),
+        result.end());
+
+    for (auto& tag : result) {
+        tag = RemoveExtraSpaces(tag);
+    }
+
+    std::sort(result.begin(), result.end());
+    auto last = std::unique(result.begin(), result.end());
+    result.erase(last, result.end());
+    return result;
+}
+
 View::View(menu::Menu& menu, app::UseCases& use_cases, std::istream& input, std::ostream& output)
     : menu_{menu}
     , use_cases_{use_cases}
@@ -59,9 +99,9 @@ bool View::AddAuthor(std::istream& cmd_input) const {
             throw std::exception();
         }
         boost::algorithm::trim(name);
-        use_cases_.StartWork();
-        use_cases_.AddAuthor(std::move(name));
-        use_cases_.EndWork();
+        auto unit = use_cases_.GetUnit();
+        unit->AddAuthor(std::move(name));
+        unit->Commit();
     } catch (const std::exception&) {
         output_ << "Failed to add author"sv << std::endl;
     }
@@ -70,11 +110,12 @@ bool View::AddAuthor(std::istream& cmd_input) const {
 
 bool View::AddBook(std::istream& cmd_input) const {
     try {
-        use_cases_.StartWork();
-        if (auto params = GetBookParams(cmd_input)) {
-            use_cases_.AddBook(domain::AuthorId::FromString(params->author_id), params->title, params->publication_year);
+        auto unit = use_cases_.GetUnit();
+        if (auto params = GetBookParams(unit.get(), cmd_input)) {
+            unit->AddBook(domain::AuthorId::FromString(params->author_id), params->title, params->publication_year);
+            AddTags(unit.get(), params->title);
         }
-        use_cases_.EndWork();
+        unit->Commit();
     } catch (const std::exception&) {
         output_ << "Failed to add book"sv << std::endl;
     }
@@ -82,54 +123,75 @@ bool View::AddBook(std::istream& cmd_input) const {
 }
 
 bool View::ShowAuthors() const {
-    use_cases_.StartWork();
-    PrintVector(output_, GetAuthors());
-    use_cases_.EndWork();
+    auto unit = use_cases_.GetUnit();
+    PrintVector(output_, GetAuthors(unit.get()));
+    unit->Commit();
     return true;
 }
 
 bool View::ShowBooks() const {
-    use_cases_.StartWork();
-    PrintVector(output_, GetBooks());
-    use_cases_.EndWork();
+    auto unit = use_cases_.GetUnit();
+    PrintVector(output_, GetBooks(unit.get()));
+    unit->Commit();
     return true;
 }
 
 bool View::ShowAuthorBooks() const {
     // TODO: handle error
     try {
-        use_cases_.StartWork();
-        if (auto author_id = SelectAuthor()) {
-            PrintVector(output_, GetAuthorBooks(*author_id));
+        auto unit = use_cases_.GetUnit();
+        if (auto author_id = SelectAuthor(unit.get())) {
+            PrintVector(output_, GetAuthorBooks(unit.get(), *author_id));
         }
-        use_cases_.EndWork();
+        unit->Commit();
     } catch (const std::exception&) {
         throw std::runtime_error("Failed to Show Books");
     }
     return true;
 }
 
-std::optional<detail::AddBookParams> View::GetBookParams(std::istream& cmd_input) const {
+std::optional<detail::AddBookParams> View::GetBookParams(app::UnitOfWork* unit, std::istream& cmd_input) const {
     detail::AddBookParams params;
 
     cmd_input >> params.publication_year;
     std::getline(cmd_input, params.title);
     boost::algorithm::trim(params.title);
 
-    auto author_id = SelectAuthor();
-    if (not author_id.has_value())
+    auto author_id = SelectAuthor(unit);
+    if (not author_id.has_value()) {
         return std::nullopt;
-    else {
-        params.author_id = author_id.value();
-        return params;
     }
+    params.author_id = author_id.value();
+    return params;
 }
 
-std::optional<std::string> View::SelectAuthor() const {
-    output_ << "Select author:" << std::endl;
-    auto authors = GetAuthors();
+std::optional<std::string> View::SelectAuthor(app::UnitOfWork* unit) const {
+    output_ << "Enter author name or empty line to select from list:"sv << std::endl;
+    std::string str;
+    if (!std::getline(input_, str) || str.empty()) {
+        return SelectAuthorFromList(unit);
+    }
+    
+    boost::algorithm::trim(str);
+    if (auto author = unit->GetAuthorIfExists(str)) {
+        return author->GetId().ToString();
+    }
+    output_ << "No author found. Do you want to add "sv << str << " (y/n)?"sv << std::endl;
+    std::string yes_or_no;
+    if (!std::getline(input_, yes_or_no) || yes_or_no.empty()) {
+        throw std::runtime_error("Parsing failed");
+    }
+    if (yes_or_no == "y" || yes_or_no == "Y") {
+        unit->AddAuthor(str);
+        return unit->GetAuthorIfExists(str).value().GetId().ToString();
+    }
+    throw std::runtime_error("Invalid answer");
+}
+
+std::optional<std::string> View::SelectAuthorFromList(app::UnitOfWork* unit) const {
+    auto authors = unit->GetAuthors();
     PrintVector(output_, authors);
-    output_ << "Enter author # or empty line to cancel" << std::endl;
+    output_ << "Enter author # or empty line to cancel"sv << std::endl;
 
     std::string str;
     if (!std::getline(input_, str) || str.empty()) {
@@ -139,7 +201,8 @@ std::optional<std::string> View::SelectAuthor() const {
     int author_idx;
     try {
         author_idx = std::stoi(str);
-    } catch (std::exception const&) {
+    }
+    catch (std::exception const&) {
         throw std::runtime_error("Invalid author num");
     }
 
@@ -148,31 +211,41 @@ std::optional<std::string> View::SelectAuthor() const {
         throw std::runtime_error("Invalid author num");
     }
 
-    return authors[author_idx].id;
+    return authors[author_idx].GetId().ToString();
 }
 
-std::vector<detail::AuthorInfo> View::GetAuthors() const {
+std::vector<detail::AuthorInfo> View::GetAuthors(app::UnitOfWork* unit) const {
     std::vector<detail::AuthorInfo> dst_autors;
-    for (auto& author : use_cases_.GetAuthors()) {
+    for (auto& author : unit->GetAuthors()) {
         dst_autors.emplace_back(std::move(author.GetId().ToString()), author.GetName());
     }
     return dst_autors;
 }
 
-std::vector<detail::BookInfo> View::GetBooks() const {
+std::vector<detail::BookInfo> View::GetBooks(app::UnitOfWork* unit) const {
     std::vector<detail::BookInfo> books;
-    for (auto& book : use_cases_.GetBooks()) {
+    for (auto& book : unit->GetBooks()) {
         books.emplace_back(book.GetTitle(), book.GetYear());
     }
     return books;
 }
 
-std::vector<detail::BookInfo> View::GetAuthorBooks(const std::string& author_id) const {
+std::vector<detail::BookInfo> View::GetAuthorBooks(app::UnitOfWork* unit, const std::string& author_id) const {
     std::vector<detail::BookInfo> books;
-    for (auto& book : use_cases_.GetBooksByAuthor(domain::AuthorId::FromString(author_id))) {
+    for (auto& book : unit->GetBooksByAuthor(domain::AuthorId::FromString(author_id))) {
         books.emplace_back(book.GetTitle(), book.GetYear());
     }
     return books;
+}
+
+void View::AddTags(app::UnitOfWork* unit, const std::string& book) const {
+    output_ << "Enter tags (comma separated):" << std::endl;
+    auto tags = ParseTags(input_);
+    if (tags.empty()) {
+        return;
+    }
+    auto found_book = unit->GetBookIfExists(book).value();
+    unit->AddTags(found_book.GetId(), tags);
 }
 
 }  // namespace ui

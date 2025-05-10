@@ -49,6 +49,8 @@ namespace domain {
         virtual void Save(const Book& book) = 0;
         virtual std::vector<Book> GetBooks() = 0;
         virtual std::vector<Book> GetBooksByAuthor(const AuthorId& id) = 0;
+        virtual std::optional<domain::Book> GetBookIfExists(const std::string& title) = 0;
+        virtual void AddTags(const BookId& id, const std::vector<std::string>& tags) = 0;
 
     protected:
         ~BookRepository() = default;

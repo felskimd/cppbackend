@@ -11,19 +11,27 @@ namespace app {
 class UnitOfWorkImpl : public UnitOfWork {
 public:
     explicit UnitOfWorkImpl(pqxx::connection& conn)
-        :work_(conn) {
-        authors_.SetWork(&work_);
-        books_.SetWork(&work_);
+        :work_{conn},
+        authors_{work_},
+        books_{work_}{
     }
 
     void Commit() override;
-    domain::AuthorRepository& Authors() override;
-    domain::BookRepository& Books() override;
+    /*domain::AuthorRepository& Authors() override;
+    domain::BookRepository& Books() override;*/
+    void AddAuthor(const std::string& name) override;
+    void AddBook(const domain::AuthorId& author, const std::string& title, int publication_year) override;
+    std::vector<domain::Author> GetAuthors() override;
+    std::vector<domain::Book> GetBooks() override;
+    std::vector<domain::Book> GetBooksByAuthor(const domain::AuthorId& id) override;
+    std::optional<domain::Author> GetAuthorIfExists(const std::string& name) override;
+    std::optional<domain::Book> GetBookIfExists(const std::string& title) override;
+    void AddTags(const domain::BookId& id, const std::vector<std::string>& tags) override;
 
 private:
+    pqxx::work work_;
     postgres::AuthorRepositoryImpl authors_;
     postgres::BookRepositoryImpl books_;
-    pqxx::work work_;
 };
 
 class UnitOfWorkFactoryImpl : public UnitOfWorkFactory {
@@ -32,7 +40,7 @@ public:
         :conn_(conn) {
     }
 
-    UnitOfWorkImpl* CreateUnit() override;
+    std::unique_ptr<UnitOfWork> CreateUnit() override;
 
 private:
     pqxx::connection& conn_;
@@ -44,19 +52,18 @@ public:
         : factory_{conn} {
     }
 
-    void StartWork() override;
-    void EndWork() override;
-    void AddAuthor(const std::string& name) override;
+    std::unique_ptr<UnitOfWork> GetUnit() override;
+    /*void AddAuthor(const std::string& name) override;
     void AddBook(const domain::AuthorId& author, const std::string& title, int publication_year) override;
     std::vector<domain::Author> GetAuthors() override;
     std::vector<domain::Book> GetBooks() override;
-    std::vector<domain::Book> GetBooksByAuthor(const domain::AuthorId& id) override;
+    std::vector<domain::Book> GetBooksByAuthor(const domain::AuthorId& id) override;*/
 
 private:
     UnitOfWorkFactoryImpl factory_;
     std::unique_ptr<UnitOfWorkImpl> unit_;
 
-    void AssertUnit();
+    //void AssertUnit();
 };
 
 }  // namespace app

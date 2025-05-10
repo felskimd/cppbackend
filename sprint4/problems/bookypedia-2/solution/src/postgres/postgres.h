@@ -9,42 +9,45 @@ namespace postgres {
 
 class AuthorRepositoryImpl : public domain::AuthorRepository {
 public:
-    AuthorRepositoryImpl() = default;
+    AuthorRepositoryImpl(pqxx::work& work) 
+        :work_{work} {
+    };
 
-    void SetWork(pqxx::work* work);
-    void ResetWork();
     void Save(const domain::Author& author) override;
     std::vector<domain::Author> GetAuthors() override;
+    std::optional<domain::Author> GetAuthorIfExists(const std::string& name) override;
 
 private:
-    pqxx::work* work_ = nullptr;
+    pqxx::work& work_;
 };
 
 class BookRepositoryImpl : public domain::BookRepository {
 public:
-    BookRepositoryImpl() = default;
+    BookRepositoryImpl(pqxx::work& work)
+        :work_{ work } {
+    };
 
-    void SetWork(pqxx::work* work);
-    void ResetWork();
     void Save(const domain::Book& book) override;
     std::vector<domain::Book> GetBooks() override; 
     std::vector<domain::Book> GetBooksByAuthor(const domain::AuthorId& id) override;
+    std::optional<domain::Book> GetBookIfExists(const std::string& title) override;
+    void AddTags(const domain::BookId& id, const std::vector<std::string>& tags) override;
 
 private:
-    pqxx::work* work_ = nullptr;
+    pqxx::work& work_;
 };
 
 class Database {
 public:
     explicit Database(pqxx::connection connection);
 
-    AuthorRepositoryImpl& GetAuthors() & {
+    /*AuthorRepositoryImpl& GetAuthors() & {
         return authors_;
     }
 
     BookRepositoryImpl& GetBooks() & {
         return books_;
-    }
+    }*/
 
     pqxx::connection& GetConnection() {
         return connection_;
@@ -52,8 +55,8 @@ public:
 
 private:
     pqxx::connection connection_;
-    AuthorRepositoryImpl authors_;
-    BookRepositoryImpl books_;
+    /*AuthorRepositoryImpl authors_;
+    BookRepositoryImpl books_;*/
 };
 
 }  // namespace postgres
