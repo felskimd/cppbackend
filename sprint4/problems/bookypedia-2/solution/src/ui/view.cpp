@@ -189,7 +189,7 @@ std::optional<std::string> View::SelectAuthor(app::UnitOfWork* unit) const {
 }
 
 std::optional<std::string> View::SelectAuthorFromList(app::UnitOfWork* unit) const {
-    auto authors = unit->GetAuthors();
+    auto authors = GetAuthors(unit);
     PrintVector(output_, authors);
     output_ << "Enter author # or empty line to cancel"sv << std::endl;
 
@@ -211,7 +211,7 @@ std::optional<std::string> View::SelectAuthorFromList(app::UnitOfWork* unit) con
         throw std::runtime_error("Invalid author num");
     }
 
-    return authors[author_idx].GetId().ToString();
+    return authors[author_idx].id;
 }
 
 std::vector<detail::AuthorInfo> View::GetAuthors(app::UnitOfWork* unit) const {

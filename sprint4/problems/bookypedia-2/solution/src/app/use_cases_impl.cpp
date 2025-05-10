@@ -35,7 +35,7 @@ std::vector<domain::Book> UnitOfWorkImpl::GetBooks() {
 }
 
 std::vector<domain::Book> UnitOfWorkImpl::GetBooksByAuthor(const domain::AuthorId& id) {
-    books_.GetBooksByAuthor(id);
+    return books_.GetBooksByAuthor(id);
 }
 
 std::optional<domain::Author> UnitOfWorkImpl::GetAuthorIfExists(const std::string& name) {
