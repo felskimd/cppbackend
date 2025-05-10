@@ -25,11 +25,13 @@ UnitOfWorkImpl* UnitOfWorkFactoryImpl::CreateUnit() {
 }
 
 void UseCasesImpl::StartWork() {
-    if (unit_ == nullptr) {
+    if (unit_) {
         throw std::runtime_error("Work already started");
     }
-    //unit_ = std::make_unique<UnitOfWork>(factory_.CreateUnit());
-    unit_ = factory_.CreateUnit();
+    //auto unit = factory_.CreateUnit();
+    unit_.reset(factory_.CreateUnit());
+    //unit_ = std::make_unique<UnitOfWorkImpl>(unit);
+    //unit_ = factory_.CreateUnit();
 }
 
 void UseCasesImpl::EndWork() {
@@ -37,9 +39,7 @@ void UseCasesImpl::EndWork() {
         throw std::runtime_error("Work not started");
     }
     unit_->Commit();
-    //unit_.reset();
-    delete unit_;
-    unit_ = nullptr;
+    unit_.reset();
 }
 
 void UseCasesImpl::AddAuthor(const std::string& name) {

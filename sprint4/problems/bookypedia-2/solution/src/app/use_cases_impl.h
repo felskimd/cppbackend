@@ -52,16 +52,9 @@ public:
     std::vector<domain::Book> GetBooks() override;
     std::vector<domain::Book> GetBooksByAuthor(const domain::AuthorId& id) override;
 
-    ~UseCasesImpl() {
-        if (unit_) {
-            delete unit_;
-        }
-    }
-
 private:
     UnitOfWorkFactoryImpl factory_;
-    //std::unique_ptr<UnitOfWork> unit_;
-    UnitOfWork* unit_ = nullptr;
+    std::unique_ptr<UnitOfWorkImpl> unit_;
 
     void AssertUnit();
 };

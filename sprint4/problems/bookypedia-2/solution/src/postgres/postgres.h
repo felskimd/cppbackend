@@ -17,7 +17,7 @@ public:
     std::vector<domain::Author> GetAuthors() override;
 
 private:
-    pqxx::work* work_;
+    pqxx::work* work_ = nullptr;
 };
 
 class BookRepositoryImpl : public domain::BookRepository {
@@ -31,7 +31,7 @@ public:
     std::vector<domain::Book> GetBooksByAuthor(const domain::AuthorId& id) override;
 
 private:
-    pqxx::work* work_;
+    pqxx::work* work_ = nullptr;
 };
 
 class Database {
