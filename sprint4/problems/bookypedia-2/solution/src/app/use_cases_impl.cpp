@@ -7,9 +7,10 @@ namespace app {
 using namespace domain;
 
 void UnitOfWorkImpl::Commit() {
-    work_.commit();
+    //work_.commit();
     authors_.ResetWork();
     books_.ResetWork();
+    work_.commit();
 }
 
 AuthorRepository& UnitOfWorkImpl::Authors() {
