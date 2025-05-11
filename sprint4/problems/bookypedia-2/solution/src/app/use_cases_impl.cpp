@@ -47,8 +47,9 @@ void UnitOfWorkImpl::AddTags(const domain::BookId& id, const std::vector<std::st
 }
 
 void UnitOfWorkImpl::DeleteAuthor(const domain::Author& author) {
-    authors_.DeleteAuthor(author.GetName());
     books_.DeleteBooksOfAuthor(author.GetId());
+    authors_.DeleteAuthor(author.GetName());
+    //books_.DeleteBooksOfAuthor(author.GetId());
 }
 
 void UnitOfWorkImpl::EditAuthor(const domain::Author& author) {
