@@ -13,6 +13,11 @@
 using namespace std::literals;
 namespace ph = std::placeholders;
 
+std::ostream& operator<<(std::ostream& out, const domain::Book& book) {
+    out << book.GetTitle() << " by " << book.GetAuthorName() << ", " << book.GetYear();
+    return out;
+}
+
 namespace ui {
 namespace detail {
 
@@ -279,7 +284,7 @@ bool View::ShowBook(std::istream& cmd_input) const {
         }
 
         --book_idx;
-        if (author_idx < 0 or book_idx >= books.size()) {
+        if (book_idx < 0 or book_idx >= books.size()) {
             throw std::runtime_error("Invalid book num");
         }
         auto& book = books[book_idx];

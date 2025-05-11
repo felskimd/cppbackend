@@ -163,7 +163,7 @@ std::vector<std::string> BookRepositoryImpl::GetTags(const domain::BookId& id) {
 SELECT tag FROM book_tags WHERE book_id=$1
 )", id.ToString());
     for (const auto& row : tags) {
-        result.emplace_back(row.as<std::string>());
+        result.emplace_back(std::get<0>(row.as<std::string>()));
     }
     return result;
 }
