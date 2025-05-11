@@ -170,7 +170,7 @@ bool View::DeleteAuthor(std::istream& cmd_input) const {
                 unit->Commit();
             }
             else {
-                throw std::runtime_error("Failed to delete author");
+                throw std::exception("Failed to delete author");
             }
         }
         else {
@@ -180,7 +180,7 @@ bool View::DeleteAuthor(std::istream& cmd_input) const {
                 unit->Commit();
             }
             else {
-                throw std::runtime_error("Failed to delete author");
+                throw std::exception("Failed to delete author");
             }
         }
     }
@@ -212,6 +212,7 @@ bool View::EditAuthor(std::istream& cmd_input) const {
                 unit->Commit();
             }
         }
+        //throw
     }
     catch (const std::exception&) {
         output_ << "Failed to edit author"sv << std::endl;
