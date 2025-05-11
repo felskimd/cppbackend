@@ -8,6 +8,7 @@ using namespace domain;
 
 void UnitOfWorkImpl::Commit() {
     work_.commit();
+    delete this;
 }
 
 void UnitOfWorkImpl::AddAuthor(const std::string& name) {
