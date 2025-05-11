@@ -27,7 +27,7 @@ std::ostream& operator<<(std::ostream& out, const BookInfo& book) {
 }
 
 std::ostream& operator<<(std::ostream& out, const BookInfoWithAuthor& book) {
-    out << book.title << "by " << book.author << ", " << book.publication_year;
+    out << book.title << " by " << book.author << ", " << book.publication_year;
     return out;
 }
 
