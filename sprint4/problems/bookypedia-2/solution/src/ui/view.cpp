@@ -97,16 +97,13 @@ View::View(menu::Menu& menu, app::UseCases& use_cases, std::istream& input, std:
     menu_.AddAction("DeleteAuthor"s, "<name>", "Delete author and all his books, type empty name to select from list"s,
         std::bind(&View::DeleteAuthor, this, ph::_1));
     menu_.AddAction("EditAuthor"s, "<name>", "Edit author name, type empty name to select from list"s,
-        std::bind(&View::DeleteAuthor, this, ph::_1));
+        std::bind(&View::EditAuthor, this, ph::_1));
 }
 
 bool View::AddAuthor(std::istream& cmd_input) const {
     try {
         std::string name;
-        if (!getline(cmd_input, name)) {
-            throw std::exception();
-        }
-        if (name.empty()) {
+        if (!getline(cmd_input, name) || name.empty()) {
             throw std::exception();
         }
         boost::algorithm::trim(name);
@@ -167,9 +164,7 @@ bool View::ShowAuthorBooks() const {
 bool View::DeleteAuthor(std::istream& cmd_input) const {
     try {
         std::string name;
-        if (!std::getline(cmd_input, name)) {
-            throw std::exception();
-        }
+        std::getline(cmd_input, name);
         auto unit = use_cases_.GetUnit();
         if (name.empty()) {
             if (auto selected_author = SelectAuthorFromList(unit.get())) {
