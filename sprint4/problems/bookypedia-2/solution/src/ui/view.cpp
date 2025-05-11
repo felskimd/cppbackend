@@ -177,7 +177,6 @@ bool View::DeleteAuthor(std::istream& cmd_input) const {
         if (name.empty()) {
             if (auto selected_author = SelectAuthorFromList(unit.get())) {
                 unit->DeleteAuthor({domain::AuthorId::FromString(selected_author->id), selected_author->name});
-                unit->Commit();
             }
             else {
                 unit->Commit();
@@ -188,13 +187,13 @@ bool View::DeleteAuthor(std::istream& cmd_input) const {
             boost::algorithm::trim(name);
             if (auto author = unit->GetAuthorIfExists(name)) {
                 unit->DeleteAuthor(author.value());
-                unit->Commit();
             }
             else {
                 unit->Commit();
                 throw std::exception();
             }
         }
+        unit->Commit();
     }
     catch (const std::exception&) {
         output_ << "Failed to delete author"sv << std::endl;
@@ -214,9 +213,9 @@ bool View::EditAuthor(std::istream& cmd_input) const {
                 input_ >> new_name;
                 boost::algorithm::trim(new_name);
                 unit->EditAuthor({ domain::AuthorId::FromString(selected_author->id), new_name });
-                unit->Commit();
             }
             else {
+                unit->Commit();
                 throw std::exception();
             }
         }
@@ -224,12 +223,13 @@ bool View::EditAuthor(std::istream& cmd_input) const {
             boost::algorithm::trim(name);
             if (auto author = unit->GetAuthorIfExists(name)) {
                 unit->EditAuthor({author.value().GetId(), name});
-                unit->Commit();
             }
             else {
+                unit->Commit();
                 throw std::exception();
             }
         }
+        unit->Commit();
     }
     catch (const std::exception&) {
         output_ << "Failed to edit author"sv << std::endl;
@@ -282,11 +282,13 @@ bool View::ShowBook(std::istream& cmd_input) const {
             book_idx = std::stoi(str);
         }
         catch (std::exception const&) {
+            unit->Commit();
             throw std::runtime_error("Invalid book num");
         }
 
         --book_idx;
         if (book_idx < 0 or book_idx >= books.size()) {
+            unit->Commit();
             throw std::runtime_error("Invalid book num");
         }
         auto& book = books[book_idx];
