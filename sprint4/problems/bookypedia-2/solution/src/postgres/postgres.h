@@ -32,9 +32,11 @@ public:
     void Save(const domain::Book& book) override;
     std::vector<domain::Book> GetBooks() override; 
     std::vector<domain::Book> GetBooksByAuthor(const domain::AuthorId& id) override;
+    std::vector<domain::Book> GetBooksByTitle(const std::string& title) override;
     std::optional<domain::Book> GetBookIfExists(const std::string& title) override;
     void AddTags(const domain::BookId& id, const std::vector<std::string>& tags) override;
     void DeleteBooksOfAuthor(const domain::AuthorId& id) override;
+    std::vector<std::string> GetTags(const domain::BookId& id) override;
 
 
 private:

@@ -102,6 +102,23 @@ ORDER BY publication_year ASC, title ASC
     return result;
 }
 
+std::vector<domain::Book> BookRepositoryImpl::GetBooksByTitle(const std::string& title) {
+    std::vector<domain::Book> result;
+    pqxx::result data = work_.exec_params(R"(
+SELECT id, author_id, title, publication_year FROM books WHERE title=$1
+)", title);
+    for (const auto& row : data) {
+        auto [id, author_id, title, year] = row.as<std::string, std::string, std::string, int>();
+        result.emplace_back(
+            domain::BookId::FromString(id)
+            , domain::AuthorId::FromString(author_id)
+            , std::move(title)
+            , year
+        );
+    }
+    return result;
+}
+
 std::optional<domain::Book> BookRepositoryImpl::GetBookIfExists(const std::string& title) {
     try {
         auto row = work_.exec_params1(R"(
@@ -138,6 +155,17 @@ DELETE FROM book_tags WHERE book_id=$1
     work_.exec_params(R"(
 DELETE FROM books WHERE author_id=$1
 )", id.ToString());
+}
+
+std::vector<std::string> BookRepositoryImpl::GetTags(const domain::BookId& id) {
+    std::vector<std::string> result;
+    auto tags = work_.exec_params(R"(
+SELECT tag FROM book_tags WHERE book_id=$1
+)", id.ToString());
+    for (const auto& row : tags) {
+        result.emplace_back(row.as<std::string>());
+    }
+    return result;
 }
 
 Database::Database(pqxx::connection connection)

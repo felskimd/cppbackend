@@ -34,6 +34,10 @@ std::vector<domain::Book> UnitOfWorkImpl::GetBooksByAuthor(const domain::AuthorI
     return books_.GetBooksByAuthor(id);
 }
 
+std::vector<domain::Book> UnitOfWorkImpl::GetBooksByTitle(const std::string& title) {
+    return books_.GetBooksByTitle(title);
+}
+
 std::optional<domain::Author> UnitOfWorkImpl::GetAuthorIfExists(const std::string& name) {
     return authors_.GetAuthorIfExists(name);
 }
@@ -53,6 +57,10 @@ void UnitOfWorkImpl::DeleteAuthor(const domain::Author& author) {
 
 void UnitOfWorkImpl::EditAuthor(const domain::Author& author) {
     authors_.Save(author);
+}
+
+std::vector<std::string> UnitOfWorkImpl::GetTags(const domain::BookId& id) {
+    return books_.GetTags(id);
 }
 
 std::unique_ptr<UnitOfWork> UnitOfWorkFactoryImpl::CreateUnit() {

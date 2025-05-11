@@ -36,6 +36,7 @@ struct BookInfo {
 };
 
 struct BookInfoWithAuthor {
+    domain::BookId id;
     std::string title;
     std::string author;
     int publication_year;
@@ -55,6 +56,7 @@ private:
     bool ShowAuthorBooks() const;
     bool DeleteAuthor(std::istream& cmd_input) const;
     bool EditAuthor(std::istream& cmd_input) const;
+    bool ShowBook(std::istream& cmd_input) const;
 
     std::optional<detail::AddBookParams> GetBookParams(app::UnitOfWork* unit, std::istream& cmd_input) const;
     std::optional<detail::AuthorInfo> SelectAuthor(app::UnitOfWork* unit) const;
@@ -63,6 +65,7 @@ private:
     std::vector<detail::BookInfoWithAuthor> GetBooks(app::UnitOfWork* unit) const;
     std::vector<detail::BookInfo> GetAuthorBooks(app::UnitOfWork* unit, const std::string& author_id) const;
     void AddTags(app::UnitOfWork* unit, const std::string& book) const;
+    std::optional<detail::BookInfoWithAuthor> SelectBook(app::UnitOfWork* unit) const;
 
     menu::Menu& menu_;
     app::UseCases& use_cases_;

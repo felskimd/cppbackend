@@ -16,11 +16,13 @@ public:
     virtual std::vector<domain::Author> GetAuthors() = 0;
     virtual std::vector<domain::Book> GetBooks() = 0;
     virtual std::vector<domain::Book> GetBooksByAuthor(const domain::AuthorId& id) = 0;
+    virtual std::vector<domain::Book> GetBooksByTitle(const std::string& title) = 0;
     virtual std::optional<domain::Author> GetAuthorIfExists(const std::string& name) = 0;
     virtual std::optional<domain::Book> GetBookIfExists(const std::string& title) = 0;
     virtual void AddTags(const domain::BookId& id, const std::vector<std::string>& tags) = 0;
     virtual void DeleteAuthor(const domain::Author& author) = 0;
     virtual void EditAuthor(const domain::Author& author) = 0;
+    virtual std::vector<std::string> GetTags(const domain::BookId& id) = 0;
 };
 
 class UnitOfWorkFactory {

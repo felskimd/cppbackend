@@ -98,6 +98,8 @@ View::View(menu::Menu& menu, app::UseCases& use_cases, std::istream& input, std:
         std::bind(&View::DeleteAuthor, this, ph::_1));
     menu_.AddAction("EditAuthor"s, "<name>", "Edit author name, type empty name to select from list"s,
         std::bind(&View::EditAuthor, this, ph::_1));
+    menu_.AddAction("ShowBook"s, "<title>", "Show all book info, type empty title to select from list"s,
+        std::bind(&View::ShowBook, this, ph::_1));
 }
 
 bool View::AddAuthor(std::istream& cmd_input) const {
@@ -154,6 +156,7 @@ bool View::ShowAuthorBooks() const {
         if (auto author = SelectAuthor(unit.get())) {
             PrintVector(output_, GetAuthorBooks(unit.get(), author->id));
         }
+
         unit->Commit();
     } catch (const std::exception&) {
         output_ << "Failed to Show Books"sv << std::endl;
@@ -223,6 +226,82 @@ bool View::EditAuthor(std::istream& cmd_input) const {
     }
     catch (const std::exception&) {
         output_ << "Failed to edit author"sv << std::endl;
+    }
+    return true;
+}
+
+bool View::ShowBook(std::istream& cmd_input) const {
+    std::string title;
+    std::getline(cmd_input, title);
+    auto unit = use_cases_.GetUnit();
+    if (title.empty()) {
+        if (auto book = SelectBook(unit.get())) {
+            auto tags = unit->GetTags(book->id);
+            unit->Commit();
+            output_ << "Title: " << book->title << std::endl;
+            output_ << "Author: " << book->author << std::endl;
+            output_ << "Publication year: " << book->publication_year << std::endl;
+            if (!tags.empty()) {
+                output_ << "Tags: ";
+                bool first = true;
+                for (const auto& tag : tags) {
+                    if (first) {
+                        first = false;
+                    }
+                    else {
+                        output_ << ", ";
+                    }
+                    output_ << tag;
+                }
+                output_ << std::endl;
+            }
+        }
+    }
+    else {
+        auto books = unit->GetBooksByTitle(title);
+        if (books.empty()) {
+            unit->Commit();
+            return true;
+        }
+        PrintVector(output_, books);
+        output_ << "Enter the book # or empty line to cancel:" << std::endl;
+        std::string str;
+        if (!std::getline(input_, str) || str.empty()) {
+            return true;
+        }
+
+        int book_idx;
+        try {
+            book_idx = std::stoi(str);
+        }
+        catch (std::exception const&) {
+            throw std::runtime_error("Invalid book num");
+        }
+
+        --book_idx;
+        if (author_idx < 0 or book_idx >= books.size()) {
+            throw std::runtime_error("Invalid book num");
+        }
+        auto& book = books[book_idx];
+        auto tags = unit->GetTags(book.GetId());
+        unit->Commit();
+        output_ << "Title: " << book.GetTitle() << std::endl;
+        output_ << "Author: " << book.GetAuthorName() << std::endl;
+        output_ << "Publication year: " << book.GetYear() << std::endl;
+        if (!tags.empty()) {
+            output_ << "Tags: ";
+            bool first = true;
+            for (const auto& tag : tags) {
+                if (first) {
+                    first = false;
+                }
+                else {
+                    output_ << ", ";
+                }
+                output_ << tag;
+            }
+            output_ << std::endl;
+        }
     }
     return true;
 }
@@ -303,7 +382,7 @@ std::vector<detail::AuthorInfo> View::GetAuthors(app::UnitOfWork* unit) const {
 std::vector<detail::BookInfoWithAuthor> View::GetBooks(app::UnitOfWork* unit) const {
     std::vector<detail::BookInfoWithAuthor> books;
     for (auto& book : unit->GetBooks()) {
-        books.emplace_back(book.GetTitle(), book.GetAuthorName(), book.GetYear());
+        books.emplace_back(book.GetId(), book.GetTitle(), book.GetAuthorName(), book.GetYear());
     }
     return books;
 }
@@ -324,6 +403,32 @@ void View::AddTags(app::UnitOfWork* unit, const std::string& book) const {
     }
     auto found_book = unit->GetBookIfExists(book).value();
     unit->AddTags(found_book.GetId(), tags);
+}
+
+std::optional<detail::BookInfoWithAuthor> View::SelectBook(app::UnitOfWork* unit) const {
+    auto books = GetBooks(unit);
+    PrintVector(output_, books);
+    output_ << "Enter the book # or empty line to cancel:"sv << std::endl;
+
+    std::string str;
+    if (!std::getline(input_, str) || str.empty()) {
+        return std::nullopt;
+    }
+
+    int book_idx;
+    try {
+        book_idx = std::stoi(str);
+    }
+    catch (std::exception const&) {
+        throw std::runtime_error("Invalid author num");
+    }
+
+    --book_idx;
+    if (book_idx < 0 or book_idx >= books.size()) {
+        throw std::runtime_error("Invalid author num");
+    }
+
+    return books[book_idx];
 }
 
 }  // namespace ui
