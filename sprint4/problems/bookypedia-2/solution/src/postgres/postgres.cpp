@@ -130,15 +130,14 @@ INSERT INTO book_tags (book_id, tag) VALUES ($1, $2)
 }
 
 void BookRepositoryImpl::DeleteBooksOfAuthor(const domain::AuthorId& id) {
-    auto books = GetBooksByAuthor(id);
-    work_.exec_params(R"(
-DELETE FROM books WHERE author_id=$1
-)", id.ToString());
-    for (const auto& book : books) {
+    for (const auto& book : GetBooksByAuthor(id)) {
         work_.exec_params(R"(
 DELETE FROM book_tags WHERE book_id=$1
 )", book.GetId().ToString());
     }
+    work_.exec_params(R"(
+DELETE FROM books WHERE author_id=$1
+)", id.ToString());
 }
 
 Database::Database(pqxx::connection connection)
