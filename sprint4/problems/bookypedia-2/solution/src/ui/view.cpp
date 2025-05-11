@@ -111,7 +111,6 @@ bool View::AddAuthor(std::istream& cmd_input) const {
         auto unit = use_cases_.GetUnit();
         unit->AddAuthor(std::move(name));
         unit->Commit();
-        unit.reset();
     } catch (const std::exception&) {
         output_ << "Failed to add author"sv << std::endl;
     }
@@ -126,7 +125,6 @@ bool View::AddBook(std::istream& cmd_input) const {
             AddTags(unit.get(), params->title);
         }
         unit->Commit();
-        unit.reset();
     } catch (const std::exception&) {
         output_ << "Failed to add book"sv << std::endl;
     }
@@ -137,7 +135,6 @@ bool View::ShowAuthors() const {
     auto unit = use_cases_.GetUnit();
     PrintVector(output_, GetAuthors(unit.get()));
     unit->Commit();
-    unit.reset();
     return true;
 }
 
@@ -145,7 +142,6 @@ bool View::ShowBooks() const {
     auto unit = use_cases_.GetUnit();
     PrintVector(output_, GetBooks(unit.get()));
     unit->Commit();
-    unit.reset();
     return true;
 }
 
@@ -157,9 +153,8 @@ bool View::ShowAuthorBooks() const {
             PrintVector(output_, GetAuthorBooks(unit.get(), author->id));
         }
         unit->Commit();
-        unit.reset();
     } catch (const std::exception&) {
-        throw std::runtime_error("Failed to Show Books");
+        output_ << "Failed to Show Books"sv << std::endl;
     }
     return true;
 }
@@ -173,7 +168,6 @@ bool View::DeleteAuthor(std::istream& cmd_input) const {
             if (auto selected_author = SelectAuthorFromList(unit.get())) {
                 unit->DeleteAuthor({domain::AuthorId::FromString(selected_author->id), selected_author->name});
                 unit->Commit();
-                unit.reset();
             }
             else {
                 throw std::runtime_error("Failed to delete author");
@@ -184,7 +178,6 @@ bool View::DeleteAuthor(std::istream& cmd_input) const {
             if (auto author = unit->GetAuthorIfExists(name)) {
                 unit->DeleteAuthor(author.value());
                 unit->Commit();
-                unit.reset();
             }
             else {
                 throw std::runtime_error("Failed to delete author");
@@ -192,7 +185,7 @@ bool View::DeleteAuthor(std::istream& cmd_input) const {
         }
     }
     catch (const std::exception&) {
-        throw std::runtime_error("Failed to delete author");
+        output_ << "Failed to delete author"sv << std::endl;
     }
     return true;
 }
@@ -210,7 +203,6 @@ bool View::EditAuthor(std::istream& cmd_input) const {
                 boost::algorithm::trim(new_name);
                 unit->EditAuthor({ domain::AuthorId::FromString(selected_author->id), new_name });
                 unit->Commit();
-                unit.reset();
             }
         }
         else {
@@ -218,12 +210,11 @@ bool View::EditAuthor(std::istream& cmd_input) const {
             if (auto author = unit->GetAuthorIfExists(name)) {
                 unit->EditAuthor({author.value().GetId(), name});
                 unit->Commit();
-                unit.reset();
             }
         }
     }
     catch (const std::exception&) {
-        throw std::runtime_error("Failed to edit author");
+        output_ << "Failed to edit author"sv << std::endl;
     }
     return true;
 }
