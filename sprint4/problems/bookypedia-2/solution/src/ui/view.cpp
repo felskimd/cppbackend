@@ -206,6 +206,9 @@ bool View::EditAuthor(std::istream& cmd_input) const {
                 unit->EditAuthor({ domain::AuthorId::FromString(selected_author->id), new_name });
                 unit->Commit();
             }
+            else {
+                throw std::exception();
+            }
         }
         else {
             boost::algorithm::trim(name);
@@ -213,8 +216,10 @@ bool View::EditAuthor(std::istream& cmd_input) const {
                 unit->EditAuthor({author.value().GetId(), name});
                 unit->Commit();
             }
+            else {
+                throw std::exception();
+            }
         }
-        //throw
     }
     catch (const std::exception&) {
         output_ << "Failed to edit author"sv << std::endl;
