@@ -21,13 +21,7 @@ ON CONFLICT (id) DO UPDATE SET name=$2;
 }
 
 std::vector<domain::Author> AuthorRepositoryImpl::GetAuthors() {
-    //pqxx::read_transaction trans{connection_};
     std::vector<domain::Author> result;
-    /*for (auto [id, name] : work_->query<std::string, std::string>(R"(
-SELECT id, name FROM authors ORDER BY name ASC
-)"_zv)) {
-        result.emplace_back(domain::AuthorId::FromString(id), std::move(name));
-    }*/
     pqxx::result data = work_.exec(R"(
 SELECT id, name FROM authors ORDER BY name ASC
 )"_zv);
@@ -51,19 +45,14 @@ SELECT id, name FROM authors WHERE name=$1
     }
 }
 
+void AuthorRepositoryImpl::DeleteAuthor(const std::string& name) {
+    work_.exec_params(R"(
+DELETE FROM authors WHERE name=$1
+)", name);
+}
+
 std::vector<domain::Book> BookRepositoryImpl::GetBooks() {
-    //pqxx::read_transaction trans{ connection_ };
     std::vector<domain::Book> result;
-    /*for (auto [id, author_id, title, year] : trans.query<std::string, std::string, std::string, int>(R"(
-SELECT id, author_id, title, publication_year FROM books ORDER BY title ASC
-)"_zv)) {
-        result.emplace_back(
-            domain::BookId::FromString(id)
-            , domain::AuthorId::FromString(author_id)
-            , std::move(title)
-            , year
-        );
-    }*/
     pqxx::result data = work_.exec(R"(
 SELECT id, author_id, title, publication_year FROM books ORDER BY title ASC
 )"_zv);
@@ -80,29 +69,15 @@ SELECT id, author_id, title, publication_year FROM books ORDER BY title ASC
 }
 
 void BookRepositoryImpl::Save(const domain::Book& book) {
-    //pqxx::work work{ connection_ };
     work_.exec_params(R"(
 INSERT INTO books (id, author_id, title, publication_year) VALUES ($1, $2, $3, $4)
 ON CONFLICT (id) DO UPDATE SET author_id=$2, title=$3, publication_year=$4;
 )"_zv,
         book.GetId().ToString(), book.GetAuthor().ToString(), book.GetTitle(), book.GetYear());
-    //work.commit();
 }
 
 std::vector<domain::Book> BookRepositoryImpl::GetBooksByAuthor(const domain::AuthorId& id) {
-    //pqxx::read_transaction trans{ connection_ };
     std::vector<domain::Book> result;
-    /*for (auto [book_id, author_id, title, year] : trans.query<std::string, std::string, std::string, int>(R"(
-SELECT id, author_id, title, publication_year FROM books WHERE author_id=')" 
-+ id.ToString() + R"(' ORDER BY publication_year ASC, title ASC
-)")) {
-        result.emplace_back(
-            domain::BookId::FromString(book_id)
-            , domain::AuthorId::FromString(author_id)
-            , std::move(title)
-            , year
-        );
-    }*/
     pqxx::result data = work_.exec_params(R"(
 SELECT id, author_id, title, publication_year FROM books WHERE author_id=$1
 ORDER BY publication_year ASC, title ASC
@@ -143,6 +118,18 @@ void BookRepositoryImpl::AddTags(const domain::BookId& id, const std::vector<std
         work_.exec_params(R"(
 INSERT INTO book_tags (book_id, tag) VALUES ($1, $2)
 )"_zv, id_str, tag);
+    }
+}
+
+void BookRepositoryImpl::DeleteBooksOfAuthor(const domain::AuthorId& id) {
+    auto books = GetBooksByAuthor(id);
+    work_.exec_params(R"(
+DELETE FROM books WHERE author_id=$1
+)", id.ToString());
+    for (const auto& book : books) {
+        work_.exec_params(R"(
+DELETE FROM book_tags WHERE book_id=$1
+)", book.GetId().ToString());
     }
 }
 

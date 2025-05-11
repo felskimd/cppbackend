@@ -16,6 +16,7 @@ public:
     void Save(const domain::Author& author) override;
     std::vector<domain::Author> GetAuthors() override;
     std::optional<domain::Author> GetAuthorIfExists(const std::string& name) override;
+    void DeleteAuthor(const std::string& name) override;
 
 private:
     pqxx::work& work_;
@@ -32,6 +33,8 @@ public:
     std::vector<domain::Book> GetBooksByAuthor(const domain::AuthorId& id) override;
     std::optional<domain::Book> GetBookIfExists(const std::string& title) override;
     void AddTags(const domain::BookId& id, const std::vector<std::string>& tags) override;
+    void DeleteBooksOfAuthor(const domain::AuthorId& id) override;
+
 
 private:
     pqxx::work& work_;

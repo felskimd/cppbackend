@@ -47,10 +47,12 @@ private:
     bool ShowAuthors() const;
     bool ShowBooks() const;
     bool ShowAuthorBooks() const;
+    bool DeleteAuthor(std::istream& cmd_input) const;
+    bool EditAuthor(std::istream& cmd_input) const;
 
     std::optional<detail::AddBookParams> GetBookParams(app::UnitOfWork* unit, std::istream& cmd_input) const;
-    std::optional<std::string> SelectAuthor(app::UnitOfWork* unit) const;
-    std::optional<std::string> SelectAuthorFromList(app::UnitOfWork* unit) const;
+    std::optional<detail::AuthorInfo> SelectAuthor(app::UnitOfWork* unit) const;
+    std::optional<detail::AuthorInfo> SelectAuthorFromList(app::UnitOfWork* unit) const;
     std::vector<detail::AuthorInfo> GetAuthors(app::UnitOfWork* unit) const;
     std::vector<detail::BookInfo> GetBooks(app::UnitOfWork* unit) const;
     std::vector<detail::BookInfo> GetAuthorBooks(app::UnitOfWork* unit, const std::string& author_id) const;

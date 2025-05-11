@@ -89,6 +89,10 @@ View::View(menu::Menu& menu, app::UseCases& use_cases, std::istream& input, std:
     menu_.AddAction("ShowBooks"s, {}, "Show books"s, std::bind(&View::ShowBooks, this));
     menu_.AddAction("ShowAuthorBooks"s, {}, "Show author books"s,
                     std::bind(&View::ShowAuthorBooks, this));
+    menu_.AddAction("DeleteAuthor"s, "<name>", "Delete author and all his books, type empty name to select from list"s,
+        std::bind(&View::DeleteAuthor, this, ph::_1));
+    menu_.AddAction("EditAuthor"s, "<name>", "Edit author name, type empty name to select from list"s,
+        std::bind(&View::DeleteAuthor, this, ph::_1));
 }
 
 bool View::AddAuthor(std::istream& cmd_input) const {
@@ -140,12 +144,67 @@ bool View::ShowAuthorBooks() const {
     // TODO: handle error
     try {
         auto unit = use_cases_.GetUnit();
-        if (auto author_id = SelectAuthor(unit.get())) {
-            PrintVector(output_, GetAuthorBooks(unit.get(), *author_id));
+        if (auto author = SelectAuthor(unit.get())) {
+            PrintVector(output_, GetAuthorBooks(unit.get(), author->id));
         }
         unit->Commit();
     } catch (const std::exception&) {
         throw std::runtime_error("Failed to Show Books");
+    }
+    return true;
+}
+
+bool View::DeleteAuthor(std::istream& cmd_input) const {
+    try {
+        std::string name;
+        std::getline(cmd_input, name);
+        auto unit = use_cases_.GetUnit();
+        if (name.empty()) {
+            if (auto selected_author = SelectAuthorFromList(unit.get())) {
+                unit->DeleteAuthor({domain::AuthorId::FromString(selected_author->id), selected_author->name});
+                unit->Commit();
+            }
+        }
+        else {
+            boost::algorithm::trim(name);
+            if (auto author = unit->GetAuthorIfExists(name)) {
+                unit->DeleteAuthor(author.value());
+                unit->Commit();
+            }
+        }
+        throw std::runtime_error("Failed to delete author");
+    }
+    catch (const std::exception&) {
+        throw std::runtime_error("Failed to delete author");
+    }
+    return true;
+}
+
+bool View::EditAuthor(std::istream& cmd_input) const {
+    try {
+        std::string name;
+        std::getline(cmd_input, name);
+        auto unit = use_cases_.GetUnit();
+        if (name.empty()) {
+            if (auto selected_author = SelectAuthorFromList(unit.get())) {
+                output_ << "Enter new name:" << std::endl;
+                std::string new_name;
+                input_ >> new_name;
+                boost::algorithm::trim(new_name);
+                unit->EditAuthor({ domain::AuthorId::FromString(selected_author->id), new_name });
+                unit->Commit();
+            }
+        }
+        else {
+            boost::algorithm::trim(name);
+            if (auto author = unit->GetAuthorIfExists(name)) {
+                unit->EditAuthor({author.value().GetId(), name});
+                unit->Commit();
+            }
+        }
+    }
+    catch (const std::exception&) {
+        throw std::runtime_error("Failed to edit author");
     }
     return true;
 }
@@ -157,15 +216,15 @@ std::optional<detail::AddBookParams> View::GetBookParams(app::UnitOfWork* unit, 
     std::getline(cmd_input, params.title);
     boost::algorithm::trim(params.title);
 
-    auto author_id = SelectAuthor(unit);
-    if (not author_id.has_value()) {
+    auto author = SelectAuthor(unit);
+    if (not author.has_value()) {
         return std::nullopt;
     }
-    params.author_id = author_id.value();
+    params.author_id = author->id;
     return params;
 }
 
-std::optional<std::string> View::SelectAuthor(app::UnitOfWork* unit) const {
+std::optional<detail::AuthorInfo> View::SelectAuthor(app::UnitOfWork* unit) const {
     output_ << "Enter author name or empty line to select from list:"sv << std::endl;
     std::string str;
     if (!std::getline(input_, str) || str.empty()) {
@@ -174,7 +233,7 @@ std::optional<std::string> View::SelectAuthor(app::UnitOfWork* unit) const {
     
     boost::algorithm::trim(str);
     if (auto author = unit->GetAuthorIfExists(str)) {
-        return author->GetId().ToString();
+        return detail::AuthorInfo(author->GetId().ToString(), author->GetName());
     }
     output_ << "No author found. Do you want to add "sv << str << " (y/n)?"sv << std::endl;
     std::string yes_or_no;
@@ -183,12 +242,13 @@ std::optional<std::string> View::SelectAuthor(app::UnitOfWork* unit) const {
     }
     if (yes_or_no == "y" || yes_or_no == "Y") {
         unit->AddAuthor(str);
-        return unit->GetAuthorIfExists(str).value().GetId().ToString();
+        auto author = unit->GetAuthorIfExists(str).value();
+        return detail::AuthorInfo(author.GetId().ToString(), author.GetName());
     }
     throw std::runtime_error("Invalid answer");
 }
 
-std::optional<std::string> View::SelectAuthorFromList(app::UnitOfWork* unit) const {
+std::optional<detail::AuthorInfo> View::SelectAuthorFromList(app::UnitOfWork* unit) const {
     auto authors = GetAuthors(unit);
     PrintVector(output_, authors);
     output_ << "Enter author # or empty line to cancel"sv << std::endl;
@@ -211,7 +271,7 @@ std::optional<std::string> View::SelectAuthorFromList(app::UnitOfWork* unit) con
         throw std::runtime_error("Invalid author num");
     }
 
-    return authors[author_idx].id;
+    return authors[author_idx];
 }
 
 std::vector<detail::AuthorInfo> View::GetAuthors(app::UnitOfWork* unit) const {
