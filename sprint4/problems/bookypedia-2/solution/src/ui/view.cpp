@@ -103,7 +103,9 @@ View::View(menu::Menu& menu, app::UseCases& use_cases, std::istream& input, std:
 bool View::AddAuthor(std::istream& cmd_input) const {
     try {
         std::string name;
-        std::getline(cmd_input, name);
+        if (!getline(cmd_input, name)) {
+            throw std::exception();
+        }
         if (name.empty()) {
             throw std::exception();
         }
@@ -123,6 +125,9 @@ bool View::AddBook(std::istream& cmd_input) const {
         if (auto params = GetBookParams(unit.get(), cmd_input)) {
             unit->AddBook(domain::AuthorId::FromString(params->author_id), params->title, params->publication_year);
             AddTags(unit.get(), params->title);
+        }
+        else {
+            throw std::exception();
         }
         unit->Commit();
     } catch (const std::exception&) {
@@ -162,7 +167,9 @@ bool View::ShowAuthorBooks() const {
 bool View::DeleteAuthor(std::istream& cmd_input) const {
     try {
         std::string name;
-        std::getline(cmd_input, name);
+        if (!std::getline(cmd_input, name)) {
+            throw std::exception();
+        }
         auto unit = use_cases_.GetUnit();
         if (name.empty()) {
             if (auto selected_author = SelectAuthorFromList(unit.get())) {

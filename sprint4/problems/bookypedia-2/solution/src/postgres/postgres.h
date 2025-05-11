@@ -10,7 +10,7 @@ namespace postgres {
 class AuthorRepositoryImpl : public domain::AuthorRepository {
 public:
     AuthorRepositoryImpl(pqxx::work& work) 
-        :work_{work} {
+        :work_{ work } {
     };
 
     void Save(const domain::Author& author) override;
