@@ -108,24 +108,28 @@ View::View(menu::Menu& menu, app::UseCases& use_cases, std::istream& input, std:
 }
 
 bool View::AddAuthor(std::istream& cmd_input) const {
+    auto unit = use_cases_.GetUnit();
     try {
         std::string name;
         if (!getline(cmd_input, name) || name.empty()) {
             throw std::exception();
         }
         boost::algorithm::trim(name);
-        auto unit = use_cases_.GetUnit();
+        //auto unit = use_cases_.GetUnit();
         unit->AddAuthor(std::move(name));
-        unit->Commit();
+        //unit->Commit();
     } catch (const std::exception&) {
+        //unit->Commit();
         output_ << "Failed to add author"sv << std::endl;
     }
+    unit->Commit();
     return true;
 }
 
 bool View::AddBook(std::istream& cmd_input) const {
+    auto unit = use_cases_.GetUnit();
     try {
-        auto unit = use_cases_.GetUnit();
+        //auto unit = use_cases_.GetUnit();
         if (auto params = GetBookParams(unit.get(), cmd_input)) {
             unit->AddBook(domain::AuthorId::FromString(params->author_id), params->title, params->publication_year);
             AddTags(unit.get(), params->title);
@@ -133,10 +137,11 @@ bool View::AddBook(std::istream& cmd_input) const {
         else {
             throw std::exception();
         }
-        unit->Commit();
+        //unit->Commit();
     } catch (const std::exception&) {
         output_ << "Failed to add book"sv << std::endl;
     }
+    unit->Commit();
     return true;
 }
 
@@ -156,30 +161,33 @@ bool View::ShowBooks() const {
 
 bool View::ShowAuthorBooks() const {
     // TODO: handle error
+    auto unit = use_cases_.GetUnit();
     try {
-        auto unit = use_cases_.GetUnit();
+        //auto unit = use_cases_.GetUnit();
         if (auto author = SelectAuthor(unit.get())) {
             PrintVector(output_, GetAuthorBooks(unit.get(), author->id));
         }
 
-        unit->Commit();
+        //unit->Commit();
     } catch (const std::exception&) {
         output_ << "Failed to Show Books"sv << std::endl;
     }
+    unit->Commit();
     return true;
 }
 
 bool View::DeleteAuthor(std::istream& cmd_input) const {
+    auto unit = use_cases_.GetUnit();
     try {
         std::string name;
         std::getline(cmd_input, name);
-        auto unit = use_cases_.GetUnit();
+        //auto unit = use_cases_.GetUnit();
         if (name.empty()) {
             if (auto selected_author = SelectAuthorFromList(unit.get())) {
                 unit->DeleteAuthor({domain::AuthorId::FromString(selected_author->id), selected_author->name});
             }
             else {
-                unit->Commit();
+                //unit->Commit();
                 throw std::exception();
             }
         }
@@ -189,23 +197,25 @@ bool View::DeleteAuthor(std::istream& cmd_input) const {
                 unit->DeleteAuthor(author.value());
             }
             else {
-                unit->Commit();
+                //unit->Commit();
                 throw std::exception();
             }
         }
-        unit->Commit();
+        //unit->Commit();
     }
     catch (const std::exception&) {
         output_ << "Failed to delete author"sv << std::endl;
     }
+    unit->Commit();
     return true;
 }
 
 bool View::EditAuthor(std::istream& cmd_input) const {
+    auto unit = use_cases_.GetUnit();
     try {
         std::string name;
         std::getline(cmd_input, name);
-        auto unit = use_cases_.GetUnit();
+        //auto unit = use_cases_.GetUnit();
         if (name.empty()) {
             if (auto selected_author = SelectAuthorFromList(unit.get())) {
                 output_ << "Enter new name:" << std::endl;
@@ -215,7 +225,7 @@ bool View::EditAuthor(std::istream& cmd_input) const {
                 unit->EditAuthor({ domain::AuthorId::FromString(selected_author->id), new_name });
             }
             else {
-                unit->Commit();
+                //unit->Commit();
                 throw std::exception();
             }
         }
@@ -225,29 +235,82 @@ bool View::EditAuthor(std::istream& cmd_input) const {
                 unit->EditAuthor({author.value().GetId(), name});
             }
             else {
-                unit->Commit();
+                //unit->Commit();
                 throw std::exception();
             }
         }
-        unit->Commit();
+        //unit->Commit();
     }
     catch (const std::exception&) {
         output_ << "Failed to edit author"sv << std::endl;
     }
+    unit->Commit();
     return true;
 }
 
 bool View::ShowBook(std::istream& cmd_input) const {
-    std::string title;
-    std::getline(cmd_input, title);
     auto unit = use_cases_.GetUnit();
-    if (title.empty()) {
-        if (auto book = SelectBook(unit.get())) {
-            auto tags = unit->GetTags(book->id);
-            unit->Commit();
-            output_ << "Title: " << book->title << std::endl;
-            output_ << "Author: " << book->author << std::endl;
-            output_ << "Publication year: " << book->publication_year << std::endl;
+    try {
+        std::string title;
+        std::getline(cmd_input, title);
+        //auto unit = use_cases_.GetUnit();
+        if (title.empty()) {
+            if (auto book = SelectBook(unit.get())) {
+                auto tags = unit->GetTags(book->id);
+                //unit->Commit();
+                output_ << "Title: " << book->title << std::endl;
+                output_ << "Author: " << book->author << std::endl;
+                output_ << "Publication year: " << book->publication_year << std::endl;
+                if (!tags.empty()) {
+                    output_ << "Tags: ";
+                    bool first = true;
+                    for (const auto& tag : tags) {
+                        if (first) {
+                            first = false;
+                        }
+                        else {
+                            output_ << ", ";
+                        }
+                        output_ << tag;
+                    }
+                    output_ << std::endl;
+                }
+            }
+        }
+        else {
+            auto books = unit->GetBooksByTitle(title);
+            if (books.empty()) {
+                unit->Commit();
+                return true;
+            }
+            PrintVector(output_, books);
+            output_ << "Enter the book # or empty line to cancel:" << std::endl;
+            std::string str;
+            if (!std::getline(input_, str) || str.empty()) {
+                unit->Commit();
+                return true;
+            }
+
+            int book_idx;
+            try {
+                book_idx = std::stoi(str);
+            }
+            catch (std::exception const&) {
+                //unit->Commit();
+                throw std::runtime_error("Invalid book num");
+            }
+
+            --book_idx;
+            if (book_idx < 0 or book_idx >= books.size()) {
+                //unit->Commit();
+                throw std::runtime_error("Invalid book num");
+            }
+            auto& book = books[book_idx];
+            auto tags = unit->GetTags(book.GetId());
+            //unit->Commit();
+            output_ << "Title: " << book.GetTitle() << std::endl;
+            output_ << "Author: " << book.GetAuthorName() << std::endl;
+            output_ << "Publication year: " << book.GetYear() << std::endl;
             if (!tags.empty()) {
                 output_ << "Tags: ";
                 bool first = true;
@@ -264,54 +327,10 @@ bool View::ShowBook(std::istream& cmd_input) const {
             }
         }
     }
-    else {
-        auto books = unit->GetBooksByTitle(title);
-        if (books.empty()) {
-            unit->Commit();
-            return true;
-        }
-        PrintVector(output_, books);
-        output_ << "Enter the book # or empty line to cancel:" << std::endl;
-        std::string str;
-        if (!std::getline(input_, str) || str.empty()) {
-            return true;
-        }
-
-        int book_idx;
-        try {
-            book_idx = std::stoi(str);
-        }
-        catch (std::exception const&) {
-            unit->Commit();
-            throw std::runtime_error("Invalid book num");
-        }
-
-        --book_idx;
-        if (book_idx < 0 or book_idx >= books.size()) {
-            unit->Commit();
-            throw std::runtime_error("Invalid book num");
-        }
-        auto& book = books[book_idx];
-        auto tags = unit->GetTags(book.GetId());
-        unit->Commit();
-        output_ << "Title: " << book.GetTitle() << std::endl;
-        output_ << "Author: " << book.GetAuthorName() << std::endl;
-        output_ << "Publication year: " << book.GetYear() << std::endl;
-        if (!tags.empty()) {
-            output_ << "Tags: ";
-            bool first = true;
-            for (const auto& tag : tags) {
-                if (first) {
-                    first = false;
-                }
-                else {
-                    output_ << ", ";
-                }
-                output_ << tag;
-            }
-            output_ << std::endl;
-        }
+    catch (std::exception&) {
+        output_ << "ACHTUNG!!!" << std::endl;
     }
+    unit->Commit();
     return true;
 }
 
