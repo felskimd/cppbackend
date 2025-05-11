@@ -169,6 +169,9 @@ bool View::DeleteAuthor(std::istream& cmd_input) const {
                 unit->DeleteAuthor({domain::AuthorId::FromString(selected_author->id), selected_author->name});
                 unit->Commit();
             }
+            else {
+                throw std::runtime_error("Failed to delete author");
+            }
         }
         else {
             boost::algorithm::trim(name);
@@ -176,8 +179,10 @@ bool View::DeleteAuthor(std::istream& cmd_input) const {
                 unit->DeleteAuthor(author.value());
                 unit->Commit();
             }
+            else {
+                throw std::runtime_error("Failed to delete author");
+            }
         }
-        throw std::runtime_error("Failed to delete author");
     }
     catch (const std::exception&) {
         throw std::runtime_error("Failed to delete author");
