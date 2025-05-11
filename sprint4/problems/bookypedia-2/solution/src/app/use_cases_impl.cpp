@@ -23,7 +23,11 @@ std::vector<domain::Author> UnitOfWorkImpl::GetAuthors() {
 }
 
 std::vector<domain::Book> UnitOfWorkImpl::GetBooks() {
-    return books_.GetBooks();
+    auto books = books_.GetBooks();
+    for (auto& book : books) {
+        book.SetAuthorName(authors_.GetAuthorById(book.GetAuthor()).GetName());
+    }
+    return books;
 }
 
 std::vector<domain::Book> UnitOfWorkImpl::GetBooksByAuthor(const domain::AuthorId& id) {

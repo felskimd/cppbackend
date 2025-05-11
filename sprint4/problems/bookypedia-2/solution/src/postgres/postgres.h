@@ -17,6 +17,7 @@ public:
     std::vector<domain::Author> GetAuthors() override;
     std::optional<domain::Author> GetAuthorIfExists(const std::string& name) override;
     void DeleteAuthor(const std::string& name) override;
+    domain::Author GetAuthorById(const domain::AuthorId& id) override;
 
 private:
     pqxx::work& work_;

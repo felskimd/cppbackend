@@ -33,6 +33,14 @@ namespace domain {
             return author_;
         }
 
+        void SetAuthorName(const std::string& name) noexcept {
+            author_name_ = name;
+        }
+
+        const std::string& GetAuthorName() const noexcept {
+            return author_name_;
+        }
+
         int GetYear() const noexcept {
             return publication_year_;
         }
@@ -40,6 +48,7 @@ namespace domain {
     private:
         BookId id_;
         AuthorId author_;
+        std::string author_name_ = "";
         std::string title_;
         int publication_year_;
     };

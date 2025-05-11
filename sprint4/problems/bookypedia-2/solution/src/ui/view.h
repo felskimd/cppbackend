@@ -35,6 +35,12 @@ struct BookInfo {
     int publication_year;
 };
 
+struct BookInfoWithAuthor {
+    std::string title;
+    std::string author;
+    int publication_year;
+};
+
 }  // namespace detail
 
 class View {
@@ -54,7 +60,7 @@ private:
     std::optional<detail::AuthorInfo> SelectAuthor(app::UnitOfWork* unit) const;
     std::optional<detail::AuthorInfo> SelectAuthorFromList(app::UnitOfWork* unit) const;
     std::vector<detail::AuthorInfo> GetAuthors(app::UnitOfWork* unit) const;
-    std::vector<detail::BookInfo> GetBooks(app::UnitOfWork* unit) const;
+    std::vector<detail::BookInfoWithAuthor> GetBooks(app::UnitOfWork* unit) const;
     std::vector<detail::BookInfo> GetAuthorBooks(app::UnitOfWork* unit, const std::string& author_id) const;
     void AddTags(app::UnitOfWork* unit, const std::string& book) const;
 

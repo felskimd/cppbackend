@@ -26,6 +26,11 @@ std::ostream& operator<<(std::ostream& out, const BookInfo& book) {
     return out;
 }
 
+std::ostream& operator<<(std::ostream& out, const BookInfoWithAuthor& book) {
+    out << book.title << "by " << book.author << ", " << book.publication_year;
+    return out;
+}
+
 }  // namespace detail
 
 template <typename T>
@@ -282,10 +287,10 @@ std::vector<detail::AuthorInfo> View::GetAuthors(app::UnitOfWork* unit) const {
     return dst_autors;
 }
 
-std::vector<detail::BookInfo> View::GetBooks(app::UnitOfWork* unit) const {
-    std::vector<detail::BookInfo> books;
+std::vector<detail::BookInfoWithAuthor> View::GetBooks(app::UnitOfWork* unit) const {
+    std::vector<detail::BookInfoWithAuthor> books;
     for (auto& book : unit->GetBooks()) {
-        books.emplace_back(book.GetTitle(), book.GetYear());
+        books.emplace_back(book.GetTitle(), book.GetAuthorName(), book.GetYear());
     }
     return books;
 }

@@ -51,6 +51,14 @@ DELETE FROM authors WHERE name=$1
 )", name);
 }
 
+domain::Author AuthorRepositoryImpl::GetAuthorById(const domain::AuthorId& id) {
+    auto row = work_.exec_params1(R"(
+SELECT name FROM authors WHERE id=$1
+)"_zv, id.ToString());
+    auto name = std::get<0>(row.as<std::string>());
+    return domain::Author{ id, std::move(name)};
+}
+
 std::vector<domain::Book> BookRepositoryImpl::GetBooks() {
     std::vector<domain::Book> result;
     pqxx::result data = work_.exec(R"(
