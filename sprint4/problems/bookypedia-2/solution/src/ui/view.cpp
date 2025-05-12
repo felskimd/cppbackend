@@ -168,7 +168,7 @@ bool View::ShowAuthorBooks() const {
     auto unit = use_cases_.GetUnit();
     try {
         //auto unit = use_cases_.GetUnit();
-        if (auto author = SelectAuthor(unit.get())) {
+        if (auto author = SelectAuthorFromList(unit.get())) {
             PrintVector(output_, GetAuthorBooks(unit.get(), author->id));
         }
 
