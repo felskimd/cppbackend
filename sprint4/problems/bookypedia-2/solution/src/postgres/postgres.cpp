@@ -62,7 +62,9 @@ SELECT name FROM authors WHERE id=$1
 std::vector<domain::Book> BookRepositoryImpl::GetBooks() {
     std::vector<domain::Book> result;
     pqxx::result data = work_.exec(R"(
-SELECT id, author_id, title, publication_year FROM books ORDER BY title ASC
+SELECT id, author_id, title, publication_year FROM books 
+JOIN authors ON id = author_id
+ORDER BY title ASC, authors.name ASC
 )"_zv);
     for (const auto& row : data) {
         auto [id, author_id, title, year] = row.as<std::string, std::string, std::string, int>();
