@@ -168,6 +168,7 @@ bool View::ShowAuthorBooks() const {
     auto unit = use_cases_.GetUnit();
     try {
         //auto unit = use_cases_.GetUnit();
+        output_ << "Select author:" << std::endl;
         if (auto author = SelectAuthorFromList(unit.get())) {
             PrintVector(output_, GetAuthorBooks(unit.get(), author->id));
         }
@@ -218,9 +219,9 @@ bool View::EditAuthor(std::istream& cmd_input) const {
     auto unit = use_cases_.GetUnit();
     try {
         std::string name;
-        std::getline(cmd_input, name);
+        //std::getline(cmd_input, name);
         //auto unit = use_cases_.GetUnit();
-        if (name.empty()) {
+        if (!std::getline(cmd_input, name) || name.empty()) {
             if (auto selected_author = SelectAuthorFromList(unit.get())) {
                 output_ << "Enter new name:" << std::endl;
                 std::string new_name;
@@ -228,13 +229,13 @@ bool View::EditAuthor(std::istream& cmd_input) const {
                 boost::algorithm::trim(new_name);
                 unit->EditAuthor({ domain::AuthorId::FromString(selected_author->id), new_name });
             }
-            else {
+            //else {
                 //unit->Commit();
-                throw std::exception();
-            }
+                //throw std::exception();
+            //}
         }
         else {
-            boost::algorithm::trim(name);
+            //boost::algorithm::trim(name);
             if (auto author = unit->GetAuthorIfExists(name)) {
                 unit->EditAuthor({author.value().GetId(), name});
             }
