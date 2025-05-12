@@ -63,7 +63,7 @@ std::vector<domain::Book> BookRepositoryImpl::GetBooks() {
     std::vector<domain::Book> result;
     pqxx::result data = work_.exec(R"(
 SELECT id, author_id, title, publication_year FROM books 
-JOIN authors ON id = author_id
+JOIN authors ON books.id = author_id
 ORDER BY title ASC, authors.name ASC
 )"_zv);
     for (const auto& row : data) {
