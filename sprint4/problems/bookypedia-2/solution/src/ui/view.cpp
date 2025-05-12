@@ -292,7 +292,7 @@ bool View::DeleteBook(std::istream& cmd_input) const {
             unit->DeleteBook(book->GetId());
         }
         else {
-            throw std::exception();
+            output_ << "Book not found" << std::endl;
         }
     }
     catch (std::exception&) {
@@ -477,32 +477,30 @@ std::optional<domain::Book> View::SelectBookFromCommand(app::UnitOfWork* unit, s
     if (title.empty()) {
         return SelectBook(unit);
     }
-    else {
-        auto books = unit->GetBooksByTitle(title);
-        if (books.empty()) {
-            return {};
-        }
-        PrintVector(output_, books);
-        output_ << "Enter the book # or empty line to cancel:" << std::endl;
-        std::string str;
-        if (!std::getline(input_, str) || str.empty()) {
-            return {};
-        }
-
-        int book_idx;
-        try {
-            book_idx = std::stoi(str);
-        }
-        catch (std::exception const&) {
-            throw std::runtime_error("Invalid book num");
-        }
-
-        --book_idx;
-        if (book_idx < 0 or book_idx >= books.size()) {
-            throw std::runtime_error("Invalid book num");
-        }
-        return books[book_idx];
+    auto books = unit->GetBooksByTitle(title);
+    if (books.empty()) {
+        return {};
     }
+    PrintVector(output_, books);
+    output_ << "Enter the book # or empty line to cancel:" << std::endl;
+    std::string str;
+    if (!std::getline(input_, str) || str.empty()) {
+        return {};
+    }
+
+    int book_idx;
+    try {
+        book_idx = std::stoi(str);
+    }
+    catch (std::exception const&) {
+        throw std::runtime_error("Invalid book num");
+    }
+
+    --book_idx;
+    if (book_idx < 0 or book_idx >= books.size()) {
+        throw std::runtime_error("Invalid book num");
+    }
+    return books[book_idx];
 }
 
 }  // namespace ui
