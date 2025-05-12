@@ -63,6 +63,18 @@ std::vector<std::string> UnitOfWorkImpl::GetTags(const domain::BookId& id) {
     return books_.GetTags(id);
 }
 
+void UnitOfWorkImpl::DeleteBook(const domain::BookId& id) {
+    books_.DeleteBook(id);
+}
+
+void UnitOfWorkImpl::DeleteTags(const domain::BookId& id) {
+    books_.DeleteTags(id);
+}
+
+void UnitOfWorkImpl::EditBook(const domain::Book& book, const std::vector<std::string>& tags) {
+    books_.EditBook(book, tags);
+}
+
 std::unique_ptr<UnitOfWork> UnitOfWorkFactoryImpl::CreateUnit() {
     return std::make_unique<UnitOfWorkImpl>(conn_);
 }

@@ -63,6 +63,9 @@ namespace domain {
         virtual void AddTags(const BookId& id, const std::vector<std::string>& tags) = 0;
         virtual void DeleteBooksOfAuthor(const AuthorId& id) = 0;
         virtual std::vector<std::string> GetTags(const BookId& id) = 0;
+        virtual void DeleteBook(const domain::BookId& id) = 0;
+        virtual void DeleteTags(const domain::BookId& id) = 0;
+        virtual void EditBook(const domain::Book& book, const std::vector<std::string>& tags) = 0;
 
     protected:
         ~BookRepository() = default;

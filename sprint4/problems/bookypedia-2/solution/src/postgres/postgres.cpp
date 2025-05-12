@@ -168,6 +168,27 @@ SELECT tag FROM book_tags WHERE book_id=$1
     return result;
 }
 
+void BookRepositoryImpl::DeleteBook(const domain::BookId& id) {
+    DeleteTags(id);
+    work_.exec_params(R"(
+DELETE FROM books WHERE id=$1
+)", id.ToString());
+}
+
+void BookRepositoryImpl::DeleteTags(const domain::BookId& id) {
+    work_.exec_params(R"(
+DELETE FROM book_tags WHERE book_id=$1
+)", id.ToString());
+}
+
+void BookRepositoryImpl::EditBook(const domain::Book& book, const std::vector<std::string>& tags) {
+    DeleteTags(book.GetId());
+    Save(book);
+    if (!tags.empty()) {
+        AddTags(book.GetId(), tags);
+    }
+}
+
 Database::Database(pqxx::connection connection)
     : connection_{std::move(connection)} {
     pqxx::work work{connection_};

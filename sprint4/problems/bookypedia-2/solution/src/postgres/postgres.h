@@ -37,6 +37,9 @@ public:
     void AddTags(const domain::BookId& id, const std::vector<std::string>& tags) override;
     void DeleteBooksOfAuthor(const domain::AuthorId& id) override;
     std::vector<std::string> GetTags(const domain::BookId& id) override;
+    void DeleteBook(const domain::BookId& id) override;
+    void DeleteTags(const domain::BookId& id) override;
+    void EditBook(const domain::Book& book, const std::vector<std::string>& tags) override;
 
 
 private:

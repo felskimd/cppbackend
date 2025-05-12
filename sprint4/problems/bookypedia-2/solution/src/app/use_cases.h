@@ -23,6 +23,9 @@ public:
     virtual void DeleteAuthor(const domain::Author& author) = 0;
     virtual void EditAuthor(const domain::Author& author) = 0;
     virtual std::vector<std::string> GetTags(const domain::BookId& id) = 0;
+    virtual void DeleteBook(const domain::BookId& id) = 0;
+    virtual void DeleteTags(const domain::BookId& id) = 0;
+    virtual void EditBook(const domain::Book& book, const std::vector<std::string>& tags) = 0;
 };
 
 class UnitOfWorkFactory {

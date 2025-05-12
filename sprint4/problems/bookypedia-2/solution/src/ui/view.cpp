@@ -251,66 +251,12 @@ bool View::EditAuthor(std::istream& cmd_input) const {
 bool View::ShowBook(std::istream& cmd_input) const {
     auto unit = use_cases_.GetUnit();
     try {
-        std::string title;
-        std::getline(cmd_input, title);
-        //auto unit = use_cases_.GetUnit();
-        if (title.empty()) {
-            if (auto book = SelectBook(unit.get())) {
-                auto tags = unit->GetTags(book->id);
-                //unit->Commit();
-                output_ << "Title: " << book->title << std::endl;
-                output_ << "Author: " << book->author << std::endl;
-                output_ << "Publication year: " << book->publication_year << std::endl;
-                if (!tags.empty()) {
-                    output_ << "Tags: ";
-                    bool first = true;
-                    for (const auto& tag : tags) {
-                        if (first) {
-                            first = false;
-                        }
-                        else {
-                            output_ << ", ";
-                        }
-                        output_ << tag;
-                    }
-                    output_ << std::endl;
-                }
-            }
-        }
-        else {
-            auto books = unit->GetBooksByTitle(title);
-            if (books.empty()) {
-                unit->Commit();
-                return true;
-            }
-            PrintVector(output_, books);
-            output_ << "Enter the book # or empty line to cancel:" << std::endl;
-            std::string str;
-            if (!std::getline(input_, str) || str.empty()) {
-                unit->Commit();
-                return true;
-            }
-
-            int book_idx;
-            try {
-                book_idx = std::stoi(str);
-            }
-            catch (std::exception const&) {
-                //unit->Commit();
-                throw std::runtime_error("Invalid book num");
-            }
-
-            --book_idx;
-            if (book_idx < 0 or book_idx >= books.size()) {
-                //unit->Commit();
-                throw std::runtime_error("Invalid book num");
-            }
-            auto& book = books[book_idx];
-            auto tags = unit->GetTags(book.GetId());
-            //unit->Commit();
-            output_ << "Title: " << book.GetTitle() << std::endl;
-            output_ << "Author: " << book.GetAuthorName() << std::endl;
-            output_ << "Publication year: " << book.GetYear() << std::endl;
+        auto book = SelectBookFromCommand(unit.get(), cmd_input);
+        if (book) {
+            auto tags = unit->GetTags(book->GetId());
+            output_ << "Title: " << book->GetTitle() << std::endl;
+            output_ << "Author: " << book->GetAuthorName() << std::endl;
+            output_ << "Publication year: " << book->GetYear() << std::endl;
             if (!tags.empty()) {
                 output_ << "Tags: ";
                 bool first = true;
@@ -329,6 +275,72 @@ bool View::ShowBook(std::istream& cmd_input) const {
     }
     catch (std::exception&) {
         output_ << "ACHTUNG!!!" << std::endl;
+    }
+    unit->Commit();
+    return true;
+}
+
+bool View::DeleteBook(std::istream& cmd_input) const {
+    auto unit = use_cases_.GetUnit();
+    try {
+        auto book = SelectBookFromCommand(unit.get(), cmd_input);
+        if (book) {
+            unit->DeleteBook(book->GetId());
+        }
+        else {
+            throw std::exception();
+        }
+    }
+    catch (std::exception&) {
+        output_ << "Failed to delete book" << std::endl;
+    }
+    unit->Commit();
+    return true;
+}
+
+bool View::EditBook(std::istream& cmd_input) const {
+    auto unit = use_cases_.GetUnit();
+    try {
+        auto book = SelectBookFromCommand(unit.get(), cmd_input);
+        if (book) {
+            output_ << "Enter new title or empty line to use the current one (" + book->GetTitle() + "):" << std::endl;
+            std::string new_name;
+            std::getline(input_, new_name);
+            if (new_name.empty()) {
+                new_name = book->GetTitle();
+            }
+            output_ << "Enter publication year or empty line to use the current one (" + std::to_string(book->GetYear()) + "):" << std::endl;
+            std::string new_year_str;
+            std::getline(input_, new_year_str);
+            int new_year;
+            if (new_year_str.empty()) {
+                new_year = book->GetYear();
+            }
+            else {
+                new_year = std::stoi(new_year_str);
+            }
+            output_ << "Enter tags (current tags: ";
+            bool first = true;
+            for (const auto& tag : unit->GetTags(book->GetId())) {
+                if (first) {
+                    first = false;
+                }
+                else {
+                    output_ << ", ";
+                }
+                output_ << tag;
+            }
+            output_ << "):" << std::endl;
+            std::vector<std::string> new_tags = ParseTags(input_);
+            auto new_book = domain::Book(book->GetId(), book->GetAuthor(), new_name, new_year);
+            unit->EditBook(new_book, new_tags);
+        }
+        else {
+            throw std::exception();
+        }
+    }
+    catch (std::exception&) {
+        output_ << "Book not found" << std::endl;
     }
     unit->Commit();
     return true;
@@ -407,12 +419,8 @@ std::vector<detail::AuthorInfo> View::GetAuthors(app::UnitOfWork* unit) const {
     return dst_autors;
 }
 
-std::vector<detail::BookInfoWithAuthor> View::GetBooks(app::UnitOfWork* unit) const {
-    std::vector<detail::BookInfoWithAuthor> books;
-    for (auto& book : unit->GetBooks()) {
-        books.emplace_back(book.GetId(), book.GetTitle(), book.GetAuthorName(), book.GetYear());
-    }
-    return books;
+std::vector<domain::Book> View::GetBooks(app::UnitOfWork* unit) const {
+    return unit->GetBooks();
 }
 
 std::vector<detail::BookInfo> View::GetAuthorBooks(app::UnitOfWork* unit, const std::string& author_id) const {
@@ -433,7 +441,7 @@ void View::AddTags(app::UnitOfWork* unit, const std::string& book) const {
     unit->AddTags(found_book.GetId(), tags);
 }
 
-std::optional<detail::BookInfoWithAuthor> View::SelectBook(app::UnitOfWork* unit) const {
+std::optional<domain::Book> View::SelectBook(app::UnitOfWork* unit) const {
     auto books = GetBooks(unit);
     PrintVector(output_, books);
     output_ << "Enter the book # or empty line to cancel:"sv << std::endl;
@@ -457,6 +465,40 @@ std::optional<detail::BookInfoWithAuthor> View::SelectBook(app::UnitOfWork* unit
     }
 
     return books[book_idx];
+}
+
+std::optional<domain::Book> View::SelectBookFromCommand(app::UnitOfWork* unit, std::istream& cmd_input) const {
+    std::string title;
+    std::getline(cmd_input, title);
+    if (title.empty()) {
+        return SelectBook(unit);
+    }
+    else {
+        auto books = unit->GetBooksByTitle(title);
+        if (books.empty()) {
+            return {};
+        }
+        PrintVector(output_, books);
+        output_ << "Enter the book # or empty line to cancel:" << std::endl;
+        std::string str;
+        if (!std::getline(input_, str) || str.empty()) {
+            return {};
+        }
+
+        int book_idx;
+        try {
+            book_idx = std::stoi(str);
+        }
+        catch (std::exception const&) {
+            throw std::runtime_error("Invalid book num");
+        }
+
+        --book_idx;
+        if (book_idx < 0 or book_idx >= books.size()) {
+            throw std::runtime_error("Invalid book num");
+        }
+        return books[book_idx];
+    }
 }
 
 }  // namespace ui
