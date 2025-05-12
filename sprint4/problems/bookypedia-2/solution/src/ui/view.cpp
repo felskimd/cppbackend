@@ -190,10 +190,10 @@ bool View::DeleteAuthor(std::istream& cmd_input) const {
             if (auto selected_author = SelectAuthorFromList(unit.get())) {
                 unit->DeleteAuthor({domain::AuthorId::FromString(selected_author->id), selected_author->name});
             }
-            else {
-                //unit->Commit();
-                throw std::exception();
-            }
+            //else {
+            //    //unit->Commit();
+            //    throw std::exception();
+            //}
         }
         else {
             boost::algorithm::trim(name);
