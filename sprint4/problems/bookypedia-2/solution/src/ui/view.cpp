@@ -61,9 +61,9 @@ std::string RemoveExtraSpaces(const std::string& input) {
     return result;
 }
 
-std::vector<std::string> ParseTags(std::istream& cmd_input) {
+std::vector<std::string> ParseTags(std::istream& input) {
     std::string str;
-    if (!std::getline(cmd_input, str) || str.empty()) {
+    if (!std::getline(input, str) || str.empty()) {
         return {};
     }
     std::vector<std::string> result;
@@ -371,7 +371,7 @@ std::optional<detail::AddBookParams> View::GetBookParams(app::UnitOfWork* unit, 
     boost::algorithm::trim(params.title);
 
     auto author = SelectAuthor(unit);
-    if (not author.has_value()) {
+    if (!author) {
         return std::nullopt;
     }
     params.author_id = author->id;
@@ -392,14 +392,16 @@ std::optional<detail::AuthorInfo> View::SelectAuthor(app::UnitOfWork* unit) cons
     output_ << "No author found. Do you want to add "sv << str << " (y/n)?"sv << std::endl;
     std::string yes_or_no;
     if (!std::getline(input_, yes_or_no) || yes_or_no.empty()) {
-        throw std::runtime_error("Parsing failed");
+        //throw std::exception();
+        return {};
     }
     if (yes_or_no == "y" || yes_or_no == "Y") {
         unit->AddAuthor(str);
         auto author = unit->GetAuthorIfExists(str).value();
         return detail::AuthorInfo(author.GetId().ToString(), author.GetName());
     }
-    throw std::runtime_error("Invalid answer");
+    //throw std::exception();
+    return {};
 }
 
 std::optional<detail::AuthorInfo> View::SelectAuthorFromList(app::UnitOfWork* unit) const {
