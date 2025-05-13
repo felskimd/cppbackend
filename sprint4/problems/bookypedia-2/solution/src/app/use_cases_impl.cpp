@@ -10,6 +10,10 @@ void UnitOfWorkImpl::Commit() {
     work_.commit();
 }
 
+void UnitOfWorkImpl::Commit() {
+    work_.abort();
+}
+
 void UnitOfWorkImpl::AddAuthor(const std::string& name) {
     authors_.Save({ AuthorId::New(), name });
 }

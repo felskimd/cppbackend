@@ -127,7 +127,7 @@ bool View::AddAuthor(std::istream& cmd_input) const {
         unit->AddAuthor(std::move(name));
         //unit->Commit();
     } catch (const std::exception&) {
-        //unit->Commit();
+        unit->Abort();
         output_ << "Failed to add author"sv << std::endl;
         return true;
     }
@@ -148,6 +148,7 @@ bool View::AddBook(std::istream& cmd_input) const {
         }
         //unit->Commit();
     } catch (const std::exception&) {
+        unit->Abort();
         output_ << "Failed to add book"sv << std::endl;
         return true;
     }
@@ -181,6 +182,7 @@ bool View::ShowAuthorBooks() const {
 
         //unit->Commit();
     } catch (const std::exception&) {
+        unit->Abort();
         output_ << "Failed to Show Books"sv << std::endl;
         return true;
     }
@@ -216,6 +218,7 @@ bool View::DeleteAuthor(std::istream& cmd_input) const {
         //unit->Commit();
     }
     catch (const std::exception&) {
+        unit->Abort();
         output_ << "Failed to delete author"sv << std::endl;
         return true;
     }
@@ -270,6 +273,7 @@ bool View::EditAuthor(std::istream& cmd_input) const {
         //unit->Commit();
     }
     catch (const std::exception&) {
+        unit->Abort();
         output_ << "Failed to edit author"sv << std::endl;
         return true;
     }
@@ -303,6 +307,7 @@ bool View::ShowBook(std::istream& cmd_input) const {
         }
     }
     catch (std::exception&) {
+        unit->Abort();
         output_ << "ACHTUNG!!!" << std::endl;
         return true;
     }
@@ -322,6 +327,7 @@ bool View::DeleteBook(std::istream& cmd_input) const {
         }
     }
     catch (std::exception&) {
+        unit->Abort();
         output_ << "Failed to delete book" << std::endl;
         return true;
     }
@@ -371,6 +377,7 @@ bool View::EditBook(std::istream& cmd_input) const {
         }
     }
     catch (std::exception&) {
+        unit->Abort();
         output_ << "Book not found" << std::endl;
         return true;
     }
