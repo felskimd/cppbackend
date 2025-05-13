@@ -239,9 +239,14 @@ bool View::EditAuthor(std::istream& cmd_input) const {
             //}
         }
         else {
-            //boost::algorithm::trim(name);
+            boost::algorithm::trim(name);
             if (auto author = unit->GetAuthorIfExists(name)) {
-                unit->EditAuthor({author.value().GetId(), name});
+                output_ << "Enter new name:" << std::endl;
+                std::string new_name;
+                if (std::getline(cmd_input, new_name) && !new_name.empty()) {
+                    boost::algorithm::trim(new_name);
+                    unit->EditAuthor({ author->GetId(), new_name });
+                }
             }
             else {
                 //unit->Commit();
