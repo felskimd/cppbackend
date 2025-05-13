@@ -337,7 +337,7 @@ bool View::EditBook(std::istream& cmd_input) const {
                 new_year = std::stoi(new_year_str);
             }
             output_ << "Enter tags (current tags: ";
-            /*bool first = true;
+            bool first = true;
             for (const auto& tag : unit->GetTags(book->GetId())) {
                 if (first) {
                     first = false;
@@ -346,7 +346,7 @@ bool View::EditBook(std::istream& cmd_input) const {
                     output_ << ", ";
                 }
                 output_ << tag;
-            }*/
+            }
             output_ << "):" << std::endl;
             std::vector<std::string> new_tags = ParseTags(input_);
             auto new_book = domain::Book(book->GetId(), book->GetAuthor(), new_name, new_year);
@@ -488,10 +488,13 @@ std::optional<domain::Book> View::SelectBook(app::UnitOfWork* unit) const {
 
 std::optional<domain::Book> View::SelectBookFromCommand(app::UnitOfWork* unit, std::istream& cmd_input) const {
     std::string title;
-    std::getline(cmd_input, title);
-    if (title.empty()) {
+    if (!std::getline(cmd_input, title) || title.empty()) {
         return SelectBook(unit);
     }
+    /*std::getline(cmd_input, title);
+    if (title.empty()) {
+        return SelectBook(unit);
+    }*/
     auto books = unit->GetBooksByTitle(title);
     if (books.empty()) {
         return {};
