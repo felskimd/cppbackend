@@ -225,7 +225,7 @@ bool View::EditAuthor(std::istream& cmd_input) const {
             if (auto selected_author = SelectAuthorFromList(unit.get())) {
                 output_ << "Enter new name:" << std::endl;
                 std::string new_name;
-                if (std::getline(cmd_input, new_name) && !new_name.empty()) {
+                if (std::getline(input_, new_name) && !new_name.empty()) {
                     boost::algorithm::trim(new_name);
                     unit->EditAuthor({ domain::AuthorId::FromString(selected_author->id), new_name });
                 }
@@ -243,7 +243,7 @@ bool View::EditAuthor(std::istream& cmd_input) const {
             if (auto author = unit->GetAuthorIfExists(name)) {
                 output_ << "Enter new name:" << std::endl;
                 std::string new_name;
-                if (std::getline(cmd_input, new_name) && !new_name.empty()) {
+                if (std::getline(input_, new_name) && !new_name.empty()) {
                     boost::algorithm::trim(new_name);
                     unit->EditAuthor({ author->GetId(), new_name });
                 }
