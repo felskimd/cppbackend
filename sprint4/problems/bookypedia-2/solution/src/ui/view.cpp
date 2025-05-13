@@ -125,6 +125,7 @@ bool View::AddAuthor(std::istream& cmd_input) const {
     } catch (const std::exception&) {
         //unit->Commit();
         output_ << "Failed to add author"sv << std::endl;
+        return false;
     }
     unit->Commit();
     return true;
@@ -144,6 +145,7 @@ bool View::AddBook(std::istream& cmd_input) const {
         //unit->Commit();
     } catch (const std::exception&) {
         output_ << "Failed to add book"sv << std::endl;
+        return false;
     }
     unit->Commit();
     return true;
@@ -176,6 +178,7 @@ bool View::ShowAuthorBooks() const {
         //unit->Commit();
     } catch (const std::exception&) {
         output_ << "Failed to Show Books"sv << std::endl;
+        return false;
     }
     unit->Commit();
     return true;
@@ -210,6 +213,7 @@ bool View::DeleteAuthor(std::istream& cmd_input) const {
     }
     catch (const std::exception&) {
         output_ << "Failed to delete author"sv << std::endl;
+        return false;
     }
     unit->Commit();
     return true;
@@ -263,6 +267,7 @@ bool View::EditAuthor(std::istream& cmd_input) const {
     }
     catch (const std::exception&) {
         output_ << "Failed to edit author"sv << std::endl;
+        return false;
     }
     unit->Commit();
     return true;
@@ -295,6 +300,7 @@ bool View::ShowBook(std::istream& cmd_input) const {
     }
     catch (std::exception&) {
         output_ << "ACHTUNG!!!" << std::endl;
+        return false;
     }
     unit->Commit();
     return true;
@@ -313,6 +319,7 @@ bool View::DeleteBook(std::istream& cmd_input) const {
     }
     catch (std::exception&) {
         output_ << "Failed to delete book" << std::endl;
+        return false;
     }
     unit->Commit();
     return true;
@@ -361,6 +368,7 @@ bool View::EditBook(std::istream& cmd_input) const {
     }
     catch (std::exception&) {
         output_ << "Book not found" << std::endl;
+        return false;
     }
     unit->Commit();
     return true;
@@ -494,10 +502,8 @@ std::optional<domain::Book> View::SelectBookFromCommand(app::UnitOfWork* unit, s
     if (!std::getline(cmd_input, title) || title.empty()) {
         return SelectBook(unit);
     }
-    /*std::getline(cmd_input, title);
-    if (title.empty()) {
-        return SelectBook(unit);
-    }*/
+
+    boost::algorithm::trim(title);
     auto books = unit->GetBooksByTitle(title);
     if (books.empty()) {
         return {};

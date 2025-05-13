@@ -62,18 +62,19 @@ SELECT name FROM authors WHERE id=$1
 std::vector<domain::Book> BookRepositoryImpl::GetBooks() {
     std::vector<domain::Book> result;
     pqxx::result data = work_.exec(R"(
-SELECT books.id, author_id, title, publication_year FROM books 
-JOIN authors ON books.id = author_id
+SELECT books.id, author_id, title, publication_year, authors.name FROM books 
+JOIN authors ON authors.id = author_id
 ORDER BY title ASC, authors.name ASC
 )"_zv);
     for (const auto& row : data) {
-        auto [id, author_id, title, year] = row.as<std::string, std::string, std::string, int>();
+        auto [id, author_id, title, year, author_name] = row.as<std::string, std::string, std::string, int, std::string>();
         result.emplace_back(
             domain::BookId::FromString(id)
             , domain::AuthorId::FromString(author_id)
             , std::move(title)
             , year
         );
+        result.back().SetAuthorName(author_name);
     }
     return result;
 }
@@ -89,17 +90,20 @@ ON CONFLICT (id) DO UPDATE SET author_id=$2, title=$3, publication_year=$4;
 std::vector<domain::Book> BookRepositoryImpl::GetBooksByAuthor(const domain::AuthorId& id) {
     std::vector<domain::Book> result;
     pqxx::result data = work_.exec_params(R"(
-SELECT id, author_id, title, publication_year FROM books WHERE author_id=$1
+SELECT books.id, author_id, title, publication_year, authors.name FROM books 
+JOIN authors ON authors.id = author_id
+WHERE author_id=$1
 ORDER BY publication_year ASC, title ASC
 )", id.ToString());
     for (const auto& row : data) {
-        auto [id, author_id, title, year] = row.as<std::string, std::string, std::string, int>();
+        auto [id, author_id, title, year, author_name] = row.as<std::string, std::string, std::string, int, std::string>();
         result.emplace_back(
             domain::BookId::FromString(id)
             , domain::AuthorId::FromString(author_id)
             , std::move(title)
             , year
         );
+        result.back().SetAuthorName(author_name);
     }
     return result;
 }
@@ -107,16 +111,19 @@ ORDER BY publication_year ASC, title ASC
 std::vector<domain::Book> BookRepositoryImpl::GetBooksByTitle(const std::string& title) {
     std::vector<domain::Book> result;
     pqxx::result data = work_.exec_params(R"(
-SELECT id, author_id, title, publication_year FROM books WHERE title=$1
+SELECT books.id, author_id, title, publication_year, authors.name FROM books 
+JOIN authors ON authors.id = author_id
+WHERE title=$1
 )", title);
     for (const auto& row : data) {
-        auto [id, author_id, title, year] = row.as<std::string, std::string, std::string, int>();
+        auto [id, author_id, title, year, author_name] = row.as<std::string, std::string, std::string, int, std::string>();
         result.emplace_back(
             domain::BookId::FromString(id)
             , domain::AuthorId::FromString(author_id)
             , std::move(title)
             , year
         );
+        result.back().SetAuthorName(author_name);
     }
     return result;
 }
@@ -124,15 +131,19 @@ SELECT id, author_id, title, publication_year FROM books WHERE title=$1
 std::optional<domain::Book> BookRepositoryImpl::GetBookIfExists(const std::string& title) {
     try {
         auto row = work_.exec_params1(R"(
-SELECT id, author_id, title, publication_year FROM books WHERE title=$1
+SELECT books.id, author_id, title, publication_year, authors.name FROM books 
+JOIN authors ON authors.id = author_id
+WHERE title=$1
 )"_zv, title);
-        auto [id, author_id, title, year] = row.as<std::string, std::string, std::string, int>();
-        return domain::Book{
+        auto [id, author_id, title, year, author_name] = row.as<std::string, std::string, std::string, int, std::string>();
+        domain::Book book{
             domain::BookId::FromString(id)
             , domain::AuthorId::FromString(author_id)
             , std::move(title)
-            , year 
+            , year
         };
+        book.SetAuthorName(author_name);
+        return book;
     }
     catch (pqxx::unexpected_rows) {
         return {};

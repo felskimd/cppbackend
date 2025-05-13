@@ -17,7 +17,6 @@ public:
     }
 
     void Commit() override;
-    //void Abort();
     void AddAuthor(const std::string& name) override;
     void AddBook(const domain::AuthorId& author, const std::string& title, int publication_year) override;
     std::vector<domain::Author> GetAuthors() override;
