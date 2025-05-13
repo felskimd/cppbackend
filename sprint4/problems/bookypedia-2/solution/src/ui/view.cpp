@@ -229,14 +229,17 @@ bool View::EditAuthor(std::istream& cmd_input) const {
                     boost::algorithm::trim(new_name);
                     unit->EditAuthor({ domain::AuthorId::FromString(selected_author->id), new_name });
                 }
+                else {
+                    throw std::exception();
+                }
                 //input_ >> new_name;
                 //boost::algorithm::trim(new_name);
                 //unit->EditAuthor({ domain::AuthorId::FromString(selected_author->id), new_name });
             }
-            //else {
+            else {
                 //unit->Commit();
-                //throw std::exception();
-            //}
+                throw std::exception();
+            }
         }
         else {
             boost::algorithm::trim(name);
