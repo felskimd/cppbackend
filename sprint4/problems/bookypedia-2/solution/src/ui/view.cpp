@@ -69,13 +69,17 @@ std::vector<std::string> ParseTags(std::istream& input) {
     std::vector<std::string> result;
     boost::split(result, str, boost::is_any_of(","));
 
+    for (auto& tag : result) {
+        tag = RemoveExtraSpaces(tag);
+    }
+
     result.erase(std::remove_if(result.begin(), result.end(),
         [](const std::string& s) { return s.empty(); }),
         result.end());
 
-    for (auto& tag : result) {
+    /*for (auto& tag : result) {
         tag = RemoveExtraSpaces(tag);
-    }
+    }*/
 
     std::sort(result.begin(), result.end());
     auto last = std::unique(result.begin(), result.end());
