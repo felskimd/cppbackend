@@ -499,6 +499,9 @@ std::optional<domain::Book> View::SelectBookFromCommand(app::UnitOfWork* unit, s
     if (books.empty()) {
         return {};
     }
+    if (books.size() == 1) {
+        return books[0];
+    }
     PrintVector(output_, books);
     output_ << "Enter the book # or empty line to cancel:" << std::endl;
     std::string str;
