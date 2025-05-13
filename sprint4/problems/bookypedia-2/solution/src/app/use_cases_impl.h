@@ -67,7 +67,7 @@ public:
 
 private:
     UnitOfWorkFactoryImpl factory_;
-    std::unique_ptr<UnitOfWorkImpl> unit_;
+    //std::unique_ptr<UnitOfWorkImpl> unit_;
 
     //void AssertUnit();
 };
