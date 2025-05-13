@@ -10,7 +10,7 @@ void UnitOfWorkImpl::Commit() {
     work_.commit();
 }
 
-void UnitOfWorkImpl::Commit() {
+void UnitOfWorkImpl::Abort() {
     work_.abort();
 }
 
