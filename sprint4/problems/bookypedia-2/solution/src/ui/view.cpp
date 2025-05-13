@@ -337,7 +337,7 @@ bool View::EditBook(std::istream& cmd_input) const {
                 new_year = std::stoi(new_year_str);
             }
             output_ << "Enter tags (current tags: ";
-            bool first = true;
+            /*bool first = true;
             for (const auto& tag : unit->GetTags(book->GetId())) {
                 if (first) {
                     first = false;
@@ -346,7 +346,7 @@ bool View::EditBook(std::istream& cmd_input) const {
                     output_ << ", ";
                 }
                 output_ << tag;
-            }
+            }*/
             output_ << "):" << std::endl;
             std::vector<std::string> new_tags = ParseTags(input_);
             auto new_book = domain::Book(book->GetId(), book->GetAuthor(), new_name, new_year);
