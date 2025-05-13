@@ -217,7 +217,7 @@ CREATE TABLE IF NOT EXISTS books (
     id UUID CONSTRAINT book_id_constraint PRIMARY KEY,
     author_id UUID NOT NULL,
     title varchar(100) NOT NULL,
-    publication_year integer
+    publication_year integer,
     UNIQUE (author_id, title, publication_year)
 );
 )"_zv);
