@@ -308,7 +308,7 @@ bool View::ShowBook(std::istream& cmd_input) const {
     }
     catch (std::exception&) {
         unit->Abort();
-        output_ << "ACHTUNG!!!" << std::endl;
+        //output_ << "ACHTUNG!!!" << std::endl;
         return true;
     }
     unit->Commit();
