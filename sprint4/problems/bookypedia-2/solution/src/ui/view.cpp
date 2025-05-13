@@ -250,6 +250,9 @@ bool View::EditAuthor(std::istream& cmd_input) const {
                     boost::algorithm::trim(new_name);
                     unit->EditAuthor({ author->GetId(), new_name });
                 }
+                else {
+                    throw std::exception();
+                }
             }
             else {
                 //unit->Commit();
