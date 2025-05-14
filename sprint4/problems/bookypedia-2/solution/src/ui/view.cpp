@@ -373,9 +373,9 @@ bool View::EditBook(std::istream& cmd_input) const {
             auto new_book = domain::Book(book->GetId(), book->GetAuthor(), new_name, new_year);
             unit->EditBook(new_book, new_tags);
         }
-        //else {
-            //throw std::exception();
-        //}
+        else {
+            throw std::exception();
+        }
     }
     catch (std::exception&) {
         unit->Abort();
