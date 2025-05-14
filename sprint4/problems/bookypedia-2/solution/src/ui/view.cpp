@@ -323,9 +323,9 @@ bool View::DeleteBook(std::istream& cmd_input) const {
         if (book) {
             unit->DeleteBook(book->GetId());
         }
-        else {
+        /*else {
             output_ << "Book not found" << std::endl;
-        }
+        }*/
     }
     catch (std::exception&) {
         unit->Abort();
