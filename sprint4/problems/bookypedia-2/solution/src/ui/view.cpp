@@ -422,8 +422,9 @@ std::optional<detail::AuthorInfo> View::SelectAuthor(app::UnitOfWork* unit) cons
     }
     if (yes_or_no == "y" || yes_or_no == "Y") {
         unit->AddAuthor(str);
-        auto author = unit->GetAuthorIfExists(str).value();
-        return detail::AuthorInfo(author.GetId().ToString(), author.GetName());
+        if (auto author = unit->GetAuthorIfExists(str)) {
+            return detail::AuthorInfo(author->GetId().ToString(), author->GetName());
+        }
     }
     //throw std::exception();
     return std::nullopt;
