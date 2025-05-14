@@ -374,7 +374,8 @@ bool View::EditBook(std::istream& cmd_input) const {
             unit->EditBook(new_book, new_tags);
         }
         else {
-            throw std::exception();
+            //throw std::exception();
+            output_ << "Book not found" << std::endl;
         }
     }
     catch (std::exception&) {
