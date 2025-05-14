@@ -236,13 +236,13 @@ CREATE TABLE IF NOT EXISTS books (
     author_id UUID NOT NULL,
     title varchar(100) NOT NULL,
     publication_year integer,
-    UNIQUE (author_id, title, publication_year),
+    
     CONSTRAINT fk_authors
         FOREIGN KEY(author_id)
         REFERENCES authors(id)
 );
 )"_zv);
-
+    //UNIQUE (author_id, title, publication_year),
     work.exec(R"(
 CREATE TABLE IF NOT EXISTS book_tags (
     book_id UUID NOT NULL,
