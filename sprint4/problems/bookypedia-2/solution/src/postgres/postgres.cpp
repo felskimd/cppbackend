@@ -214,18 +214,24 @@ CREATE TABLE IF NOT EXISTS authors (
 
     work.exec(R"(
 CREATE TABLE IF NOT EXISTS books (
-    id UUID CONSTRAINT book_id_constraint PRIMARY KEY,
+    id UUID PRIMARY KEY,
     author_id UUID NOT NULL,
     title varchar(100) NOT NULL,
     publication_year integer,
-    UNIQUE (author_id, title, publication_year)
+    UNIQUE (author_id, title, publication_year),
+    CONSTRAINT fk_authors
+        FOREIGN KEY(author_id)
+        REFERENCES authors(id)
 );
 )"_zv);
 
     work.exec(R"(
 CREATE TABLE IF NOT EXISTS book_tags (
     book_id UUID NOT NULL,
-    tag varchar(30) NOT NULL
+    tag varchar(30) NOT NULL,
+    CONSTRAINT fk_books
+        FOREIGN KEY(book_id)
+        REFERENCES books(id)
 );
 )"_zv);
 
