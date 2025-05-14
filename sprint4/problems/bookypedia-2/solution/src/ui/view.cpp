@@ -63,7 +63,9 @@ std::string RemoveExtraSpaces(const std::string& input) {
 
 std::vector<std::string> ParseTags(std::istream& input) {
     std::string str;
-    if (!std::getline(input, str) || str.empty()) {
+    std::getline(input, str);
+    boost::algorithm::trim(str);
+    if (str.empty()) {
         return {};
     }
     std::vector<std::string> result;
