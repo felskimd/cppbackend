@@ -64,7 +64,6 @@ std::string RemoveExtraSpaces(const std::string& input) {
 std::vector<std::string> ParseTags(std::istream& input) {
     std::string str;
     std::getline(input, str);
-    //boost::algorithm::trim(str);
     if (str.empty()) {
         return {};
     }
@@ -78,10 +77,6 @@ std::vector<std::string> ParseTags(std::istream& input) {
     result.erase(std::remove_if(result.begin(), result.end(),
         [](const std::string& s) { return s.empty(); }),
         result.end());
-
-    /*for (auto& tag : result) {
-        tag = RemoveExtraSpaces(tag);
-    }*/
 
     std::sort(result.begin(), result.end());
     auto last = std::unique(result.begin(), result.end());
@@ -425,6 +420,7 @@ std::optional<detail::AuthorInfo> View::SelectAuthor(app::UnitOfWork* unit) cons
 }
 
 std::optional<detail::AuthorInfo> View::SelectAuthorFromList(app::UnitOfWork* unit) const {
+    output_ << "Select author:" << std::endl;
     auto authors = GetAuthors(unit);
     PrintVector(output_, authors);
     output_ << "Enter author # or empty line to cancel"sv << std::endl;
