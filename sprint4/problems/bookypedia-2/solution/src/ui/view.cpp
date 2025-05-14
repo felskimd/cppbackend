@@ -140,8 +140,9 @@ bool View::AddBook(std::istream& cmd_input) const {
     try {
         //auto unit = use_cases_.GetUnit();
         if (auto params = GetBookParams(unit.get(), cmd_input)) {
-            unit->AddBook(domain::AuthorId::FromString(params->author_id), params->title, params->publication_year);
-            AddTags(unit.get(), params->title);
+            auto book = unit->AddBook(domain::AuthorId::FromString(params->author_id), params->title, params->publication_year);
+            AddTags(unit.get(), book.GetId());
+            //
         }
         else {
             throw std::exception();
@@ -467,14 +468,15 @@ std::vector<detail::BookInfo> View::GetAuthorBooks(app::UnitOfWork* unit, const 
     return books;
 }
 
-void View::AddTags(app::UnitOfWork* unit, const std::string& book) const {
+void View::AddTags(app::UnitOfWork* unit, const domain::BookId& book) const {
     output_ << "Enter tags (comma separated):" << std::endl;
     auto tags = ParseTags(input_);
+    PrintVector(output_, tags);
     if (tags.empty()) {
         return;
     }
-    auto found_book = unit->GetBookIfExists(book).value();
-    unit->AddTags(found_book.GetId(), tags);
+    //auto found_book = unit->GetBookIfExists(book).value();
+    unit->AddTags(book, tags);
 }
 
 std::optional<domain::Book> View::SelectBook(app::UnitOfWork* unit) const {

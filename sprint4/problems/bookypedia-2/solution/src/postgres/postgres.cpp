@@ -236,7 +236,6 @@ CREATE TABLE IF NOT EXISTS books (
     author_id UUID NOT NULL,
     title varchar(100) NOT NULL,
     publication_year integer,
-    
     CONSTRAINT fk_authors
         FOREIGN KEY(author_id)
         REFERENCES authors(id)

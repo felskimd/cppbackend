@@ -13,7 +13,7 @@ public:
     virtual void Commit() = 0;
     virtual void Abort() = 0;
     virtual void AddAuthor(const std::string& name) = 0;
-    virtual void AddBook(const domain::AuthorId& author, const std::string& title, int publication_year) = 0;
+    virtual domain::Book AddBook(const domain::AuthorId& author, const std::string& title, int publication_year) = 0;
     virtual std::vector<domain::Author> GetAuthors() = 0;
     virtual std::vector<domain::Book> GetBooks() = 0;
     virtual std::vector<domain::Book> GetBooksByAuthor(const domain::AuthorId& id) = 0;

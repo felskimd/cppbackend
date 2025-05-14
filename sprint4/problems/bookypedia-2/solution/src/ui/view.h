@@ -66,7 +66,7 @@ private:
     std::vector<detail::AuthorInfo> GetAuthors(app::UnitOfWork* unit) const;
     std::vector<domain::Book> GetBooks(app::UnitOfWork* unit) const;
     std::vector<detail::BookInfo> GetAuthorBooks(app::UnitOfWork* unit, const std::string& author_id) const;
-    void AddTags(app::UnitOfWork* unit, const std::string& book) const;
+    void AddTags(app::UnitOfWork* unit, const domain::BookId& book) const;
     std::optional<domain::Book> SelectBook(app::UnitOfWork* unit) const;
     std::optional<domain::Book> SelectBookFromCommand(app::UnitOfWork* unit, std::istream& cmd_input) const;
 

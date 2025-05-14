@@ -18,8 +18,10 @@ void UnitOfWorkImpl::AddAuthor(const std::string& name) {
     authors_.Save({ AuthorId::New(), name });
 }
 
-void UnitOfWorkImpl::AddBook(const domain::AuthorId& author, const std::string& title, int publication_year) {
-    books_.Save({ BookId::New(), author, title, publication_year });
+domain::Book UnitOfWorkImpl::AddBook(const domain::AuthorId& author, const std::string& title, int publication_year) {
+    domain::Book book { BookId::New(), author, title, publication_year };
+    books_.Save(book);
+    return book;
 }
 
 std::vector<domain::Author> UnitOfWorkImpl::GetAuthors() {
