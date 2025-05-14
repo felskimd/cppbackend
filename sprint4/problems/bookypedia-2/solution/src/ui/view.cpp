@@ -328,8 +328,9 @@ bool View::DeleteBook(std::istream& cmd_input) const {
         }*/
     }
     catch (std::exception&) {
-        unit->Abort();
         output_ << "Failed to delete book" << std::endl;
+        unit->Abort();
+        //output_ << "Failed to delete book" << std::endl;
         return true;
     }
     unit->Commit();
