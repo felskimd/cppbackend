@@ -59,7 +59,7 @@ namespace domain {
         virtual std::vector<Book> GetBooks() = 0;
         virtual std::vector<Book> GetBooksByAuthor(const AuthorId& id) = 0;
         virtual std::vector<domain::Book> GetBooksByTitle(const std::string& title) = 0;
-        virtual std::optional<Book> GetBookIfExists(const std::string& title) = 0;
+        //virtual std::optional<Book> GetBookIfExists(const std::string& title) = 0;
         virtual void AddTags(const BookId& id, const std::vector<std::string>& tags) = 0;
         virtual void DeleteBooksOfAuthor(const AuthorId& id) = 0;
         //virtual std::vector<std::string> GetTags(const BookId& id) = 0;

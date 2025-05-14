@@ -471,7 +471,6 @@ std::vector<detail::BookInfo> View::GetAuthorBooks(app::UnitOfWork* unit, const 
 void View::AddTags(app::UnitOfWork* unit, const domain::BookId& book) const {
     output_ << "Enter tags (comma separated):" << std::endl;
     auto tags = ParseTags(input_);
-    PrintVector(output_, tags);
     if (tags.empty()) {
         return;
     }

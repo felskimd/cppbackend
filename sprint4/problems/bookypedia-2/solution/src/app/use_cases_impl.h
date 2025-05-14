@@ -25,7 +25,7 @@ public:
     std::vector<domain::Book> GetBooksByAuthor(const domain::AuthorId& id) override;
     std::vector<domain::Book> GetBooksByTitle(const std::string& title) override;
     std::optional<domain::Author> GetAuthorIfExists(const std::string& name) override;
-    std::optional<domain::Book> GetBookIfExists(const std::string& title) override;
+    //std::optional<domain::Book> GetBookIfExists(const std::string& title) override;
     void AddTags(const domain::BookId& id, const std::vector<std::string>& tags) override;
     void DeleteAuthor(const domain::Author& author) override;
     void EditAuthor(const domain::Author& author) override;

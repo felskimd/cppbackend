@@ -48,9 +48,9 @@ std::optional<domain::Author> UnitOfWorkImpl::GetAuthorIfExists(const std::strin
     return authors_.GetAuthorIfExists(name);
 }
 
-std::optional<domain::Book> UnitOfWorkImpl::GetBookIfExists(const std::string& title) {
-    return books_.GetBookIfExists(title);
-}
+//std::optional<domain::Book> UnitOfWorkImpl::GetBookIfExists(const std::string& title) {
+//    return books_.GetBookIfExists(title);
+//}
 
 void UnitOfWorkImpl::AddTags(const domain::BookId& id, const std::vector<std::string>& tags) {
     books_.AddTags(id, tags);
