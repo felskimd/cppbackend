@@ -374,8 +374,8 @@ bool View::EditBook(std::istream& cmd_input) const {
             unit->EditBook(new_book, new_tags);
         }
         else {
-            //throw std::exception();
-            output_ << "Book not found" << std::endl;
+            throw std::exception();
+            //output_ << "Book not found" << std::endl;
         }
     }
     catch (std::exception&) {
@@ -418,7 +418,7 @@ std::optional<detail::AuthorInfo> View::SelectAuthor(app::UnitOfWork* unit) cons
     std::string yes_or_no;
     if (!std::getline(input_, yes_or_no) || yes_or_no.empty()) {
         //throw std::exception();
-        return {};
+        return std::nullopt;
     }
     if (yes_or_no == "y" || yes_or_no == "Y") {
         unit->AddAuthor(str);
@@ -426,7 +426,7 @@ std::optional<detail::AuthorInfo> View::SelectAuthor(app::UnitOfWork* unit) cons
         return detail::AuthorInfo(author.GetId().ToString(), author.GetName());
     }
     //throw std::exception();
-    return {};
+    return std::nullopt;
 }
 
 std::optional<detail::AuthorInfo> View::SelectAuthorFromList(app::UnitOfWork* unit) const {
@@ -529,7 +529,7 @@ std::optional<domain::Book> View::SelectBookFromCommand(app::UnitOfWork* unit, s
     output_ << "Enter the book # or empty line to cancel:" << std::endl;
     std::string str;
     if (!std::getline(input_, str) || str.empty()) {
-        return {};
+        return std::nullopt;
     }
 
     int book_idx;
