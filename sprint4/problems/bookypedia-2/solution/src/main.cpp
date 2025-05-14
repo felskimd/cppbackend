@@ -25,8 +25,8 @@ bookypedia::AppConfig GetConfigFromEnv() {
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] const char* argv[]) {
     try {
-        bookypedia::Application app{GetConfigFromEnv()};
-        //bookypedia::Application app{bookypedia::AppConfig{DB_URL.data()}};
+        //bookypedia::Application app{GetConfigFromEnv()};
+        bookypedia::Application app{bookypedia::AppConfig{DB_URL.data()}};
         app.Run();
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;

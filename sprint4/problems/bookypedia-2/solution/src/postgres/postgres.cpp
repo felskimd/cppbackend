@@ -114,6 +114,7 @@ std::vector<domain::Book> BookRepositoryImpl::GetBooksByTitle(const std::string&
 SELECT books.id, author_id, title, publication_year, authors.name FROM books 
 JOIN authors ON authors.id = author_id
 WHERE title=$1
+ORDER BY authors.name ASC, publication_year ASC
 )", title);
     for (const auto& row : data) {
         auto [id, author_id, title, year, author_name] = row.as<std::string, std::string, std::string, int, std::string>();
