@@ -170,13 +170,31 @@ DELETE FROM books WHERE author_id=$1
 )", id.ToString());
 }
 
-std::vector<std::string> BookRepositoryImpl::GetTags(const domain::BookId& id) {
-    std::vector<std::string> result;
+//std::vector<std::string> BookRepositoryImpl::GetTags(const domain::BookId& id) {
+//    std::vector<std::string> result;
+//    auto tags = work_.exec_params(R"(
+//SELECT tag FROM book_tags WHERE book_id=$1
+//)", id.ToString());
+//    for (const auto& row : tags) {
+//        result.emplace_back(std::get<0>(row.as<std::string>()));
+//    }
+//    return result;
+//}
+
+std::string BookRepositoryImpl::GetTags(const domain::BookId& id) {
+    std::string result = "";
     auto tags = work_.exec_params(R"(
 SELECT tag FROM book_tags WHERE book_id=$1
 )", id.ToString());
+    bool first = true;
     for (const auto& row : tags) {
-        result.emplace_back(std::get<0>(row.as<std::string>()));
+        if (first) {
+            first = false;
+        }
+        else {
+            result += ", ";
+        }
+        result += std::get<0>(row.as<std::string>());
     }
     return result;
 }

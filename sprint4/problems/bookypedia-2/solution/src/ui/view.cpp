@@ -292,8 +292,8 @@ bool View::ShowBook(std::istream& cmd_input) const {
             output_ << "Author: " << book->GetAuthorName() << std::endl;
             output_ << "Publication year: " << book->GetYear() << std::endl;
             if (!tags.empty()) {
-                output_ << "Tags: ";
-                bool first = true;
+                output_ << "Tags: " << tags << std::endl;
+                /*bool first = true;
                 for (const auto& tag : tags) {
                     if (first) {
                         first = false;
@@ -303,7 +303,7 @@ bool View::ShowBook(std::istream& cmd_input) const {
                     }
                     output_ << tag;
                 }
-                output_ << std::endl;
+                output_ << std::endl;*/
             }
         }
     }

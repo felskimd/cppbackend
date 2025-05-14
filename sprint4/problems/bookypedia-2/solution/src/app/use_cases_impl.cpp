@@ -63,7 +63,11 @@ void UnitOfWorkImpl::EditAuthor(const domain::Author& author) {
     authors_.Save(author);
 }
 
-std::vector<std::string> UnitOfWorkImpl::GetTags(const domain::BookId& id) {
+//std::vector<std::string> UnitOfWorkImpl::GetTags(const domain::BookId& id) {
+//    return books_.GetTags(id);
+//}
+
+std::string UnitOfWorkImpl::GetTags(const domain::BookId& id) {
     return books_.GetTags(id);
 }
 
