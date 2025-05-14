@@ -120,9 +120,7 @@ bool View::AddAuthor(std::istream& cmd_input) const {
             throw std::exception();
         }
         boost::algorithm::trim(name);
-        //auto unit = use_cases_.GetUnit();
         unit->AddAuthor(std::move(name));
-        //unit->Commit();
     } catch (const std::exception&) {
         unit->Abort();
         output_ << "Failed to add author"sv << std::endl;
@@ -135,15 +133,10 @@ bool View::AddAuthor(std::istream& cmd_input) const {
 bool View::AddBook(std::istream& cmd_input) const {
     auto unit = use_cases_.GetUnit();
     try {
-        //auto unit = use_cases_.GetUnit();
         if (auto params = GetBookParams(unit.get(), cmd_input)) {
             auto book = unit->AddBook(domain::AuthorId::FromString(params->author_id), params->title, params->publication_year);
             AddTags(unit.get(), book.GetId());
         }
-        /*else {
-            throw std::exception();
-        }*/
-        //unit->Commit();
     } catch (const std::exception&) {
         unit->Abort();
         output_ << "Failed to add book"sv << std::endl;
@@ -168,16 +161,13 @@ bool View::ShowBooks() const {
 }
 
 bool View::ShowAuthorBooks() const {
-    // TODO: handle error
     auto unit = use_cases_.GetUnit();
     try {
-        //auto unit = use_cases_.GetUnit();
-        output_ << "Select author:" << std::endl;
+        //output_ << "Select author:" << std::endl;
         if (auto author = SelectAuthorFromList(unit.get())) {
             PrintVector(output_, GetAuthorBooks(unit.get(), author->id));
         }
 
-        //unit->Commit();
     } catch (const std::exception&) {
         unit->Abort();
         output_ << "Failed to Show Books"sv << std::endl;
@@ -192,15 +182,10 @@ bool View::DeleteAuthor(std::istream& cmd_input) const {
     try {
         std::string name;
         std::getline(cmd_input, name);
-        //auto unit = use_cases_.GetUnit();
         if (name.empty()) {
             if (auto selected_author = SelectAuthorFromList(unit.get())) {
                 unit->DeleteAuthor({domain::AuthorId::FromString(selected_author->id), selected_author->name});
             }
-            //else {
-            //    //unit->Commit();
-            //    throw std::exception();
-            //}
         }
         else {
             boost::algorithm::trim(name);
@@ -208,11 +193,9 @@ bool View::DeleteAuthor(std::istream& cmd_input) const {
                 unit->DeleteAuthor(author.value());
             }
             else {
-                //unit->Commit();
                 throw std::exception();
             }
         }
-        //unit->Commit();
     }
     catch (const std::exception&) {
         unit->Abort();
@@ -238,17 +221,7 @@ bool View::EditAuthor(std::istream& cmd_input) const {
                 else {
                     throw std::exception();
                 }
-                //input_ >> new_name;
-                //boost::algorithm::trim(new_name);
-                //unit->EditAuthor({ domain::AuthorId::FromString(selected_author->id), new_name });
             }
-            //else {
-                //unit->Commit();
-                //throw std::exception();
-
-                //unit->Abort();
-                //return true;
-            //}
         }
         else {
             boost::algorithm::trim(name);
@@ -264,11 +237,9 @@ bool View::EditAuthor(std::istream& cmd_input) const {
                 }
             }
             else {
-                //unit->Commit();
                 throw std::exception();
             }
         }
-        //unit->Commit();
     }
     catch (const std::exception&) {
         unit->Abort();
@@ -290,23 +261,11 @@ bool View::ShowBook(std::istream& cmd_input) const {
             output_ << "Publication year: " << book->GetYear() << std::endl;
             if (!tags.empty()) {
                 output_ << "Tags: " << tags << std::endl;
-                /*bool first = true;
-                for (const auto& tag : tags) {
-                    if (first) {
-                        first = false;
-                    }
-                    else {
-                        output_ << ", ";
-                    }
-                    output_ << tag;
-                }
-                output_ << std::endl;*/
             }
         }
     }
     catch (std::exception&) {
         unit->Abort();
-        //output_ << "ACHTUNG!!!" << std::endl;
         return true;
     }
     unit->Commit();
@@ -320,14 +279,10 @@ bool View::DeleteBook(std::istream& cmd_input) const {
         if (book) {
             unit->DeleteBook(book->GetId());
         }
-        /*else {
-            output_ << "Book not found" << std::endl;
-        }*/
     }
     catch (std::exception&) {
         output_ << "Failed to delete book" << std::endl;
         unit->Abort();
-        //output_ << "Failed to delete book" << std::endl;
         return true;
     }
     unit->Commit();
@@ -363,7 +318,6 @@ bool View::EditBook(std::istream& cmd_input) const {
         }
         else {
             throw std::exception();
-            //output_ << "Book not found" << std::endl;
         }
     }
     catch (std::exception&) {
@@ -406,7 +360,6 @@ std::optional<detail::AuthorInfo> View::SelectAuthor(app::UnitOfWork* unit) cons
     std::string yes_or_no;
     if (!std::getline(input_, yes_or_no) || yes_or_no.empty()) {
         throw std::exception();
-        //return std::nullopt;
     }
     if (yes_or_no == "y" || yes_or_no == "Y") {
         unit->AddAuthor(str);
@@ -415,7 +368,6 @@ std::optional<detail::AuthorInfo> View::SelectAuthor(app::UnitOfWork* unit) cons
         }
     }
     throw std::exception();
-    //return std::nullopt;
 }
 
 std::optional<detail::AuthorInfo> View::SelectAuthorFromList(app::UnitOfWork* unit) const {
@@ -471,7 +423,6 @@ void View::AddTags(app::UnitOfWork* unit, const domain::BookId& book) const {
     if (tags.empty()) {
         return;
     }
-    //auto found_book = unit->GetBookIfExists(book).value();
     unit->AddTags(book, tags);
 }
 
