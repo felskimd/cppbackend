@@ -245,13 +245,13 @@ bool View::EditAuthor(std::istream& cmd_input) const {
                 //boost::algorithm::trim(new_name);
                 //unit->EditAuthor({ domain::AuthorId::FromString(selected_author->id), new_name });
             }
-            else {
+            //else {
                 //unit->Commit();
                 //throw std::exception();
 
-                unit->Abort();
-                return true;
-            }
+                //unit->Abort();
+                //return true;
+            //}
         }
         else {
             boost::algorithm::trim(name);
@@ -373,9 +373,9 @@ bool View::EditBook(std::istream& cmd_input) const {
             auto new_book = domain::Book(book->GetId(), book->GetAuthor(), new_name, new_year);
             unit->EditBook(new_book, new_tags);
         }
-        else {
-            throw std::exception();
-        }
+        //else {
+            //throw std::exception();
+        //}
     }
     catch (std::exception&) {
         unit->Abort();
