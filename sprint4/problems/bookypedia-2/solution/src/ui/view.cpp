@@ -514,7 +514,9 @@ std::optional<domain::Book> View::SelectBook(app::UnitOfWork* unit) const {
 
 std::optional<domain::Book> View::SelectBookFromCommand(app::UnitOfWork* unit, std::istream& cmd_input) const {
     std::string title;
-    if (!std::getline(cmd_input, title) || title.empty()) {
+    std::getline(cmd_input, title);
+    boost::algorithm::trim(title);
+    if (title.empty()) {
         return SelectBook(unit);
     }
 
