@@ -403,7 +403,8 @@ std::optional<detail::AddBookParams> View::GetBookParams(app::UnitOfWork* unit, 
 std::optional<detail::AuthorInfo> View::SelectAuthor(app::UnitOfWork* unit) const {
     output_ << "Enter author name or empty line to select from list:"sv << std::endl;
     std::string str;
-    if (!std::getline(input_, str) || str.empty()) {
+    std::getline(input_, str);
+    if (str.empty()) {
         return SelectAuthorFromList(unit);
     }
     
