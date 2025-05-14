@@ -357,18 +357,8 @@ bool View::EditBook(std::istream& cmd_input) const {
             else {
                 new_year = std::stoi(new_year_str);
             }
-            output_ << "Enter tags (current tags: ";
-            bool first = true;
-            for (const auto& tag : unit->GetTags(book->GetId())) {
-                if (first) {
-                    first = false;
-                }
-                else {
-                    output_ << ", ";
-                }
-                output_ << tag;
-            }
-            output_ << "):" << std::endl;
+            auto tags = unit->GetTags(book->GetId());
+            output_ << "Enter tags (current tags: " << tags << "):" << std::endl;
             std::vector<std::string> new_tags = ParseTags(input_);
             auto new_book = domain::Book(book->GetId(), book->GetAuthor(), new_name, new_year);
             unit->EditBook(new_book, new_tags);
@@ -492,7 +482,9 @@ std::optional<domain::Book> View::SelectBook(app::UnitOfWork* unit) const {
     output_ << "Enter the book # or empty line to cancel:"sv << std::endl;
 
     std::string str;
-    if (!std::getline(input_, str) || str.empty()) {
+    std::getline(input_, str);
+    boost::algorithm::trim(str);
+    if (str.empty()) {
         return std::nullopt;
     }
 
@@ -531,7 +523,9 @@ std::optional<domain::Book> View::SelectBookFromCommand(app::UnitOfWork* unit, s
     PrintVector(output_, books);
     output_ << "Enter the book # or empty line to cancel:" << std::endl;
     std::string str;
-    if (!std::getline(input_, str) || str.empty()) {
+    std::getline(input_, str);
+    boost::algorithm::trim(str);
+    if (str.empty()) {
         return std::nullopt;
     }
 
