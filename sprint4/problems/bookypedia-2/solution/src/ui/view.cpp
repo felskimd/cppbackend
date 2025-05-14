@@ -230,8 +230,6 @@ bool View::EditAuthor(std::istream& cmd_input) const {
     auto unit = use_cases_.GetUnit();
     try {
         std::string name;
-        //std::getline(cmd_input, name);
-        //auto unit = use_cases_.GetUnit();
         if (!std::getline(cmd_input, name) || name.empty()) {
             if (auto selected_author = SelectAuthorFromList(unit.get())) {
                 output_ << "Enter new name:" << std::endl;
@@ -249,7 +247,10 @@ bool View::EditAuthor(std::istream& cmd_input) const {
             }
             else {
                 //unit->Commit();
-                throw std::exception();
+                //throw std::exception();
+
+                unit->Abort();
+                return true;
             }
         }
         else {
