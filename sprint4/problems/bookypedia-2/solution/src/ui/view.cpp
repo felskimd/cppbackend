@@ -139,11 +139,10 @@ bool View::AddBook(std::istream& cmd_input) const {
         if (auto params = GetBookParams(unit.get(), cmd_input)) {
             auto book = unit->AddBook(domain::AuthorId::FromString(params->author_id), params->title, params->publication_year);
             AddTags(unit.get(), book.GetId());
-            //
         }
-        else {
+        /*else {
             throw std::exception();
-        }
+        }*/
         //unit->Commit();
     } catch (const std::exception&) {
         unit->Abort();
@@ -406,8 +405,8 @@ std::optional<detail::AuthorInfo> View::SelectAuthor(app::UnitOfWork* unit) cons
     output_ << "No author found. Do you want to add "sv << str << " (y/n)?"sv << std::endl;
     std::string yes_or_no;
     if (!std::getline(input_, yes_or_no) || yes_or_no.empty()) {
-        //throw std::exception();
-        return std::nullopt;
+        throw std::exception();
+        //return std::nullopt;
     }
     if (yes_or_no == "y" || yes_or_no == "Y") {
         unit->AddAuthor(str);
@@ -415,8 +414,8 @@ std::optional<detail::AuthorInfo> View::SelectAuthor(app::UnitOfWork* unit) cons
             return detail::AuthorInfo(author->GetId().ToString(), author->GetName());
         }
     }
-    //throw std::exception();
-    return std::nullopt;
+    throw std::exception();
+    //return std::nullopt;
 }
 
 std::optional<detail::AuthorInfo> View::SelectAuthorFromList(app::UnitOfWork* unit) const {
