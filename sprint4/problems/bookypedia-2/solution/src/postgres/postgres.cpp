@@ -129,28 +129,6 @@ ORDER BY authors.name ASC, publication_year ASC
     return result;
 }
 
-//std::optional<domain::Book> BookRepositoryImpl::GetBookIfExists(const std::string& title) {
-//    try {
-//        auto row = work_.exec_params1(R"(
-//SELECT books.id, author_id, title, publication_year, authors.name FROM books 
-//JOIN authors ON authors.id = author_id
-//WHERE title=$1
-//)"_zv, title);
-//        auto [id, author_id, title, year, author_name] = row.as<std::string, std::string, std::string, int, std::string>();
-//        domain::Book book{
-//            domain::BookId::FromString(id)
-//            , domain::AuthorId::FromString(author_id)
-//            , std::move(title)
-//            , year
-//        };
-//        book.SetAuthorName(author_name);
-//        return book;
-//    }
-//    catch (pqxx::unexpected_rows) {
-//        return {};
-//    }
-//}
-
 void BookRepositoryImpl::AddTags(const domain::BookId& id, const std::vector<std::string>& tags) {
     auto id_str = id.ToString();
     for (const auto& tag : tags) {

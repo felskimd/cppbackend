@@ -163,7 +163,6 @@ bool View::ShowBooks() const {
 bool View::ShowAuthorBooks() const {
     auto unit = use_cases_.GetUnit();
     try {
-        //output_ << "Select author:" << std::endl;
         if (auto author = SelectAuthorFromList(unit.get())) {
             PrintVector(output_, GetAuthorBooks(unit.get(), author->id));
         }

@@ -33,10 +33,8 @@ public:
     std::vector<domain::Book> GetBooks() override; 
     std::vector<domain::Book> GetBooksByAuthor(const domain::AuthorId& id) override;
     std::vector<domain::Book> GetBooksByTitle(const std::string& title) override;
-    //std::optional<domain::Book> GetBookIfExists(const std::string& title) override;
     void AddTags(const domain::BookId& id, const std::vector<std::string>& tags) override;
     void DeleteBooksOfAuthor(const domain::AuthorId& id) override;
-    //std::vector<std::string> GetTags(const domain::BookId& id) override;
     std::string GetTags(const domain::BookId& id) override;
     void DeleteBook(const domain::BookId& id) override;
     void DeleteTags(const domain::BookId& id) override;
@@ -51,22 +49,12 @@ class Database {
 public:
     explicit Database(pqxx::connection connection);
 
-    /*AuthorRepositoryImpl& GetAuthors() & {
-        return authors_;
-    }
-
-    BookRepositoryImpl& GetBooks() & {
-        return books_;
-    }*/
-
     pqxx::connection& GetConnection() {
         return connection_;
     }
 
 private:
     pqxx::connection connection_;
-    /*AuthorRepositoryImpl authors_;
-    BookRepositoryImpl books_;*/
 };
 
 }  // namespace postgres

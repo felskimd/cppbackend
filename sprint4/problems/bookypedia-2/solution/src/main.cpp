@@ -9,7 +9,7 @@ using namespace std::literals;
 namespace {
 
 constexpr const char DB_URL_ENV_NAME[]{"BOOKYPEDIA_DB_URL"};
-constexpr std::string_view DB_URL = "postgres://postgres:Mys3Cr3t@127.0.0.1:5432/postgres"sv;
+//constexpr std::string_view DB_URL = "postgres://postgres:Mys3Cr3t@127.0.0.1:5432/postgres"sv;
 
 bookypedia::AppConfig GetConfigFromEnv() {
     bookypedia::AppConfig config;
