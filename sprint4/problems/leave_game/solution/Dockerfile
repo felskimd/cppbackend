@@ -36,8 +36,8 @@ USER www
 COPY --from=build /app/build/game_server /app/
 COPY ./data /app/data
 COPY ./static /app/static
-ARG GAME_DB_URL=postgres://postgres:Mys3Cr3t@127.0.0.1:5432/postgres
-ENV GAME_DB_URL=$GAME_DB_URL
+#ARG GAME_DB_URL=postgres://postgres:Mys3Cr3t@127.0.0.1:5432/postgres
+#ENV GAME_DB_URL=$GAME_DB_URL
 
 # Запускаем игровой сервер
 ENTRYPOINT ["/app/game_server", "--config-file", "/app/data/config.json", "--www-root", "/app/static", "--randomize-spawn-points", "--tick-period", "100", "--state-file", "/app/data/save"]
