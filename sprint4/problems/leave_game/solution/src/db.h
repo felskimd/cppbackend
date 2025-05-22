@@ -2,6 +2,7 @@
 
 #include "model.h"
 
+#include <condition_variable>
 #include <pqxx/connection>
 #include <pqxx/pqxx>
 #include <pqxx/transaction>

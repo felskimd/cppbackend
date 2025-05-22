@@ -14,15 +14,10 @@ public:
     void Save(const std::vector<SaveStat>& stats) override {
         auto conn = pool_->GetConnection();
         pqxx::work work {*conn};
-        try {
-            for (const auto& stat : stats) {
-                work.exec_params(R"(
+        for (const auto& stat : stats) {
+            work.exec_params(R"(
 INSERT INTO retired_players (name, score, playtime) VALUES ($1, $2, $3);
 )", stat.name, stat.scores, stat.playtime);
-            }
-        }
-        catch (std::exception&) {
-
         }
         work.commit();
     }
