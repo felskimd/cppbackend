@@ -9,6 +9,7 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <unordered_set>
 #include <variant>
 #include <vector>
 
@@ -26,6 +27,7 @@ namespace model {
         ModelLiterals() = delete;
         constexpr static std::string_view DEFAULT_DOG_SPEED = "defaultDogSpeed"sv;
         constexpr static std::string_view DEFAULT_BAG_CAPACITY = "defaultBagCapacity"sv;
+        constexpr static std::string_view DEFAULT_DOG_RETIREMENT_TIME = "dogRetirementTime"sv;
         constexpr static std::string_view DOG_SPEED = "dogSpeed"sv;
         constexpr static std::string_view BAG_CAPACITY = "bagCapacity"sv;
         constexpr static std::string_view MAPS = "maps"sv;
@@ -326,11 +328,18 @@ namespace model {
             :id_(GetNextId()), name_(std::move(name)), pockets_(pockets_capacity)
         { }
 
-        //mb not needed
         explicit Dog(size_t id, std::string&& name, size_t pockets_capacity)
             :id_(id), name_(std::move(name)), pockets_(pockets_capacity)
         {
             ++start_id_;
+        }
+
+        bool operator==(const Dog& right) const {
+            return this->id_ == right.id_;
+        }
+
+        bool operator==(const Dog* right) const {
+            return this->id_ == right->id_;
         }
 
         int GetId() const {
@@ -461,9 +470,20 @@ namespace model {
 
     };
 
+    struct SaveStat {
+        std::string name;
+        int scores;
+        unsigned playtime;
+    };
+
+    class StatSaver {
+    public:
+        virtual void Save(const std::vector<SaveStat>& stat) = 0;
+    };
+
     class GameSession {
     public:
-        explicit GameSession(Map* map, bool randomize_spawn);
+        explicit GameSession(Map* map, bool randomize_spawn, unsigned dog_retirement_time, StatSaver* stat_saver);
 
         using LootType = unsigned;
         using LootId = unsigned;
@@ -486,7 +506,7 @@ namespace model {
             return map_->GetSpeed();
         }
 
-        void Tick(unsigned delta, unsigned loot_count) {
+        std::unordered_set<size_t> Tick(unsigned delta, unsigned loot_count) {
             auto [new_positions, dogs_to_stop] = CalculatePositions(delta);
             CollisionActorsProvider provider;
             provider.SetGatherers(PrepareDogs(new_positions));
@@ -496,6 +516,9 @@ namespace model {
             ProcessEvents(events, data);
             UpdateDogsPositions(new_positions, dogs_to_stop);
             SpawnLoot(loot_count);
+            auto dogs_to_retire = ObserveAFK(delta);
+            RetireDogs(dogs_to_retire);
+            return dogs_to_retire;
         }
 
         const std::unordered_map<LootId, std::pair<LootType, Position>>& GetLootMap() const {
@@ -531,8 +554,12 @@ namespace model {
         std::unordered_map<Point, std::vector<const Road*>, PointHash> roads_graph_;
         bool randomize_spawn_;
         std::unordered_map<LootId, std::pair<LootType, Position>> loot_map_;
+        std::unordered_map<size_t, unsigned> afk_dogs_;
+        std::unordered_map<size_t, unsigned> dogs_playtime_;
         unsigned loot_count_ = 0;
         unsigned loot_id_ = 0;
+        unsigned dog_retirement_time_;
+        StatSaver* stat_saver_;
 
         std::pair<bool, Position> CalculateMove(Position pos, Speed speed, unsigned delta) const;
 
@@ -549,14 +576,21 @@ namespace model {
         std::pair<std::vector<collision_detector::Item>, std::unordered_map<size_t, ItemData>> PrepareCollisionItems() const;
 
         void ProcessEvents(const std::vector<collision_detector::GatheringEvent>& events, const std::unordered_map<size_t, ItemData>& items_data);
+
+        //Returns dog ids to retire
+        std::unordered_set<size_t> ObserveAFK(unsigned delta);
+
+        void RetireDogs(const std::unordered_set<size_t>& ids);
     };
 
     class Game {
     public:
         using Maps = std::vector<Map>;
 
-        explicit Game(loot_gen::LootGenerator&& loot_gen)
-            : loot_generator_(std::move(loot_gen)) { }
+        explicit Game(loot_gen::LootGenerator&& loot_gen, unsigned dog_retirement_time)
+            : loot_generator_(std::move(loot_gen)) 
+            , dog_retirement_time_(dog_retirement_time)
+        { }
 
         void AddMap(Map map);
 
@@ -578,19 +612,21 @@ namespace model {
             return nullptr;
         }
 
-        void StartSessions(bool randomize_spawn) {
+        void StartSessions(bool randomize_spawn, model::StatSaver* stat_saver) {
             sessions_.clear();
             sessions_.reserve(maps_.size());
             for (auto& map : maps_) {
-                sessions_.push_back(GameSession{ &map, randomize_spawn });
+                sessions_.push_back(GameSession{ &map, randomize_spawn, dog_retirement_time_, stat_saver });
             }
         }
 
-        void Tick(unsigned delta) {
+        std::vector<size_t> Tick(unsigned delta) {
             loot_gen::LootGenerator::TimeInterval ms_duration(delta);
+            std::vector<size_t> retired_dogs;
             for (auto& session : sessions_) {
                 session.Tick(delta, loot_generator_.Generate(ms_duration, session.GetLootCount(), session.GetDogsCount()));
             }
+            return retired_dogs;
         }
 
         void AddLoot(const Map::Id& map_id, GameSession::LootId loot_id, GameSession::LootType type, Position pos) {
@@ -616,6 +652,7 @@ namespace model {
         MapIdToIndex map_id_to_index_;
         std::vector<GameSession> sessions_;
         loot_gen::LootGenerator loot_generator_;
+        unsigned dog_retirement_time_;
     };
 
 }  // namespace model
@@ -651,8 +688,15 @@ namespace app {
     class Player {
     public:
         explicit Player(Token&& token, model::GameSession* session, model::Dog* dog);
-
         explicit Player(size_t id, Token&& token, model::GameSession* session, model::Dog* dog);
+
+        bool operator==(const Player& other) {
+            return this->id_ == other.id_;
+        }
+
+        bool operator==(const Player* other) {
+            return this->id_ == other->id_;
+        }
 
         Token GetToken() const {
             return token_;
@@ -698,6 +742,14 @@ namespace app {
             return players_;
         }
 
+        void RemovePlayers(const std::vector<size_t>& dogs_ids) {
+            for (const auto id : dogs_ids) {
+                tokens_to_players_.erase(dogs_id_to_players_.at(id)->GetToken());
+                std::erase(players_, dogs_id_to_players_.at(id));
+                dogs_id_to_players_.erase(id);
+            }
+        }
+
     private:
         using TokenHasher = util::TaggedHasher<Token>;
         using TokensToPlayers = std::unordered_map<Token, size_t, TokenHasher>;
@@ -705,6 +757,7 @@ namespace app {
         std::vector<Player> players_;
         TokensToPlayers tokens_to_players_;
         TokensGen token_gen_;
+        std::unordered_map<size_t, Player*> dogs_id_to_players_;
     };
 
     class ApplicationListener {
@@ -714,7 +767,7 @@ namespace app {
 
     class Application {
     public:
-        explicit Application(model::Game&& game, bool randomize_spawn);
+        explicit Application(model::Game&& game, bool randomize_spawn, model::StatSaver* stat_saver);
 
         const model::Map* FindMap(const model::Map::Id& id) const {
             return game_.FindMap(id);
@@ -749,7 +802,8 @@ namespace app {
         }
 
         void Tick(unsigned millisec) {
-            game_.Tick(millisec);
+            auto dog_ids_to_retire = game_.Tick(millisec);
+            players_.RemovePlayers(dog_ids_to_retire);
             if (listener_) {
                 listener_->OnTick(millisec);
             }

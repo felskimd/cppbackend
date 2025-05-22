@@ -78,9 +78,11 @@ namespace model {
 
     size_t Dog::start_id_ = 0;
 
-    GameSession::GameSession(Map* map, bool randomize_spawn)
-        : map_(map),
-        randomize_spawn_(randomize_spawn)
+    GameSession::GameSession(Map* map, bool randomize_spawn, unsigned dog_retirement_time, StatSaver* stat_saver)
+        : map_(map)
+        , randomize_spawn_(randomize_spawn)
+        , dog_retirement_time_(dog_retirement_time)
+        , stat_saver_(stat_saver)
     {
         for (const auto& road : map_->GetRoads()) {
             auto start = road.GetStart();
@@ -311,6 +313,43 @@ namespace model {
         return loot_id_++;
     }
 
+    std::unordered_set<size_t> GameSession::ObserveAFK(unsigned delta) {
+        std::unordered_set<size_t> result;
+        for (const auto& dog : dogs_) {
+            if (dog.GetSpeed() == Speed{}) {
+                afk_dogs_[dog.GetId()] += delta;
+                if (afk_dogs_[dog.GetId()] >= dog_retirement_time_) {
+                    result.insert(dog.GetId());
+                }
+                /*else {
+                    afk_dogs_[dog.GetId()] += delta;
+                }*/
+            }
+            else {
+                afk_dogs_[dog.GetId()] = 0;
+            }
+            dogs_playtime_[dog.GetId()] += delta;
+        }
+        return result;
+    }
+
+    void GameSession::RetireDogs(const std::unordered_set<size_t>& ids) {
+        std::vector<SaveStat> stats;
+        std::vector<Dog*> dogs_to_erase;
+        for (auto& dog : dogs_) {
+            if (ids.contains(dog.GetId())) {
+                stats.emplace_back(dog.GetName(), dog.GetScore(), dogs_playtime_.at(dog.GetId()));
+                dogs_to_erase.push_back(&dog);
+            }
+        }
+        for (const auto dog : dogs_to_erase) {
+            //??? mb errors
+            std::erase(dogs_links_, dog);
+            std::erase(dogs_, dog);
+        }
+        stat_saver_->Save(stats);
+    }
+
 }  // namespace model
 
 namespace app {
@@ -339,6 +378,7 @@ namespace app {
         auto token_copy = token;
         Player player(std::move(token_copy), session, doggy);
         players_.push_back(std::move(player));
+        dogs_id_to_players_[doggy->GetId()] = &players_.back();
         tokens_to_players_.emplace(std::move(token), players_.size() - 1);
         return players_.back();
     }
@@ -349,6 +389,7 @@ namespace app {
         Player player(id, std::move(token_copy), session, doggy);
         players_.push_back(std::move(player));
         tokens_to_players_.emplace(std::move(token), players_.size() - 1);
+        dogs_id_to_players_[doggy->GetId()] = &players_.back();
     }
 
     Player* Players::FindByToken(const Token& token) {
@@ -360,10 +401,10 @@ namespace app {
 
     size_t Player::start_id_ = 0;
 
-    Application::Application(model::Game&& game, bool randomize_spawn)
+    Application::Application(model::Game&& game, bool randomize_spawn, model::StatSaver* stat_saver)
         :game_(std::move(game))
     {
-        game_.StartSessions(randomize_spawn);
+        game_.StartSessions(randomize_spawn, stat_saver);
     }
 
     void Application::AddPlayer(size_t player_id, Token&& token, model::Dog&& dog, const model::Map::Id& map_id) {

@@ -1,7 +1,7 @@
 #pragma once
 #include "extra_data.h"
 #include "http_server.h"
-#include "model.h"
+#include "db.h"
 
 #include <boost/asio/io_context.hpp>
 #include <boost/json.hpp>
@@ -84,11 +84,13 @@ namespace http_handler {
         constexpr static std::string_view PLAYER = "player"sv;
         constexpr static std::string_view ACTION = "action"sv;
         constexpr static std::string_view TICK = "tick"sv;
+        constexpr static std::string_view RECORDS = "records"sv;
     };
 
     struct HttpBodies {
         HttpBodies() = delete;
         constexpr static std::string_view BAD_REQUEST = R"({ "code": "badRequest", "message": "Bad request" })"sv;
+        constexpr static std::string_view RECORDS_REQUEST_INVALID_MAX_ITEMS = R"({ "code": "badRequest", "message": "Invalid max items" })"sv;
         constexpr static std::string_view MAP_NOT_FOUND = R"({ "code": "mapNotFound", "message": "Map not found" })"sv;
         constexpr static std::string_view FILE_NOT_FOUND = R"({ "code": "fileNotFound", "message": "File not found" })"sv;
         constexpr static std::string_view INVALID_NAME = R"({ "code": "invalidArgument", "message": "Invalid name" })"sv;
@@ -207,7 +209,7 @@ namespace http_handler {
     public:
         using Strand = net::strand<net::io_context::executor_type>;
 
-        explicit APIRequestHandler(app::Application& app, net::io_context& ioc, bool no_auto_tick);
+        explicit APIRequestHandler(app::Application& app, net::io_context& ioc, bool no_auto_tick, std::shared_ptr<database::StatProvider> stat_provider);
 
         APIRequestHandler(const APIRequestHandler&) = delete;
         APIRequestHandler& operator=(const APIRequestHandler&) = delete;
@@ -245,6 +247,13 @@ namespace http_handler {
             if (splitted[2] == RestApiLiterals::GAME) {
                 if (splitted.size() < 4) {
                     return Sender::SendBadRequest(std::move(send));
+                }
+                if (splitted[3] == RestApiLiterals::RECORDS) {
+                    if (method != "GET" && method != "HEAD") {
+                        return Sender::SendMethodNotAllowed(std::move(send), "GET, HEAD");
+                    }
+                    auto info = GetStatAdditionalInfoOrDefault(req);
+                    return RecordsRequest(info, std::move(send));
                 }
                 if (splitted[3] == RestApiLiterals::JOIN) {
                     if (method != "POST") {
@@ -320,8 +329,40 @@ namespace http_handler {
         app::Application& app_;
         Strand strand_;
         bool auto_tick_;
+        std::shared_ptr<database::StatProvider> stat_provider_;
 
         json::array ProcessMapsRequestBody() const;
+
+        struct StatAdditionalInfo {
+            int start;
+            int max_items;
+        };
+
+        template <typename Body, typename Allocator>
+        StatAdditionalInfo GetStatAdditionalInfoOrDefault(const http::request<Body, http::basic_fields<Allocator>>& req) const {
+            StatAdditionalInfo result{.start = 0, .max_items = 100};
+            std::string_view target = req.target();
+            size_t query_pos = target.find('?');
+            if (query_pos != std::string::npos) {
+                std::map<std::string, std::string> params;
+                std::vector<std::string> pairs;
+                boost::split(pairs, target.substr(query_pos + 1), boost::is_any_of("&"));
+                for (const auto& pair : pairs) {
+                    std::vector<std::string> kv;
+                    boost::split(kv, pair, boost::is_any_of("="));
+                    if (kv.size() >= 2) {
+                        params[kv[0]] = kv[1];
+                    }
+                }
+                if (auto start = params.find("start"); start != params.end()) {
+                    result.start = std::stoi(start->second);
+                }
+                if (auto max_items = params.find("maxItems"); max_items != params.end()) {
+                    result.max_items = std::stoi(max_items->second);
+                }
+            }
+            return result;
+        }
 
         template<typename Send>
         ResponseData MapRequest(std::string id, Send&& send) {
@@ -335,6 +376,24 @@ namespace http_handler {
                 Sender::SendAPIResponse(http::status::not_found, HttpBodies::MAP_NOT_FOUND, std::move(send));
                 return { http::status::not_found , ContentType::APP_JSON };
             }
+        }
+
+        template<typename Send>
+        ResponseData RecordsRequest(StatAdditionalInfo info, Send&& send) {
+            if (info.max_items > 100) {
+                Sender::SendAPIResponse(http::status::bad_request, HttpBodies::RECORDS_REQUEST_INVALID_MAX_ITEMS, std::move(send));
+                return { http::status::bad_request, ContentType::APP_JSON };
+            }
+            auto stats = stat_provider_->GetStats(info.start, info.max_items);
+            json::array result;
+            for (const auto& stat : stats) {
+                json::object value;
+                value["name"] = stat.name;
+                value["score"] = stat.score;
+                value["playTime"] = stat.playtime;
+            }
+            Sender::SendAPIResponse(http::status::ok, json::serialize(result), std::move(send));
+            return { http::status::ok, ContentType::APP_JSON };
         }
 
         template<typename Send>
@@ -533,7 +592,7 @@ namespace http_handler {
 
     class RequestHandler : public std::enable_shared_from_this<RequestHandler> {
     public:
-        explicit RequestHandler(app::Application& app, const char* path_to_static, net::io_context& ioc, bool no_auto_tick);
+        explicit RequestHandler(app::Application& app, const char* path_to_static, net::io_context& ioc, bool no_auto_tick, std::shared_ptr<database::StatProvider> stat_provider);
 
         RequestHandler(const RequestHandler&) = delete;
         RequestHandler& operator=(const RequestHandler&) = delete;

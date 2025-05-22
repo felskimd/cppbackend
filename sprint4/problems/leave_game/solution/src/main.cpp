@@ -10,6 +10,7 @@
 #include "json_loader.h"
 #include "model_serialization.h"
 #include "request_handler.h"
+#include "stat_saver_impl.h"
 
 using namespace std::literals;
 namespace net = boost::asio;
@@ -171,7 +172,19 @@ int main(int argc, const char* argv[]) {
         InitLogger();
 
         // 1. Загружаем карту из файла и построить модель игры
-        app::Application app{std::move(json_loader::LoadGame(args->config_path)), args->randomize_spawn};
+        const char* db_url = std::getenv("GAME_DB_URL");
+        if (!db_url) {
+            return 1;
+        }
+        const unsigned num_threads = std::thread::hardware_concurrency();
+        /*database::ConnectionPool pool{ num_threads, [db_url] {
+                                     return std::make_shared<pqxx::connection>(db_url);
+                                 } };*/
+        auto shared_pool = std::make_shared<database::ConnectionPool>(num_threads, [db_url] {
+            return std::make_shared<pqxx::connection>(db_url);
+            });
+        model::StatSaverImpl stat_saver{shared_pool};
+        app::Application app{std::move(json_loader::LoadGame(args->config_path)), args->randomize_spawn, &stat_saver};
 
         serialization::SerializingListener sl{ static_cast<unsigned>(args->saving_period), args->state_path, app };
 
@@ -184,7 +197,6 @@ int main(int argc, const char* argv[]) {
         }
 
         // 2. Инициализируем io_context
-        const unsigned num_threads = std::thread::hardware_concurrency();
         net::io_context ioc(num_threads);
 
         // 3. Добавляем асинхронный обработчик сигналов SIGINT и SIGTERM
@@ -197,7 +209,8 @@ int main(int argc, const char* argv[]) {
         });
 
         // 4. Создаём обработчик HTTP-запросов и связываем его с моделью игры
-        auto handler = std::make_shared<http_handler::RequestHandler>(app, args->static_path.data(), ioc, args->no_auto_tick);
+        auto stat_provider = std::make_shared<database::StatProvider>(shared_pool);
+        auto handler = std::make_shared<http_handler::RequestHandler>(app, args->static_path.data(), ioc, args->no_auto_tick, stat_provider);
         http_handler::LoggingRequestHandler log_handler{handler};
 
         if (!args->no_auto_tick) {

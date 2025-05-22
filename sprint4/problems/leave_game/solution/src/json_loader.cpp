@@ -37,7 +37,11 @@ model::Game LoadGame(const std::filesystem::path& json_path) {
     auto obj = json_config.as_object();
     double default_speed = 1.;
     unsigned default_bag_capacity = 3;
-    model::Game game{std::move(CreateLootGenerator(obj))};
+    unsigned dog_retirement_time = 10000;
+    if (auto time = obj.find(std::string(model::ModelLiterals::DEFAULT_DOG_RETIREMENT_TIME)); time != obj.end()) {
+        dog_retirement_time = time->value().as_double() * 1000;
+    }
+    model::Game game{std::move(CreateLootGenerator(obj)), dog_retirement_time};
     if (auto speed = obj.find(std::string(model::ModelLiterals::DEFAULT_DOG_SPEED)); speed != obj.end()) {
         default_speed = speed->value().as_double();
     }

@@ -34,11 +34,14 @@ add_executable(game_server
 	src/request_handler.h
 	src/extra_data.h
         src/extra_data.cpp
+	src/db.h
+	src/db.cpp
+	src/stat_saver_impl.h
 )
 
 add_executable(game_server_tests
     tests/tests.cpp
 )
 
-target_link_libraries(game_server PRIVATE GameLib)
+target_link_libraries(game_server PRIVATE GameLib CONAN_PKG::libpq CONAN_PKG::libpqxx)
 target_link_libraries(game_server_tests PRIVATE CONAN_PKG::catch2 GameLib)
