@@ -624,7 +624,10 @@ namespace model {
             loot_gen::LootGenerator::TimeInterval ms_duration(delta);
             std::vector<size_t> retired_dogs;
             for (auto& session : sessions_) {
-                session.Tick(delta, loot_generator_.Generate(ms_duration, session.GetLootCount(), session.GetDogsCount()));
+                auto dogs_to_retire = session.Tick(delta, loot_generator_.Generate(ms_duration, session.GetLootCount(), session.GetDogsCount()));
+                for (const auto dog_id : dogs_to_retire) {
+                    retired_dogs.push_back(dog_id);
+                }
             }
             return retired_dogs;
         }

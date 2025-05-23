@@ -318,7 +318,7 @@ namespace model {
         for (const auto& dog : dogs_) {
             if (dog.GetSpeed() == Speed{}) {
                 afk_dogs_[dog.GetId()] += delta;
-                if (afk_dogs_[dog.GetId()] > dog_retirement_time_) {
+                if (afk_dogs_[dog.GetId()] >= dog_retirement_time_) {
                     result.insert(dog.GetId());
                 }
                 /*else {
