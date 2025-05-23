@@ -189,7 +189,15 @@ void LoggingRequestHandler::LogResponse(const ResponseData& r, boost::chrono::sy
 }
 
 bool APIRequestHandler::ParseBearer(const std::string_view auth_header, std::string& token_to_write) const {
-    if (!auth_header.starts_with("Bearer ")) {
+    std::vector<std::string_view> splitted;
+    boost::algorithm::split(splitted, auth_header, boost::is_any_of(" "));
+    if (splitted.size() != 2 || splitted[0] != "Bearer" || splitted[1].size() != 32) {
+        return false;
+    }
+    token_to_write = splitted[1];
+    return true;
+
+    /*if (!auth_header.starts_with("Bearer ")) {
         return false;
     }
     std::string_view str = auth_header.substr(7);
@@ -197,7 +205,7 @@ bool APIRequestHandler::ParseBearer(const std::string_view auth_header, std::str
         return false;
     }
     token_to_write = str;
-    return true;
+    return true;*/
 }
 
 }  // namespace http_handler
