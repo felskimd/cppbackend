@@ -17,7 +17,7 @@ public:
         for (const auto& stat : stats) {
             work.exec_params(R"(
 INSERT INTO retired_players (name, score, playtime) VALUES ($1, $2, $3);
-)", stat.name, stat.scores, stat.playtime);
+)", stat.name, stat.scores, stat.playtime / 1000.); //add millisec in sec
         }
         work.commit();
     }

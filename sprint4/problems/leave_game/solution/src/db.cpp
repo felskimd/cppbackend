@@ -1,8 +1,8 @@
 #include "db.h"
 
 namespace database {
-    void InitializeDB(ConnectionPool& pool) {
-        auto conn = pool.GetConnection();
+    void InitializeDB(std::shared_ptr<ConnectionPool> pool) {
+        auto conn = pool->GetConnection();
         pqxx::work work{ *conn };
         work.exec(R"(
 CREATE TABLE IF NOT EXISTS retired_players (
@@ -13,13 +13,13 @@ CREATE TABLE IF NOT EXISTS retired_players (
 );
 )");
         work.exec(R"(
-CREATE INDEX score_idx ON retired_players (score);
+CREATE INDEX IF NOT EXISTS score_idx ON retired_players (score);
 )");
         work.exec(R"(
-CREATE INDEX playtime_idx ON retired_players (playtime);
+CREATE INDEX IF NOT EXISTS playtime_idx ON retired_players (playtime);
 )");
         work.exec(R"(
-CREATE INDEX name_idx ON retired_players (name);
+CREATE INDEX IF NOT EXISTS name_idx ON retired_players (name);
 )");
         work.commit();
     }

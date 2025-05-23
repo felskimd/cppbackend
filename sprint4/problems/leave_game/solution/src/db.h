@@ -88,7 +88,7 @@ namespace database {
         size_t used_connections_ = 0;
     };
 
-    void InitializeDB(ConnectionPool& pool);
+    void InitializeDB(std::shared_ptr<ConnectionPool> pool);
 
     struct StatInfo {
         std::string name;

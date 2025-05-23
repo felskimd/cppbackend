@@ -391,6 +391,7 @@ namespace http_handler {
                 value["name"] = stat.name;
                 value["score"] = stat.score;
                 value["playTime"] = stat.playtime;
+                result.emplace_back(std::move(value));
             }
             Sender::SendAPIResponse(http::status::ok, json::serialize(result), std::move(send));
             return { http::status::ok, ContentType::APP_JSON };
