@@ -182,9 +182,9 @@ int main(int argc, const char* argv[]) {
         /*database::ConnectionPool pool{ num_threads, [db_url] {
                                      return std::make_shared<pqxx::connection>(db_url);
                                  } };*/
-        auto shared_pool = std::make_shared<database::ConnectionPool>(num_threads, /*[] {*/  [db_url] {
+        auto shared_pool = std::make_shared<database::ConnectionPool>(num_threads, /*[] { */[db_url] {
             return std::make_shared<pqxx::connection>(/*"postgres://postgres:Mys3Cr3t@127.0.0.1:5432/postgres");*/db_url);
-            });
+        });
         database::InitializeDB(shared_pool);
         model::StatSaverImpl stat_saver{shared_pool};
         app::Application app{std::move(json_loader::LoadGame(args->config_path)), args->randomize_spawn, &stat_saver};

@@ -9,6 +9,9 @@ ExtensionToConetntTypeMapper Sender::mapper_;
 std::vector<std::string_view> SplitRequest(std::string_view body) {
     std::vector<std::string_view> result;
     size_t start = 0;
+    if (auto params_start = body.find('?'); params_start != body.npos) {
+        body = body.substr(0, params_start);
+    }
     size_t end = body.find("/");
     while (end != std::string_view::npos) {
         result.push_back(body.substr(start, end - start));
