@@ -297,11 +297,15 @@ namespace model {
             std::uniform_real_distribution deviation{-MAX_DELTA, MAX_DELTA};
             Position loot_pos;
             if (road.IsHorizontal()) {
-                std::uniform_real_distribution rand_pos{ static_cast<double>(road.GetStart().x), static_cast<double>(road.GetEnd().x) };
+                double max = static_cast<double>(std::max(road.GetStart().x, road.GetEnd().x));
+                double min = static_cast<double>(std::min(road.GetStart().x, road.GetEnd().x));
+                std::uniform_real_distribution rand_pos{ min, max };
                 loot_pos = { rand_pos(generator), road.GetStart().y + deviation(generator)};
             }
             else {
-                std::uniform_real_distribution rand_pos{ static_cast<double>(road.GetStart().y), static_cast<double>(road.GetEnd().y) };
+                double max = static_cast<double>(std::max(road.GetStart().y, road.GetEnd().y));
+                double min = static_cast<double>(std::min(road.GetStart().y, road.GetEnd().y));
+                std::uniform_real_distribution rand_pos{ min, max };
                 loot_pos = { road.GetStart().x + deviation(generator), rand_pos(generator) };
             }
             loot_map_[GetNextLootId()] = {rand_type(generator), loot_pos};
