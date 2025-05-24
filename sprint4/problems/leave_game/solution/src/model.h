@@ -741,7 +741,7 @@ namespace app {
 
         Player* FindByToken(const Token& token);
 
-        const std::vector<Player>& GetPlayers() const {
+        const std::forward_list<Player>& GetPlayers() const {
             return players_;
         }
 
@@ -755,9 +755,9 @@ namespace app {
 
     private:
         using TokenHasher = util::TaggedHasher<Token>;
-        using TokensToPlayers = std::unordered_map<Token, size_t, TokenHasher>;
+        using TokensToPlayers = std::unordered_map<Token, Player*, TokenHasher>;
 
-        std::vector<Player> players_;
+        std::forward_list<Player> players_;
         TokensToPlayers tokens_to_players_;
         TokensGen token_gen_;
         std::unordered_map<size_t, Player*> dogs_id_to_players_;
@@ -805,15 +805,10 @@ namespace app {
         }
 
         void Tick(unsigned millisec) {
-            try {
             auto dog_ids_to_retire = game_.Tick(millisec);
             players_.RemovePlayers(dog_ids_to_retire);
             if (listener_) {
                 listener_->OnTick(millisec);
-            }
-            }
-            catch (std::exception& ex) {
-                std::cerr << ex.what();
             }
         }
 
@@ -831,7 +826,7 @@ namespace app {
             return game_.GetLostItems();
         }
 
-        const std::vector<Player>& GetPlayers() const {
+        const std::forward_list<Player>& GetPlayers() const {
             return players_.GetPlayers();
         }
 
