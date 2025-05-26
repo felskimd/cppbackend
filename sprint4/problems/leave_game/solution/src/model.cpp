@@ -382,7 +382,7 @@ namespace app {
         auto token_copy = token;
         Player player(std::move(token_copy), session, doggy);
         //players_.emplace_front(std::move(player));
-        tokens_to_players_.emplace(std::move(token), std::move(player));
+        tokens_to_players_.emplace(token, std::move(player));
         dogs_id_to_players_[doggy->GetId()] = &tokens_to_players_.at(token);
         return tokens_to_players_.at(token);
     }
