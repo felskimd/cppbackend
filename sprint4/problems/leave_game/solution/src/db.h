@@ -6,7 +6,6 @@
 #include <pqxx/connection>
 #include <pqxx/pqxx>
 #include <pqxx/transaction>
-#include <memory>
 #include <mutex>
 #include <vector>
 

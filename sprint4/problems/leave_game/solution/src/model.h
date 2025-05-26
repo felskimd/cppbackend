@@ -4,6 +4,7 @@
 #include <forward_list>
 #include <iomanip>
 #include <iostream>
+#include <memory>
 #include <random>
 #include <sstream>
 #include <string>
