@@ -381,24 +381,25 @@ namespace app {
         }
         auto token_copy = token;
         Player player(std::move(token_copy), session, doggy);
-        players_.emplace_front(std::move(player));
-        dogs_id_to_players_[doggy->GetId()] = &players_.front();
-        tokens_to_players_.emplace(std::move(token), &players_.front());
-        return players_.front();
+        //players_.emplace_front(std::move(player));
+        tokens_to_players_.emplace(std::move(token), std::move(player));
+        dogs_id_to_players_[doggy->GetId()] = &tokens_to_players_.at(token);
+        return tokens_to_players_.at(token);
     }
 
     void Players::AddPlayer(size_t id, Token&& token, model::Dog&& dog, model::GameSession* session) {
         auto* doggy = session->AddDog(std::move(dog));
         auto token_copy = token;
         Player player(id, std::move(token_copy), session, doggy);
-        players_.emplace_front(std::move(player));
-        tokens_to_players_.emplace(std::move(token), &players_.front());
-        dogs_id_to_players_[doggy->GetId()] = &players_.front();
+        //players_.emplace_front(std::move(player));
+        tokens_to_players_.emplace(std::move(token), std::move(player));
+        dogs_id_to_players_[doggy->GetId()] = &tokens_to_players_.at(token);
     }
 
     Player* Players::FindByToken(const Token& token) {
+        auto player = tokens_to_players_.find(token);
         if (auto player = tokens_to_players_.find(token); player != tokens_to_players_.end()) {
-            return player->second;
+            return &player->second;
         }
         return nullptr;
     }
