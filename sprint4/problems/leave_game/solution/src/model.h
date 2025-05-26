@@ -483,7 +483,7 @@ namespace model {
 
     class GameSession {
     public:
-        explicit GameSession(Map* map, bool randomize_spawn, unsigned dog_retirement_time, StatSaver* stat_saver);
+        explicit GameSession(Map* map, bool randomize_spawn, unsigned dog_retirement_time, std::shared_ptr<StatSaver> stat_saver);
 
         using LootType = unsigned;
         using LootId = unsigned;
@@ -559,7 +559,7 @@ namespace model {
         unsigned loot_count_ = 0;
         unsigned loot_id_ = 0;
         unsigned dog_retirement_time_;
-        StatSaver* stat_saver_;
+        std::shared_ptr<model::StatSaver> stat_saver_;
 
         std::pair<bool, Position> CalculateMove(Position pos, Speed speed, unsigned delta) const;
 
@@ -612,7 +612,7 @@ namespace model {
             return nullptr;
         }
 
-        void StartSessions(bool randomize_spawn, model::StatSaver* stat_saver) {
+        void StartSessions(bool randomize_spawn, std::shared_ptr<model::StatSaver> stat_saver) {
             sessions_.clear();
             sessions_.reserve(maps_.size());
             for (auto& map : maps_) {
@@ -774,7 +774,7 @@ namespace app {
 
     class Application {
     public:
-        explicit Application(model::Game&& game, bool randomize_spawn, model::StatSaver* stat_saver);
+        explicit Application(model::Game&& game, bool randomize_spawn, std::shared_ptr<model::StatSaver> stat_saver);
 
         const model::Map* FindMap(const model::Map::Id& id) const {
             return game_.FindMap(id);
@@ -816,8 +816,8 @@ namespace app {
             }
         }
 
-        void SetAppListener(ApplicationListener& listener) {
-            listener_ = &listener;
+        void SetAppListener(std::shared_ptr<ApplicationListener> listener) {
+            listener_ = listener;
         }
 
         void AddPlayer(size_t player_id, Token&& token, model::Dog&& dog, const model::Map::Id& map_id);
@@ -837,7 +837,7 @@ namespace app {
     private:
         model::Game game_;
         Players players_;
-        ApplicationListener* listener_ = nullptr;
+        std::shared_ptr<ApplicationListener> listener_;
     };
 
 }  // namespace app

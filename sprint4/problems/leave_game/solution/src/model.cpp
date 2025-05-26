@@ -78,7 +78,7 @@ namespace model {
 
     size_t Dog::start_id_ = 0;
 
-    GameSession::GameSession(Map* map, bool randomize_spawn, unsigned dog_retirement_time, StatSaver* stat_saver)
+    GameSession::GameSession(Map* map, bool randomize_spawn, unsigned dog_retirement_time, std::shared_ptr<model::StatSaver> stat_saver)
         : map_(map)
         , randomize_spawn_(randomize_spawn)
         , dog_retirement_time_(dog_retirement_time)
@@ -406,7 +406,7 @@ namespace app {
 
     size_t Player::start_id_ = 0;
 
-    Application::Application(model::Game&& game, bool randomize_spawn, model::StatSaver* stat_saver)
+    Application::Application(model::Game&& game, bool randomize_spawn, std::shared_ptr<model::StatSaver> stat_saver)
         :game_(std::move(game))
     {
         game_.StartSessions(randomize_spawn, stat_saver);
