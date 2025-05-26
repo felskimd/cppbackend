@@ -69,6 +69,7 @@ namespace model {
             const auto& road_start = roads[0].GetStart();
             dog.SetPosition({ static_cast<double>(road_start.x), static_cast<double>(road_start.y) });
         }
+        dog.SetObserver(this);
         dog.ResetDirection();
         dog.Stop();
         dogs_.push_front(std::move(dog));
@@ -317,20 +318,15 @@ namespace model {
         return loot_id_++;
     }
 
-    std::unordered_set<size_t> GameSession::ObserveAFK(unsigned delta) {
+    std::unordered_set<size_t> GameSession::ObserveAFKAndPlaytime(unsigned delta) {
         std::unordered_set<size_t> result;
         for (const auto& dog : dogs_) {
-            if (dog.GetSpeed() == Speed{}) {
-                afk_dogs_[dog.GetId()] += delta;
-                if (afk_dogs_[dog.GetId()] >= dog_retirement_time_) {
-                    result.insert(dog.GetId());
+            if (auto afk = afk_dogs_.find(dog.GetId()); afk != afk_dogs_.end()) {
+                afk->second += delta;
+                if (afk->second >= dog_retirement_time_) {
+                    result.insert(afk->first);
+                    afk_dogs_.erase(afk->first);
                 }
-                /*else {
-                    afk_dogs_[dog.GetId()] += delta;
-                }*/
-            }
-            else {
-                afk_dogs_[dog.GetId()] = 0;
             }
             dogs_playtime_[dog.GetId()] += delta;
         }

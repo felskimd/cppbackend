@@ -323,7 +323,23 @@ namespace model {
         size_t capacity_;
     };
 
-    class Dog {
+    class AFKObserver {
+    public:
+        virtual void OnAFK(size_t) = 0;
+        virtual void OnNotAFK(size_t) = 0;
+    };
+
+    class AFKSubject {
+    public:
+        void SetObserver(AFKObserver* obs) { 
+            obs_ = obs;
+        }
+
+    protected:
+        AFKObserver* obs_ = nullptr;
+    };
+
+    class Dog : public AFKSubject {
     public:
         explicit Dog(std::string&& name, size_t pockets_capacity) 
             :id_(GetNextId()), name_(std::move(name)), pockets_(pockets_capacity)
@@ -387,6 +403,7 @@ namespace model {
 
         void Stop() {
             speed_ = {};
+            NotifyAFK();
         }
 
         void ResetDirection() {
@@ -437,6 +454,18 @@ namespace model {
         static size_t GetNextId() {
             return start_id_++;
         }
+
+        void NotifyAFK() {
+            if (obs_) {
+                obs_->OnAFK(id_);
+            }
+        }
+
+        void NotifyNotAFK() {
+            if (obs_) {
+                obs_->OnNotAFK(id_);
+            }
+        }
     };
 
     class CollisionActorsProvider : public collision_detector::ItemGathererProvider {
@@ -482,7 +511,7 @@ namespace model {
         virtual void Save(const std::vector<SaveStat>& stat) = 0;
     };
 
-    class GameSession {
+    class GameSession : public AFKObserver {
     public:
         explicit GameSession(Map* map, bool randomize_spawn, unsigned dog_retirement_time, std::shared_ptr<StatSaver> stat_saver);
 
@@ -498,6 +527,16 @@ namespace model {
             ItemType type;
             size_t outer_id;
         };
+
+        void OnAFK(size_t id) override {
+            afk_dogs_[id] = 0;
+        }
+
+        void OnNotAFK(size_t id) override {
+            if (afk_dogs_.contains(id)) {
+                afk_dogs_.erase(id);
+            }
+        }
 
         std::vector<const Dog*> GetDogs() const;
 
@@ -517,7 +556,7 @@ namespace model {
             ProcessEvents(events, data);
             UpdateDogsPositions(new_positions, dogs_to_stop);
             SpawnLoot(loot_count);
-            auto dogs_to_retire = ObserveAFK(delta);
+            auto dogs_to_retire = ObserveAFKAndPlaytime(delta);
             RetireDogs(dogs_to_retire);
             return dogs_to_retire;
         }
@@ -579,7 +618,7 @@ namespace model {
         void ProcessEvents(const std::vector<collision_detector::GatheringEvent>& events, const std::unordered_map<size_t, ItemData>& items_data);
 
         //Returns dog ids to retire
-        std::unordered_set<size_t> ObserveAFK(unsigned delta);
+        std::unordered_set<size_t> ObserveAFKAndPlaytime(unsigned delta);
 
         void RetireDogs(const std::unordered_set<size_t>& ids);
     };
