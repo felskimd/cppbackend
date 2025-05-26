@@ -173,17 +173,17 @@ int main(int argc, const char* argv[]) {
 
         // 1. Загружаем карту из файла и построить модель игры
 
-        /*const char* db_url = std::getenv("GAME_DB_URL");
+        const char* db_url = std::getenv("GAME_DB_URL");
         if (!db_url) {
             throw std::runtime_error("Can't get GAME_DB_URL from env");
-        }*/
+        }
 
         const unsigned num_threads = std::thread::hardware_concurrency();
         /*database::ConnectionPool pool{ num_threads, [db_url] {
                                      return std::make_shared<pqxx::connection>(db_url);
                                  } };*/
-        auto shared_pool = std::make_shared<database::ConnectionPool>(num_threads, [] { //[db_url] {
-            return std::make_shared<pqxx::connection>("postgres://postgres:Mys3Cr3t@127.0.0.1:5432/postgres"); //db_url);
+        auto shared_pool = std::make_shared<database::ConnectionPool>(num_threads, /*[] {*/ [db_url] {
+            return std::make_shared<pqxx::connection>(/*"postgres://postgres:Mys3Cr3t@127.0.0.1:5432/postgres");*/ db_url);
         });
         database::InitializeDB(shared_pool);
         model::StatSaverImpl stat_saver{shared_pool};
