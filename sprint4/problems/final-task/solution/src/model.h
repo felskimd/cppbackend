@@ -589,7 +589,6 @@ namespace model {
         }
 
     private:
-        //std::unordered_map<size_t, Dog> dogs_;
         std::forward_list<Dog> dogs_;
         std::vector<Dog*> dogs_links_;
         Map* map_;
@@ -794,7 +793,6 @@ namespace app {
         void RemovePlayers(const std::vector<size_t>& dogs_ids) {
             for (const auto id : dogs_ids) {
                 tokens_to_players_.erase(dogs_id_to_players_.at(id)->GetToken());
-                //std::erase(players_, dogs_id_to_players_.at(id));
                 dogs_id_to_players_.erase(id);
             }
         }
@@ -803,7 +801,6 @@ namespace app {
         using TokenHasher = util::TaggedHasher<Token>;
         using TokensToPlayers = std::unordered_map<Token, Player, TokenHasher>;
 
-        //std::forward_list<Player> players_;
         TokensToPlayers tokens_to_players_;
         TokensGen token_gen_;
         std::unordered_map<size_t, Player*> dogs_id_to_players_;
