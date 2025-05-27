@@ -852,14 +852,15 @@ namespace app {
 
         void Tick(unsigned millisec) {
             try {
-            auto dog_ids_to_retire = game_.Tick(millisec);
-            players_.RemovePlayers(dog_ids_to_retire);
-            if (listener_) {
-                listener_->OnTick(millisec);
+                auto dog_ids_to_retire = game_.Tick(millisec);
+                players_.RemovePlayers(dog_ids_to_retire);
+                if (listener_) {
+                    listener_->OnTick(millisec);
+                }
             }
-            }
+            //не знаю, почему без try-catch ошибки возникают
             catch (std::exception& ex) {
-                std::cerr << ex.what() << std::endl << std::endl << std::endl << std::endl << std::endl << std::endl;
+                std::cerr << ex.what() << std::endl;
             }
         }
 

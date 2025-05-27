@@ -238,12 +238,6 @@ int main(int argc, const char* argv[]) {
 
         // 6. Запускаем обработку асинхронных операций
         RunWorkers(std::max(1u, num_threads), [&ioc] {
-            /*try {
-                ioc.run();
-            }
-            catch (std::exception& ex) {
-                std::cerr << ex.what() << std::endl << std::endl << std::endl << std::endl;
-            }*/
             ioc.run();
         });
 
