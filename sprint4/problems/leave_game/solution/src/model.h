@@ -547,6 +547,7 @@ namespace model {
         }
 
         std::unordered_set<size_t> Tick(unsigned delta, unsigned loot_count) {
+            try {
             auto [new_positions, dogs_to_stop] = CalculatePositions(delta);
             CollisionActorsProvider provider;
             provider.SetGatherers(PrepareDogs(new_positions));
@@ -559,6 +560,10 @@ namespace model {
             auto dogs_to_retire = ObserveAFKAndPlaytime(delta);
             RetireDogs(dogs_to_retire);
             return dogs_to_retire;
+            }
+            catch (std::exception& ex) {
+                std::cerr << ex.what() << std::endl;
+            }
         }
 
         const std::unordered_map<LootId, std::pair<LootType, Position>>& GetLootMap() const {
