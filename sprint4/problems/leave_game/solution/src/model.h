@@ -385,6 +385,7 @@ namespace model {
 
         void Move(Direction dir, double speed) {
             direction_ = dir;
+            NotifyNotAFK();
             switch (dir) {
             case Direction::NORTH:
                 speed_ = { 0., -speed };
@@ -399,7 +400,6 @@ namespace model {
                 speed_ = { speed, 0. };
                 return;
             }
-            NotifyNotAFK();
         }
 
         void Stop() {
