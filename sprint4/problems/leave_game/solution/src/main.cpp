@@ -180,9 +180,6 @@ int main(int argc, const char* argv[]) {
         }
 
         const unsigned num_threads = std::thread::hardware_concurrency();
-        /*database::ConnectionPool pool{ num_threads, [db_url] {
-                                     return std::make_shared<pqxx::connection>(db_url);
-                                 } };*/
         auto shared_pool = std::make_shared<database::ConnectionPool>(num_threads, [db_url] {
             return std::make_shared<pqxx::connection>(db_url);
         });
@@ -241,6 +238,12 @@ int main(int argc, const char* argv[]) {
 
         // 6. Запускаем обработку асинхронных операций
         RunWorkers(std::max(1u, num_threads), [&ioc] {
+            /*try {
+                ioc.run();
+            }
+            catch (std::exception& ex) {
+                std::cerr << ex.what() << std::endl << std::endl << std::endl << std::endl;
+            }*/
             ioc.run();
         });
 

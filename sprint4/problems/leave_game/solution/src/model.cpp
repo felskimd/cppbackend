@@ -347,7 +347,9 @@ namespace model {
             std::erase(dogs_links_, dog);
             std::erase(dogs_, dog);
         }
-        stat_saver_->Save(stats);
+        if (stats.size() != 0) {
+            stat_saver_->Save(stats);
+        }
     }
 
 }  // namespace model
