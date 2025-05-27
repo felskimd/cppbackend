@@ -23,8 +23,17 @@ void ReportError(beast::error_code ec, std::string_view where) {
     BOOST_LOG_TRIVIAL(error) << boost::log::add_value(error_data, data) << "error";
 }
 
+//SessionBase::SessionBase(tcp::socket&& socket)
+//    : address_(socket.remote_endpoint().address()), stream_(std::move(socket)) {
+//}
+
 SessionBase::SessionBase(tcp::socket&& socket)
     : address_(socket.remote_endpoint().address()), stream_(std::move(socket)) {
+    beast::error_code ec;
+    stream_.socket().set_option(boost::asio::socket_base::keep_alive(true), ec);
+    stream_.socket().set_option(boost::asio::ip::tcp::no_delay(true), ec);
+    stream_.socket().set_option(boost::asio::socket_base::receive_buffer_size(65536), ec);
+    stream_.socket().set_option(boost::asio::socket_base::send_buffer_size(65536), ec);
 }
 
 void SessionBase::Read() {

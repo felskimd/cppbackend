@@ -589,6 +589,7 @@ namespace model {
         }
 
     private:
+        //std::unordered_map<size_t, Dog> dogs_;
         std::forward_list<Dog> dogs_;
         std::vector<Dog*> dogs_links_;
         Map* map_;
