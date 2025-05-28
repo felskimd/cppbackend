@@ -22,6 +22,7 @@ add_library(GameLib STATIC
 target_link_libraries(GameLib PUBLIC CONAN_PKG::boost Threads::Threads)
 
 add_executable(game_server
+	src/ticker.h
 	src/model_serialization.h 
 	src/main.cpp
 	src/http_server.cpp
