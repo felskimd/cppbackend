@@ -217,7 +217,7 @@ namespace model {
 
     std::pair<std::vector<collision_detector::Gatherer>, std::unordered_map<size_t, size_t>> GameSession::PrepareDogs(const std::unordered_map<size_t, Position>& calculated_positions) const {
         std::vector<collision_detector::Gatherer> gatherers;
-        std::unordered_map<size_t, size_t> dog_id_to_gatherer_id;
+        std::unordered_map<size_t, size_t> gatherer_id_to_dog_id;
         size_t i = 0;
         for (const auto [id, pos] : calculated_positions) {
             auto temp_start = dogs_.at(id).GetPosition();
@@ -225,10 +225,10 @@ namespace model {
             auto temp_end = calculated_positions.at(id);
             geom::Point2D end{ temp_end.x, temp_end.y };
             gatherers.emplace_back(start, end, CollisionWidths::DOG_WIDTH / 2);
-            dog_id_to_gatherer_id[id] = i;
+            gatherer_id_to_dog_id[i] = id;
             ++i;
         }
-        return { gatherers, dog_id_to_gatherer_id };
+        return { gatherers, gatherer_id_to_dog_id };
     }
 
     void GameSession::UpdateDogsPositions(const std::unordered_map<size_t, Position>& positions, const std::vector<size_t>& dogs_to_stop) {
@@ -266,11 +266,11 @@ namespace model {
 
     void GameSession::ProcessEvents(const std::vector<collision_detector::GatheringEvent>& events
                                 , const std::unordered_map<size_t, ItemData>& items_data
-                                , const std::unordered_map<size_t, size_t>& dog_id_to_gatherer_id) {
+                                , const std::unordered_map<size_t, size_t>& gatherer_id_to_dog_id) {
+        std::unordered_set<size_t> taken_loot;
         for (const auto& event : events) {
             auto& item_data = items_data.at(event.item_id);
-            std::unordered_set<size_t> taken_loot;
-            auto& dog = dogs_.at(dog_id_to_gatherer_id.at(event.gatherer_id));
+            auto& dog = dogs_.at(gatherer_id_to_dog_id.at(event.gatherer_id));
             if (item_data.type == GameSession::ItemType::LOOT) {
                 if (!taken_loot.contains(item_data.outer_id) && dog.CanTakeLoot()) {
                     dog.TakeLoot({ item_data.outer_id, loot_map_.at(item_data.outer_id).first });

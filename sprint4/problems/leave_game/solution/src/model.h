@@ -550,12 +550,12 @@ namespace model {
         std::unordered_set<size_t> Tick(unsigned delta, unsigned loot_count) {
             auto [new_positions, dogs_to_stop] = CalculatePositions(delta);
             CollisionActorsProvider provider;
-            auto [gatherers, dog_id_to_gatherer_id] = PrepareDogs(new_positions);
+            auto [gatherers, gatherer_id_to_dog_id] = PrepareDogs(new_positions);
             provider.SetGatherers(std::move(gatherers));
             auto [items, data] = PrepareCollisionItems();
             provider.SetItems(std::move(items));
             auto events = collision_detector::FindGatherEvents(provider);
-            ProcessEvents(events, data, dog_id_to_gatherer_id);
+            ProcessEvents(events, data, gatherer_id_to_dog_id);
             UpdateDogsPositions(new_positions, dogs_to_stop);
             SpawnLoot(loot_count);
             auto dogs_to_retire = ObserveAFKAndPlaytime(delta);
@@ -620,7 +620,7 @@ namespace model {
 
         void ProcessEvents(const std::vector<collision_detector::GatheringEvent>& events
             , const std::unordered_map<size_t, ItemData>& items_data
-            , const std::unordered_map<size_t, size_t>& dog_id_to_gatherer_id);
+            , const std::unordered_map<size_t, size_t>& gatherer_id_to_dog_id);
 
         //Returns dog ids to retire
         std::unordered_set<size_t> ObserveAFKAndPlaytime(unsigned delta);
