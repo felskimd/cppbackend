@@ -857,17 +857,12 @@ namespace app {
         }
 
         void Tick(unsigned millisec) {
-            try {
-                auto dog_ids_to_retire = game_.Tick(millisec);
-                if (dog_ids_to_retire.size() != 0) {
-                    players_.RemovePlayers(dog_ids_to_retire);
-                }
-                if (listener_) {
-                    listener_->OnTick(millisec);
-                }
+            auto dog_ids_to_retire = game_.Tick(millisec);
+            if (dog_ids_to_retire.size() != 0) {
+                players_.RemovePlayers(dog_ids_to_retire);
             }
-            catch (std::exception& ex) {
-                std::cerr << ex.what() << std::endl;
+            if (listener_) {
+                listener_->OnTick(millisec);
             }
         }
 

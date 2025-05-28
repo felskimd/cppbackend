@@ -69,6 +69,7 @@ model::Game LoadGame(const std::filesystem::path& json_path) {
         size_t loot_id = 0;
         for (const auto& loot : loot_array) {
             loot_map[loot_id] = loot.as_object().at("value").as_int64();
+            ++loot_id;
         }
         model_map.SetLootValues(std::move(loot_map));
         if (auto speed = object_map.find(std::string(model::ModelLiterals::DOG_SPEED)); speed != obj.end()) {
