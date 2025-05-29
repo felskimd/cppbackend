@@ -550,15 +550,18 @@ namespace model {
         std::unordered_set<size_t> Tick(unsigned delta, unsigned loot_count) {
             auto [new_positions, dogs_to_stop] = CalculatePositions(delta);
             CollisionActorsProvider provider;
-            provider.SetGatherers(PrepareDogs(new_positions));
+            auto [gatherers, gatherer_id_to_dog_id] = PrepareDogs(new_positions);
+            provider.SetGatherers(std::move(gatherers));
             auto [items, data] = PrepareCollisionItems();
             provider.SetItems(std::move(items));
             auto events = collision_detector::FindGatherEvents(provider);
-            ProcessEvents(events, data);
+            ProcessEvents(events, data, gatherer_id_to_dog_id);
             UpdateDogsPositions(new_positions, dogs_to_stop);
             SpawnLoot(loot_count);
             auto dogs_to_retire = ObserveAFKAndPlaytime(delta);
-            RetireDogs(dogs_to_retire);
+            if (dogs_to_retire.size() != 0) {
+                RetireDogs(dogs_to_retire);
+            }
             return dogs_to_retire;
         }
 
@@ -571,7 +574,7 @@ namespace model {
         }
 
         unsigned GetDogsCount() const {
-            return dogs_links_.size();
+            return dogs_.size();
         }
 
         unsigned GetPocketsSize() {
@@ -589,9 +592,7 @@ namespace model {
         }
 
     private:
-        //std::unordered_map<size_t, Dog> dogs_;
-        std::forward_list<Dog> dogs_;
-        std::vector<Dog*> dogs_links_;
+        std::unordered_map<size_t, Dog> dogs_;
         Map* map_;
         std::unordered_map<Point, std::vector<const Road*>, PointHash> roads_graph_;
         bool randomize_spawn_;
@@ -605,19 +606,21 @@ namespace model {
 
         std::pair<bool, Position> CalculateMove(Position pos, Speed speed, unsigned delta) const;
 
-        std::pair<std::unordered_map<size_t, Position>, std::unordered_map<size_t, bool>> CalculatePositions(unsigned delta) const;
+        std::pair<std::unordered_map<size_t, Position>, std::vector<size_t>> CalculatePositions(unsigned delta) const;
 
-        void UpdateDogsPositions(const std::unordered_map<size_t, Position>& positions, const std::unordered_map<size_t, bool>& dogs_to_stop);
+        void UpdateDogsPositions(const std::unordered_map<size_t, Position>& positions, const std::vector<size_t>& dogs_to_stop);
 
         void SpawnLoot(unsigned loot_count);
 
         unsigned GetNextLootId();
 
-        std::vector<collision_detector::Gatherer> PrepareDogs(const std::unordered_map<size_t, Position>& calculated_positions) const;
+        std::pair<std::vector<collision_detector::Gatherer>, std::unordered_map<size_t, size_t>> PrepareDogs(const std::unordered_map<size_t, Position>& calculated_positions) const;
 
         std::pair<std::vector<collision_detector::Item>, std::unordered_map<size_t, ItemData>> PrepareCollisionItems() const;
 
-        void ProcessEvents(const std::vector<collision_detector::GatheringEvent>& events, const std::unordered_map<size_t, ItemData>& items_data);
+        void ProcessEvents(const std::vector<collision_detector::GatheringEvent>& events
+            , const std::unordered_map<size_t, ItemData>& items_data
+            , const std::unordered_map<size_t, size_t>& gatherer_id_to_dog_id);
 
         //Returns dog ids to retire
         std::unordered_set<size_t> ObserveAFKAndPlaytime(unsigned delta);
@@ -743,6 +746,10 @@ namespace app {
             return this->id_ == other->id_;
         }
 
+        bool operator!=(const Player& other) {
+            return !(*this==other);
+        }
+
         Token GetToken() const {
             return token_;
         }
@@ -793,9 +800,9 @@ namespace app {
 
         void RemovePlayers(const std::vector<size_t>& dogs_ids) {
             for (const auto id : dogs_ids) {
-                tokens_to_players_.erase(dogs_id_to_players_.at(id)->GetToken());
-                //std::erase(players_, dogs_id_to_players_.at(id));
+                auto token = dogs_id_to_players_.at(id)->GetToken();
                 dogs_id_to_players_.erase(id);
+                tokens_to_players_.erase(token);
             }
         }
 
@@ -803,7 +810,6 @@ namespace app {
         using TokenHasher = util::TaggedHasher<Token>;
         using TokensToPlayers = std::unordered_map<Token, Player, TokenHasher>;
 
-        //std::forward_list<Player> players_;
         TokensToPlayers tokens_to_players_;
         TokensGen token_gen_;
         std::unordered_map<size_t, Player*> dogs_id_to_players_;
@@ -851,16 +857,12 @@ namespace app {
         }
 
         void Tick(unsigned millisec) {
-            try {
-                auto dog_ids_to_retire = game_.Tick(millisec);
+            auto dog_ids_to_retire = game_.Tick(millisec);
+            if (dog_ids_to_retire.size() != 0) {
                 players_.RemovePlayers(dog_ids_to_retire);
-                if (listener_) {
-                    listener_->OnTick(millisec);
-                }
             }
-            //не знаю, почему без try-catch ошибки возникают
-            catch (std::exception& ex) {
-                std::cerr << ex.what() << std::endl;
+            if (listener_) {
+                listener_->OnTick(millisec);
             }
         }
 

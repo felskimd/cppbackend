@@ -59,25 +59,27 @@ namespace database {
 
         ConnectionWrapper GetConnection() {
             std::unique_lock lock{ mutex_ };
-            // Блокируем текущий поток и ждём, пока cond_var_ не получит уведомление и не освободится
-            // хотя бы одно соединение
+            // Р‘Р»РѕРєРёСЂСѓРµРј С‚РµРєСѓС‰РёР№ РїРѕС‚РѕРє Рё Р¶РґС‘Рј, РїРѕРєР° cond_var_ РЅРµ РїРѕР»СѓС‡РёС‚ СѓРІРµРґРѕРјР»РµРЅРёРµ Рё РЅРµ РѕСЃРІРѕР±РѕРґРёС‚СЃСЏ
+            // С…РѕС‚СЏ Р±С‹ РѕРґРЅРѕ СЃРѕРµРґРёРЅРµРЅРёРµ
             cond_var_.wait(lock, [this] {
                 return used_connections_ < pool_.size();
                 });
-            // После выхода из цикла ожидания мьютекс остаётся захваченным
+            // РџРѕСЃР»Рµ РІС‹С…РѕРґР° РёР· С†РёРєР»Р° РѕР¶РёРґР°РЅРёСЏ РјСЊСЋС‚РµРєСЃ РѕСЃС‚Р°С‘С‚СЃСЏ Р·Р°С…РІР°С‡РµРЅРЅС‹Рј
 
             return { std::move(pool_[used_connections_++]), *this };
         }
 
     private:
         void ReturnConnection(ConnectionPtr&& conn) {
-            // Возвращаем соединение обратно в пул
+            // Р’РѕР·РІСЂР°С‰Р°РµРј СЃРѕРµРґРёРЅРµРЅРёРµ РѕР±СЂР°С‚РЅРѕ РІ РїСѓР»
             {
                 std::lock_guard lock{ mutex_ };
-                assert(used_connections_ != 0);
+                if (used_connections_ == 0) {
+                    throw std::logic_error("Wrong connection pool logic");
+                }
                 pool_[--used_connections_] = std::move(conn);
             }
-            // Уведомляем один из ожидающих потоков об изменении состояния пула
+            // РЈРІРµРґРѕРјР»СЏРµРј РѕРґРёРЅ РёР· РѕР¶РёРґР°СЋС‰РёС… РїРѕС‚РѕРєРѕРІ РѕР± РёР·РјРµРЅРµРЅРёРё СЃРѕСЃС‚РѕСЏРЅРёСЏ РїСѓР»Р°
             cond_var_.notify_one();
         }
 

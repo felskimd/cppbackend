@@ -35,11 +35,11 @@ model::Game LoadGame(const std::filesystem::path& json_path) {
     // Загрузить модель игры из файла
     auto json_config = json::parse(ReadFileToString(json_path));
     auto obj = json_config.as_object();
-    double default_speed = 1.;
-    unsigned default_bag_capacity = 3;
-    unsigned dog_retirement_time = 60000;
+    double default_speed = DEFAULT_DOG_SPEED;
+    unsigned default_bag_capacity = DEFAULT_BAG_CAPACITY;
+    unsigned dog_retirement_time = DEFAULT_DOG_RETIREMENT_TIME;
     if (auto time = obj.find(std::string(model::ModelLiterals::DEFAULT_DOG_RETIREMENT_TIME)); time != obj.end()) {
-        dog_retirement_time = time->value().as_double() * 1000;
+        dog_retirement_time = time->value().as_double() * MILLISEC_IN_SEC;
     }
     model::Game game{std::move(CreateLootGenerator(obj)), dog_retirement_time};
     if (auto speed = obj.find(std::string(model::ModelLiterals::DEFAULT_DOG_SPEED)); speed != obj.end()) {
@@ -69,6 +69,7 @@ model::Game LoadGame(const std::filesystem::path& json_path) {
         size_t loot_id = 0;
         for (const auto& loot : loot_array) {
             loot_map[loot_id] = loot.as_object().at("value").as_int64();
+            ++loot_id;
         }
         model_map.SetLootValues(std::move(loot_map));
         if (auto speed = object_map.find(std::string(model::ModelLiterals::DOG_SPEED)); speed != obj.end()) {

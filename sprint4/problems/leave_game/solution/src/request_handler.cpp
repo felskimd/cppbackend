@@ -196,16 +196,6 @@ bool APIRequestHandler::ParseBearer(const std::string_view auth_header, std::str
     }
     token_to_write = splitted[1];
     return true;
-
-    /*if (!auth_header.starts_with("Bearer ")) {
-        return false;
-    }
-    std::string_view str = auth_header.substr(7);
-    if (str.size() != 32) {
-        return false;
-    }
-    token_to_write = str;
-    return true;*/
 }
 
 }  // namespace http_handler

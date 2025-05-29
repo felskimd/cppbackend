@@ -19,6 +19,11 @@ struct LootLiterals {
 	constexpr static std::string_view LOOT_TYPES = "lootTypes";
 };
 
+constexpr int MILLISEC_IN_SEC = 1000;
+constexpr int DEFAULT_DOG_RETIREMENT_TIME = 60000;
+constexpr int DEFAULT_BAG_CAPACITY = 3;
+constexpr double DEFAULT_DOG_SPEED = 1.;
+
 namespace json = boost::json;
 
 model::Game LoadGame(const std::filesystem::path& json_path);

@@ -44,7 +44,7 @@ namespace model {
 
     std::vector<const Dog*> GameSession::GetDogs() const {
         std::vector<const Dog*> result;
-        for (const auto& dog : dogs_) {
+        for (const auto& [id, dog] : dogs_) {
             result.emplace_back(&dog);
         }
         return result;
@@ -72,9 +72,10 @@ namespace model {
         dog.SetObserver(this);
         dog.ResetDirection();
         dog.Stop();
-        dogs_.push_front(std::move(dog));
-        dogs_links_.push_back(&dogs_.front());
-        return &dogs_.front();
+        auto id = dog.GetId();
+        dogs_.insert({id, std::move(dog)});
+        dogs_playtime_[id];
+        return &dogs_.at(id);
     }
 
     size_t Dog::start_id_ = 0;
@@ -199,47 +200,43 @@ namespace model {
         return { true, end_pos };
     }
 
-    std::pair<std::unordered_map<size_t, Position>, std::unordered_map<size_t, bool>> GameSession::CalculatePositions(unsigned delta) const {
+    std::pair<std::unordered_map<size_t, Position>, std::vector<size_t>> GameSession::CalculatePositions(unsigned delta) const {
         std::unordered_map<size_t, Position> new_positions;
-        std::unordered_map<size_t, bool> dogs_to_stop;
-        size_t i = 0;
-        for (auto& dog : dogs_) {
+        std::vector<size_t> dogs_to_stop;
+        for (auto& [id, dog] : dogs_) {
             if (dog.GetSpeed() != Speed{}) {
                 auto [stop, new_pos] = CalculateMove(dog.GetPosition(), dog.GetSpeed(), delta);
-                new_positions[i] = new_pos;
-                dogs_to_stop[i] = stop;
+                new_positions[id] = new_pos;
+                if (stop) {
+                    dogs_to_stop.push_back(id);
+                }
             }
-            else {
-                new_positions[i] = dog.GetPosition();
-                dogs_to_stop[i] = false;
-            }
-            ++i;
         }
         return {new_positions, dogs_to_stop};
     }
 
-    std::vector<collision_detector::Gatherer> GameSession::PrepareDogs(const std::unordered_map<size_t, Position>& calculated_positions) const {
-        std::vector<collision_detector::Gatherer> result;
+    std::pair<std::vector<collision_detector::Gatherer>, std::unordered_map<size_t, size_t>> GameSession::PrepareDogs(const std::unordered_map<size_t, Position>& calculated_positions) const {
+        std::vector<collision_detector::Gatherer> gatherers;
+        std::unordered_map<size_t, size_t> gatherer_id_to_dog_id;
         size_t i = 0;
-        for (auto& dog : dogs_) {
-            auto temp_start = dog.GetPosition();
-            geom::Point2D start{temp_start.x, temp_start.y};
-            auto temp_end = calculated_positions.at(i);
+        for (const auto [id, pos] : calculated_positions) {
+            auto temp_start = dogs_.at(id).GetPosition();
+            geom::Point2D start{ temp_start.x, temp_start.y };
+            auto temp_end = calculated_positions.at(id);
             geom::Point2D end{ temp_end.x, temp_end.y };
-            result.emplace_back(start, end, CollisionWidths::DOG_WIDTH / 2);
+            gatherers.emplace_back(start, end, CollisionWidths::DOG_WIDTH / 2);
+            gatherer_id_to_dog_id[i] = id;
             ++i;
         }
-        return result;
+        return { gatherers, gatherer_id_to_dog_id };
     }
 
-    void GameSession::UpdateDogsPositions(const std::unordered_map<size_t, Position>& positions, const std::unordered_map<size_t, bool>& dogs_to_stop) {
-        size_t i = 0;
-        for (auto& dog : dogs_) {
-            dog.SetPosition(positions.at(i));
-            if (dogs_to_stop.at(i)) {
-                dog.Stop();
-            }
-            ++i;
+    void GameSession::UpdateDogsPositions(const std::unordered_map<size_t, Position>& positions, const std::vector<size_t>& dogs_to_stop) {
+        for (const auto [id, pos] : positions) {
+            dogs_.at(id).SetPosition(pos);
+        }
+        for (const auto id : dogs_to_stop) {
+            dogs_.at(id).Stop();
         }
     }
 
@@ -267,22 +264,24 @@ namespace model {
         return {items, item_data};
     }
 
-    void GameSession::ProcessEvents(const std::vector<collision_detector::GatheringEvent>& events, const std::unordered_map<size_t, ItemData>& items_data) {
+    void GameSession::ProcessEvents(const std::vector<collision_detector::GatheringEvent>& events
+                                , const std::unordered_map<size_t, ItemData>& items_data
+                                , const std::unordered_map<size_t, size_t>& gatherer_id_to_dog_id) {
+        std::unordered_set<size_t> taken_loot;
         for (const auto& event : events) {
             auto& item_data = items_data.at(event.item_id);
-            std::unordered_set<size_t> taken_loot;
-            auto& dog = dogs_links_[event.gatherer_id];
+            auto& dog = dogs_.at(gatherer_id_to_dog_id.at(event.gatherer_id));
             if (item_data.type == GameSession::ItemType::LOOT) {
-                if (!taken_loot.contains(item_data.outer_id) && dog->CanTakeLoot()) {
-                    dog->TakeLoot({ item_data.outer_id, loot_map_.at(item_data.outer_id).first });
+                if (!taken_loot.contains(item_data.outer_id) && dog.CanTakeLoot()) {
+                    dog.TakeLoot({ item_data.outer_id, loot_map_.at(item_data.outer_id).first });
                     taken_loot.insert(item_data.outer_id);
                     loot_map_.erase(item_data.outer_id);
                 }
             }
             else {
-                auto items = dog->TransferItems();
+                auto items = dog.TransferItems();
                 for (const auto& item : items) {
-                    dog->AddScore(map_->GetValue(item.type));
+                    dog.AddScore(map_->GetValue(item.type));
                 }
             }
         }
@@ -320,32 +319,29 @@ namespace model {
 
     std::unordered_set<size_t> GameSession::ObserveAFKAndPlaytime(unsigned delta) {
         std::unordered_set<size_t> result;
-        for (const auto& dog : dogs_) {
-            if (auto afk = afk_dogs_.find(dog.GetId()); afk != afk_dogs_.end()) {
-                afk->second += delta;
-                if (afk->second >= dog_retirement_time_) {
-                    result.insert(afk->first);
-                    afk_dogs_.erase(afk->first);
-                }
+        for (auto& [id, time] : afk_dogs_) {
+            time += delta;
+            if (time >= dog_retirement_time_) {
+                result.insert(id);
             }
-            dogs_playtime_[dog.GetId()] += delta;
         }
+        for (const auto id : result) {
+            afk_dogs_.erase(id);
+        }
+
+        for (auto& [id, time] : dogs_playtime_) {
+            time += delta;
+        }
+
         return result;
     }
 
     void GameSession::RetireDogs(const std::unordered_set<size_t>& ids) {
         std::vector<SaveStat> stats;
-        std::vector<Dog*> dogs_to_erase;
-        for (auto& dog : dogs_) {
-            if (ids.contains(dog.GetId())) {
-                stats.emplace_back(dog.GetName(), dog.GetScore(), dogs_playtime_.at(dog.GetId()));
-                dogs_to_erase.push_back(&dog);
-            }
-        }
-        for (const auto dog : dogs_to_erase) {
-            //??? mb errors
-            std::erase(dogs_links_, dog);
-            std::erase(dogs_, dog);
+        for (const auto id : ids) {
+            auto& dog = dogs_.at(id);
+            stats.emplace_back(dog.GetName(), dog.GetScore(), dogs_playtime_.at(dog.GetId()));
+            dogs_.erase(id);
         }
         if (stats.size() != 0) {
             stat_saver_->Save(stats);
@@ -379,7 +375,6 @@ namespace app {
         }
         auto token_copy = token;
         Player player(std::move(token_copy), session, doggy);
-        //players_.emplace_front(std::move(player));
         tokens_to_players_.emplace(token, std::move(player));
         dogs_id_to_players_[doggy->GetId()] = &tokens_to_players_.at(token);
         return tokens_to_players_.at(token);
@@ -389,7 +384,6 @@ namespace app {
         auto* doggy = session->AddDog(std::move(dog));
         auto token_copy = token;
         Player player(id, std::move(token_copy), session, doggy);
-        //players_.emplace_front(std::move(player));
         tokens_to_players_.emplace(std::move(token), std::move(player));
         dogs_id_to_players_[doggy->GetId()] = &tokens_to_players_.at(token);
     }
